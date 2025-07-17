@@ -42,8 +42,8 @@ LIBS	:= -lmplayerwii -lavformat -lavcodec -lavutil -lpostproc -lswscale \
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= /opt/devkitpro-r24/portlibs/ppc /opt/devkitpro-r24/libogc \
-			/opt/devkitpro-r24/portlibs/ppc/wii
+LIBDIRS	:= $(DEVKITPRO)/portlibs/ppc $(DEVKITPRO)/libogc \
+			$(DEVKITPRO)/portlibs/ppc/wii
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
