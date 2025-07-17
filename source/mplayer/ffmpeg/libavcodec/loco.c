@@ -2,20 +2,20 @@
  * LOCO codec
  * Copyright (c) 2005 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -123,9 +123,6 @@ static int loco_decode_plane(LOCOContext *l, uint8_t *data, int width, int heigh
     int val;
     int i, j;
 
-    if(buf_size<=0)
-        return -1;
-
     init_get_bits(&rc.gb, buf, buf_size*8);
     rc.save = 0;
     rc.run = 0;
@@ -166,7 +163,7 @@ static int decode_frame(AVCodecContext *avctx,
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     LOCOContext * const l = avctx->priv_data;
-    AVFrame * const p = &l->pic;
+    AVFrame * const p= (AVFrame*)&l->pic;
     int decoded;
 
     if(p->data[0])
@@ -210,7 +207,7 @@ static int decode_frame(AVCodecContext *avctx,
         decoded = loco_decode_plane(l, p->data[0] + p->linesize[0]*(avctx->height-1) + 2, avctx->width, avctx->height,
                                     -p->linesize[0], buf, buf_size, 3);
         break;
-    case LOCO_CRGBA: case LOCO_RGBA:
+    case LOCO_RGBA:
         decoded = loco_decode_plane(l, p->data[0], avctx->width, avctx->height,
                                     p->linesize[0], buf, buf_size, 4);
         buf += decoded; buf_size -= decoded;
@@ -228,7 +225,7 @@ static int decode_frame(AVCodecContext *avctx,
     *data_size = sizeof(AVFrame);
     *(AVFrame*)data = l->pic;
 
-    return buf_size < 0 ? -1 : buf_size;
+    return buf_size;
 }
 
 static av_cold int decode_init(AVCodecContext *avctx){
@@ -275,8 +272,6 @@ static av_cold int decode_init(AVCodecContext *avctx){
     if(avctx->debug & FF_DEBUG_PICT_INFO)
         av_log(avctx, AV_LOG_INFO, "lossy:%i, version:%i, mode: %i\n", l->lossy, version, l->mode);
 
-    avcodec_get_frame_defaults(&l->pic);
-
     return 0;
 }
 
@@ -299,5 +294,5 @@ AVCodec ff_loco_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("LOCO"),
+    .long_name = NULL_IF_CONFIG_SMALL("LOCO"),
 };

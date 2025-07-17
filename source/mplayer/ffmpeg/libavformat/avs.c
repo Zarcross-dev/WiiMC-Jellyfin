@@ -2,20 +2,20 @@
  * AVS demuxer.
  * Copyright (c) 2006  Aurelien Jacobs <aurel@gnuage.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -55,7 +55,7 @@ static int avs_probe(AVProbeData * p)
     return 0;
 }
 
-static int avs_read_header(AVFormatContext * s)
+static int avs_read_header(AVFormatContext * s, AVFormatParameters * ap)
 {
     AvsFormat *avs = s->priv_data;
 
@@ -124,7 +124,7 @@ static int avs_read_audio_packet(AVFormatContext * s, AVPacket * pkt)
     int ret, size;
 
     size = avio_tell(s->pb);
-    ret = ff_voc_get_packet(s, pkt, avs->st_audio, avs->remaining_audio_size);
+    ret = voc_get_packet(s, pkt, avs->st_audio, avs->remaining_audio_size);
     size = avio_tell(s->pb) - size;
     avs->remaining_audio_size -= size;
 
@@ -163,14 +163,10 @@ static int avs_read_packet(AVFormatContext * s, AVPacket * pkt)
             sub_type = avio_r8(s->pb);
             type = avio_r8(s->pb);
             size = avio_rl16(s->pb);
-            if (size < 4)
-                return AVERROR_INVALIDDATA;
             avs->remaining_frame_size -= size;
 
             switch (type) {
             case AVS_PALETTE:
-                if (size - 4 > sizeof(palette))
-                    return AVERROR_INVALIDDATA;
                 ret = avio_read(s->pb, palette, size - 4);
                 if (ret < size - 4)
                     return AVERROR(EIO);
@@ -179,7 +175,7 @@ static int avs_read_packet(AVFormatContext * s, AVPacket * pkt)
 
             case AVS_VIDEO:
                 if (!avs->st_video) {
-                    avs->st_video = avformat_new_stream(s, NULL);
+                    avs->st_video = av_new_stream(s, AVS_VIDEO);
                     if (avs->st_video == NULL)
                         return AVERROR(ENOMEM);
                     avs->st_video->codec->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -188,15 +184,15 @@ static int avs_read_packet(AVFormatContext * s, AVPacket * pkt)
                     avs->st_video->codec->height = avs->height;
                     avs->st_video->codec->bits_per_coded_sample=avs->bits_per_sample;
                     avs->st_video->nb_frames = avs->nb_frames;
-                    avs->st_video->r_frame_rate = avs->st_video->avg_frame_rate =
-                                                  (AVRational){avs->fps, 1};
+                    avs->st_video->codec->time_base = (AVRational) {
+                    1, avs->fps};
                 }
                 return avs_read_video_packet(s, pkt, type, sub_type, size,
                                              palette, palette_size);
 
             case AVS_AUDIO:
                 if (!avs->st_audio) {
-                    avs->st_audio = avformat_new_stream(s, NULL);
+                    avs->st_audio = av_new_stream(s, AVS_AUDIO);
                     if (avs->st_audio == NULL)
                         return AVERROR(ENOMEM);
                     avs->st_audio->codec->codec_type = AVMEDIA_TYPE_AUDIO;

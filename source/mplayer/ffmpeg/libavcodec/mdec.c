@@ -4,20 +4,20 @@
  *
  * based upon code from Sebastian Jedruszkiewicz <elf@frogger.rules.pl>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -214,12 +214,11 @@ static int decode_frame(AVCodecContext *avctx,
 static av_cold void mdec_common_init(AVCodecContext *avctx){
     MDECContext * const a = avctx->priv_data;
 
-    ff_dsputil_init(&a->dsp, avctx);
+    dsputil_init(&a->dsp, avctx);
 
     a->mb_width   = (avctx->coded_width  + 15) / 16;
     a->mb_height  = (avctx->coded_height + 15) / 16;
 
-    avcodec_get_frame_defaults(&a->picture);
     avctx->coded_frame= &a->picture;
     a->avctx= avctx;
 }
@@ -243,16 +242,15 @@ static av_cold int decode_init(AVCodecContext *avctx){
 
 static av_cold int decode_init_thread_copy(AVCodecContext *avctx){
     MDECContext * const a = avctx->priv_data;
-    AVFrame *p = &a->picture;
+    AVFrame *p = (AVFrame*)&a->picture;
 
-    avctx->coded_frame= p;
+    avctx->coded_frame = p;
     a->avctx= avctx;
 
-    p->qscale_table= av_mallocz(a->mb_width);
+    p->qscale_table = av_mallocz( a->mb_width);
 
     return 0;
 }
-
 
 static av_cold int decode_end(AVCodecContext *avctx){
     MDECContext * const a = avctx->priv_data;
@@ -267,14 +265,15 @@ static av_cold int decode_end(AVCodecContext *avctx){
 }
 
 AVCodec ff_mdec_decoder = {
-    .name             = "mdec",
-    .type             = AVMEDIA_TYPE_VIDEO,
-    .id               = CODEC_ID_MDEC,
-    .priv_data_size   = sizeof(MDECContext),
-    .init             = decode_init,
-    .close            = decode_end,
-    .decode           = decode_frame,
-    .capabilities     = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS,
-    .long_name        = NULL_IF_CONFIG_SMALL("Sony PlayStation MDEC (Motion DECoder)"),
-    .init_thread_copy = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy)
+    .name           = "mdec",
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = CODEC_ID_MDEC,
+    .priv_data_size = sizeof(MDECContext),
+    .init           = decode_init,
+    .close          = decode_end,
+    .decode         = decode_frame,
+    .capabilities   = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS,
+    .long_name= NULL_IF_CONFIG_SMALL("Sony PlayStation MDEC (Motion DECoder)"),
+    .init_thread_copy= ONLY_IF_THREADS_ENABLED(decode_init_thread_copy)
 };
+

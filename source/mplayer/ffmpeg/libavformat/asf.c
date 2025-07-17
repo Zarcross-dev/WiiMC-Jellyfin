@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2000, 2001 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -114,10 +114,6 @@ const ff_asf_guid ff_asf_marker_header = {
         0x01, 0xCD, 0x87, 0xF4, 0x51, 0xA9, 0xCF, 0x11, 0x8E, 0xE6, 0x00, 0xC0, 0x0C, 0x20, 0x53, 0x65
 };
 
-const ff_asf_guid ff_asf_metadata_library_header = {
-    0x94, 0x1c, 0x23, 0x44, 0x98, 0x94, 0xd1, 0x49, 0xa1, 0x41, 0x1d, 0x13, 0x4e, 0x45, 0x70, 0x54
-};
-
 /* I am not a number !!! This GUID is the one found on the PC used to
    generate the stream */
 const ff_asf_guid ff_asf_my_guid = {
@@ -156,9 +152,9 @@ const AVMetadataConv ff_asf_metadata_conv[] = {
     { "WM/Publisher"       , "publisher"   },
     { "WM/Tool"            , "encoder"     },
     { "WM/TrackNumber"     , "track"       },
+    { "WM/Track"           , "track"       },
     { "WM/MediaStationCallSign", "service_provider" },
     { "WM/MediaStationName", "service_name" },
-    { "WM/Year"            , "year"        },
 //  { "Year"               , "date"        }, TODO: conversion year<->date
     { 0 }
 };

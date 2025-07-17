@@ -28,7 +28,7 @@ various Libav APIs.
 @chapter Options
 @c man begin OPTIONS
 
-@include avtools-common-opts.texi
+@include fftools-common-opts.texi
 
 @section Main options
 
@@ -39,8 +39,7 @@ Force displayed width.
 Force displayed height.
 @item -s @var{size}
 This option has been removed. Use private format options for specifying the
-input video size.  For example with the rawvideo demuxer you need to specify the
-option @var{video_size}.
+input video size.
 @item -an
 Disable audio.
 @item -vn
@@ -71,8 +70,7 @@ also sources and sinks).
 @table @option
 @item -pix_fmt @var{format}
 This option has been removed. Use private options for specifying the
-input pixel format. For example with the rawvideo demuxer you need to specify
-the option @var{pixel_format}.
+input pixel format.
 @item -stats
 Show the stream duration, the codec parameters, the current position in
 the stream and the audio/video synchronisation drift.

@@ -44,15 +44,12 @@ static GList     * URLComboEntrys = NULL;
 
 void ShowURLDialogBox( void )
 {
- urlItem * item;
-
  if ( URL ) gtkActive( URL );
    else URL=create_URL();
 
- item = listMgr( URLLIST_GET,0 );
-
- if ( item )
+ if ( urlList )
   {
+   urlItem * item = urlList;
    g_list_free( URLComboEntrys );
    URLComboEntrys=NULL;
    while( item )
@@ -104,10 +101,10 @@ static void on_Button_pressed( GtkButton * button,gpointer user_data )
 
      item=calloc( 1,sizeof( urlItem ) );
      item->url=gstrdup( str );
-     listMgr( URLLIST_ITEM_ADD,item );
+     listSet( gtkAddURLItem,item );
 
-     uiSetFileName( NULL,str,STREAMTYPE_STREAM ); guiInfo.NewPlay=GUI_FILE_NEW;
-     uiEventHandling( evPlay,0 );
+     setdup( &guiInfo.Filename,str ); guiInfo.NewPlay=GUI_FILE_NEW;
+     uiEventHandling( evPlayNetwork,0 );
     }
   }
  HideURLDialogBox();

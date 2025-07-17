@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * filebrowser.cpp
  *
@@ -57,11 +57,7 @@ static void Reset(BROWSER *info)
 		mem2_free(i->file, MEM2_BROWSER);
 		mem2_free(i->url, MEM2_BROWSER);
 		mem2_free(i->display, MEM2_BROWSER);
-		mem2_free(i->xml, MEM2_BROWSER);
-		mem2_free(i->year, MEM2_BROWSER);
-		mem2_free(i->desc, MEM2_BROWSER);
 		mem2_free(i->image, MEM2_BROWSER);
-		mem2_free(i->tunein, MEM2_BROWSER);
 		n=i->next;
 		mem2_free(i, MEM2_BROWSER);
 		i=n;
@@ -74,7 +70,7 @@ static void Reset(BROWSER *info)
 	info->last = NULL;
 }
 
-void SortBrowser(BROWSER *_browser, int ( * comparator ) ( const void *, const void * ) )
+void SortBrower(BROWSER *_browser, int ( * comparator ) ( const void *, const void * ) )
 {
 	/* preform a bubble sort on the list */
 	BROWSERENTRY *a = NULL;
@@ -181,11 +177,7 @@ bool DeleteEntry(BROWSER *info, BROWSERENTRY *entry)
 			mem2_free(i->file, MEM2_BROWSER);
 			mem2_free(i->url, MEM2_BROWSER);
 			mem2_free(i->display, MEM2_BROWSER);
-			mem2_free(i->xml, MEM2_BROWSER);
-			mem2_free(i->year, MEM2_BROWSER);
-			mem2_free(i->desc, MEM2_BROWSER);
 			mem2_free(i->image, MEM2_BROWSER);
-			mem2_free(i->tunein, MEM2_BROWSER);
 			mem2_free(i, MEM2_BROWSER);
 				
 			return true;
@@ -309,7 +301,7 @@ void PopulateVideoPlaylist()
 	i=browser.first;
 	while(i!=NULL)
 	{
-		if(!i->file || i->type != TYPE_FILE) //|| strncmp(i->file, "http://www.youtube.com", 22) == 0)
+		if(!i->file || i->type != TYPE_FILE || strncmp(i->file, "http://www.youtube.com", 22) == 0)
 		{
 			i=i->next;
 			continue;

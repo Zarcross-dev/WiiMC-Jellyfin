@@ -1,66 +1,26 @@
 /*
  * Copyright (c) 2009 Stefano Sabatini
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavformat/avformat.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/samplefmt.h"
 #include "libavfilter/avfilter.h"
-#include "libavfilter/formats.h"
-
-static void print_formats(AVFilterContext *filter_ctx)
-{
-    int i, j;
-
-#define PRINT_FMTS(inout, outin, INOUT)                                 \
-    for (i = 0; i < filter_ctx->inout##put_count; i++) {                     \
-        if (filter_ctx->inout##puts[i]->type == AVMEDIA_TYPE_VIDEO) {   \
-            AVFilterFormats *fmts =                                     \
-                filter_ctx->inout##puts[i]->outin##_formats;            \
-            for (j = 0; j < fmts->format_count; j++)                    \
-                if(av_get_pix_fmt_name(fmts->formats[j]))               \
-                printf(#INOUT "PUT[%d] %s: fmt:%s\n",                   \
-                       i, filter_ctx->filter->inout##puts[i].name,      \
-                       av_get_pix_fmt_name(fmts->formats[j]));          \
-        } else if (filter_ctx->inout##puts[i]->type == AVMEDIA_TYPE_AUDIO) { \
-            AVFilterFormats *fmts;                                      \
-                                                                        \
-            fmts = filter_ctx->inout##puts[i]->outin##_formats;         \
-            for (j = 0; j < fmts->format_count; j++)                    \
-                printf(#INOUT "PUT[%d] %s: fmt:%s\n",                   \
-                       i, filter_ctx->filter->inout##puts[i].name,      \
-                       av_get_sample_fmt_name(fmts->formats[j]));       \
-                                                                        \
-            fmts = filter_ctx->inout##puts[i]->outin##_channel_layouts; \
-            for (j = 0; j < fmts->format_count; j++) {                  \
-                char buf[256];                                          \
-                av_get_channel_layout_string(buf, sizeof(buf), -1,      \
-                                             fmts->formats[j]);         \
-                printf(#INOUT "PUT[%d] %s: chlayout:%s\n",              \
-                       i, filter_ctx->filter->inout##puts[i].name, buf); \
-            }                                                           \
-        }                                                               \
-    }                                                                   \
-
-    PRINT_FMTS(in,  out, IN);
-    PRINT_FMTS(out, in,  OUT);
-}
 
 int main(int argc, char **argv)
 {
@@ -68,7 +28,7 @@ int main(int argc, char **argv)
     AVFilterContext *filter_ctx;
     const char *filter_name;
     const char *filter_args = NULL;
-    int i;
+    int i, j;
 
     av_log_set_level(AV_LOG_DEBUG);
 
@@ -90,13 +50,11 @@ int main(int argc, char **argv)
     }
 
     if (avfilter_open(&filter_ctx, filter, NULL) < 0) {
-        fprintf(stderr, "Impossible to open filter with name '%s'\n",
-                filter_name);
+        fprintf(stderr, "Inpossible to open filter with name '%s'\n", filter_name);
         return 1;
     }
     if (avfilter_init_filter(filter_ctx, filter_args, NULL) < 0) {
-        fprintf(stderr, "Impossible to init filter '%s' with arguments '%s'\n",
-                filter_name, filter_args);
+        fprintf(stderr, "Impossible to init filter '%s' with arguments '%s'\n", filter_name, filter_args);
         return 1;
     }
 
@@ -115,9 +73,25 @@ int main(int argc, char **argv)
     if (filter->query_formats)
         filter->query_formats(filter_ctx);
     else
-        ff_default_query_formats(filter_ctx);
+        avfilter_default_query_formats(filter_ctx);
 
-    print_formats(filter_ctx);
+    /* print the supported formats in input */
+    for (i = 0; i < filter_ctx->input_count; i++) {
+        AVFilterFormats *fmts = filter_ctx->inputs[i]->out_formats;
+        for (j = 0; j < fmts->format_count; j++)
+            printf("INPUT[%d] %s: %s\n",
+                   i, filter_ctx->filter->inputs[i].name,
+                   av_pix_fmt_descriptors[fmts->formats[j]].name);
+    }
+
+    /* print the supported formats in output */
+    for (i = 0; i < filter_ctx->output_count; i++) {
+        AVFilterFormats *fmts = filter_ctx->outputs[i]->in_formats;
+        for (j = 0; j < fmts->format_count; j++)
+            printf("OUTPUT[%d] %s: %s\n",
+                   i, filter_ctx->filter->outputs[i].name,
+                   av_pix_fmt_descriptors[fmts->formats[j]].name);
+    }
 
     avfilter_free(filter_ctx);
     fflush(stdout);

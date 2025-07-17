@@ -2,20 +2,20 @@
  * QuickDraw (qdrw) codec
  * Copyright (c) 2004 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -37,10 +37,9 @@ static int decode_frame(AVCodecContext *avctx,
                         AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
-    const uint8_t *buf_end = avpkt->data + avpkt->size;
     int buf_size = avpkt->size;
     QdrawContext * const a = avctx->priv_data;
-    AVFrame * const p = &a->pic;
+    AVFrame * const p= (AVFrame*)&a->pic;
     uint8_t* outdata;
     int colors;
     int i;
@@ -60,8 +59,6 @@ static int decode_frame(AVCodecContext *avctx,
 
     outdata = a->pic.data[0];
 
-    if (buf_end - buf < 0x68 + 4)
-        return AVERROR_INVALIDDATA;
     buf += 0x68; /* jump to palette */
     colors = AV_RB32(buf);
     buf += 4;
@@ -70,8 +67,6 @@ static int decode_frame(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_ERROR, "Error color count - %i(0x%X)\n", colors, colors);
         return -1;
     }
-    if (buf_end - buf < (colors + 1) * 8)
-        return AVERROR_INVALIDDATA;
 
     pal = (uint32_t*)p->data[1];
     for (i = 0; i <= colors; i++) {
@@ -90,12 +85,10 @@ static int decode_frame(AVCodecContext *avctx,
         buf++;
         b = *buf++;
         buf++;
-        pal[idx] = 0xFF << 24 | r << 16 | g << 8 | b;
+        pal[idx] = (r << 16) | (g << 8) | b;
     }
     p->palette_has_changed = 1;
 
-    if (buf_end - buf < 18)
-        return AVERROR_INVALIDDATA;
     buf += 18; /* skip unneeded data */
     for (i = 0; i < avctx->height; i++) {
         int size, left, code, pix;
@@ -107,9 +100,6 @@ static int decode_frame(AVCodecContext *avctx,
         out = outdata;
         size = AV_RB16(buf); /* size of packed line */
         buf += 2;
-        if (buf_end - buf < size)
-            return AVERROR_INVALIDDATA;
-
         left = size;
         next = buf + size;
         while (left > 0) {
@@ -125,8 +115,6 @@ static int decode_frame(AVCodecContext *avctx,
             } else { /* copy */
                 if ((out + code) > (outdata +  a->pic.linesize[0]))
                     break;
-                if (buf_end - buf < code + 1)
-                    return AVERROR_INVALIDDATA;
                 memcpy(out, buf, code + 1);
                 out += code + 1;
                 buf += code + 1;
@@ -145,9 +133,8 @@ static int decode_frame(AVCodecContext *avctx,
 }
 
 static av_cold int decode_init(AVCodecContext *avctx){
-    QdrawContext * const a = avctx->priv_data;
+//    QdrawContext * const a = avctx->priv_data;
 
-    avcodec_get_frame_defaults(&a->pic);
     avctx->pix_fmt= PIX_FMT_PAL8;
 
     return 0;
@@ -172,5 +159,5 @@ AVCodec ff_qdraw_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Apple QuickDraw"),
+    .long_name = NULL_IF_CONFIG_SMALL("Apple QuickDraw"),
 };

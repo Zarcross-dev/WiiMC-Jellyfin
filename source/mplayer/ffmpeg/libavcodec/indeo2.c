@@ -2,20 +2,20 @@
  * Intel Indeo 2 codec
  * Copyright (c) 2005 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -23,7 +23,7 @@
  * @file
  * Intel Indeo 2 decoder.
  */
-#define BITSTREAM_READER_LE
+#define ALT_BITSTREAM_READER_LE
 #include "avcodec.h"
 #include "get_bits.h"
 #include "indeo2data.h"
@@ -143,32 +143,29 @@ static int ir2_decode_frame(AVCodecContext *avctx,
     int buf_size = avpkt->size;
     Ir2Context * const s = avctx->priv_data;
     AVFrame *picture = data;
-    AVFrame * const p = &s->picture;
+    AVFrame * const p= (AVFrame*)&s->picture;
     int start;
 
-    p->reference = 3;
+    if(p->data[0])
+        avctx->release_buffer(avctx, p);
+
+    p->reference = 1;
     p->buffer_hints = FF_BUFFER_HINTS_VALID | FF_BUFFER_HINTS_PRESERVE | FF_BUFFER_HINTS_REUSABLE;
     if (avctx->reget_buffer(avctx, p)) {
         av_log(s->avctx, AV_LOG_ERROR, "reget_buffer() failed\n");
         return -1;
     }
 
-    start = 48; /* hardcoded for now */
-
-    if (start >= buf_size) {
-        av_log(s->avctx, AV_LOG_ERROR, "input buffer size too small (%d)\n", buf_size);
-        return AVERROR_INVALIDDATA;
-    }
-
     s->decode_delta = buf[18];
 
     /* decide whether frame uses deltas or not */
-#ifndef BITSTREAM_READER_LE
+#ifndef ALT_BITSTREAM_READER_LE
     for (i = 0; i < buf_size; i++)
         buf[i] = av_reverse[buf[i]];
 #endif
+    start = 48; /* hardcoded for now */
 
-    init_get_bits(&s->gb, buf + start, (buf_size - start) * 8);
+    init_get_bits(&s->gb, buf + start, buf_size - start);
 
     if (s->decode_delta) { /* intraframe */
         ir2_decode_plane(s, avctx->width, avctx->height,
@@ -188,7 +185,7 @@ static int ir2_decode_frame(AVCodecContext *avctx,
                          s->picture.data[1], s->picture.linesize[1], ir2_luma_table);
     }
 
-    *picture   = s->picture;
+    *picture= *(AVFrame*)&s->picture;
     *data_size = sizeof(AVPicture);
 
     return buf_size;
@@ -198,14 +195,13 @@ static av_cold int ir2_decode_init(AVCodecContext *avctx){
     Ir2Context * const ic = avctx->priv_data;
     static VLC_TYPE vlc_tables[1 << CODE_VLC_BITS][2];
 
-    avcodec_get_frame_defaults(&ic->picture);
     ic->avctx = avctx;
 
     avctx->pix_fmt= PIX_FMT_YUV410P;
 
     ir2_vlc.table = vlc_tables;
     ir2_vlc.table_allocated = 1 << CODE_VLC_BITS;
-#ifdef BITSTREAM_READER_LE
+#ifdef ALT_BITSTREAM_READER_LE
         init_vlc(&ir2_vlc, CODE_VLC_BITS, IR2_CODES,
                  &ir2_codes[0][1], 4, 2,
                  &ir2_codes[0][0], 4, 2, INIT_VLC_USE_NEW_STATIC | INIT_VLC_LE);
@@ -237,5 +233,5 @@ AVCodec ff_indeo2_decoder = {
     .close          = ir2_decode_end,
     .decode         = ir2_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Intel Indeo 2"),
+    .long_name = NULL_IF_CONFIG_SMALL("Intel Indeo 2"),
 };

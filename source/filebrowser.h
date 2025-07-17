@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * filebrowser.h
  *
@@ -30,11 +30,7 @@ typedef struct _bentry
 	char *file; // full filename
 	char *url; // address
 	char *display; // name for browser display
-	char *xml; // name for xml data
 	char *image;
-	char *tunein;
-	char *year;
-	char *desc;
 	int icon; // icon to display
 	int pos;
 	_bentry *next;
@@ -94,7 +90,7 @@ bool DeleteEntryOnlineMedia(BROWSERENTRY *entry);
 int EntryDistance(BROWSERENTRY * p1,BROWSERENTRY * p2);
 int EntryPosition(BROWSER *info, BROWSERENTRY * i);
 BROWSERENTRY * PositionToEntry(BROWSER *info, int pos);
-void SortBrowser(BROWSER *_browser, int ( * comparator ) ( const void *, const void * ) );
+void SortBrower(BROWSER *_browser, int ( * comparator ) ( const void *, const void * ) );
 void BrowserHistoryStore(char *path);
 const char * BrowserHistoryRetrieve();
 void BrowserHistoryDiscard();

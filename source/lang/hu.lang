@@ -1,1 +1,617 @@
-�
+msgid "********"
+msgstr "••••••••"
+
+msgid "Videos"
+msgstr "Videók"
+
+msgid "Music"
+msgstr "Zene"
+
+msgid "Pictures"
+msgstr "Képek"
+
+msgid "Online Media"
+msgstr "Online média"
+
+msgid "Please Wait"
+msgstr "Kérlek, várj!"
+
+msgid "Error"
+msgstr "Hiba"
+
+msgid "OK"
+msgstr "Oké"
+
+msgid "Retry"
+msgstr "Újra"
+
+msgid "Cancel"
+msgstr "Mégsem"
+
+msgid "Information"
+msgstr "Információ"
+
+msgid "Credits"
+msgstr "Stáb"
+
+msgid "Play"
+msgstr "Játszd"
+
+msgid "Pause"
+msgstr "Szünet"
+
+msgid "Single Play"
+msgstr "Egy dalt játssz"
+
+msgid "Continuous Play"
+msgstr "Folyamatos lejátszás"
+
+msgid "Shuffle"
+msgstr "Lejátszási sorrend keverése"
+
+msgid "Loop"
+msgstr "Ismétlés"
+
+msgid "Continuous"
+msgstr "Folyamatos"
+
+msgid "Playlist"
+msgstr "Dallista"
+
+msgid "Restart"
+msgstr "Újraindítás"
+
+msgid "Loading..."
+msgstr "Töltöm..."
+
+msgid "Global"
+msgstr "Általános"
+
+msgid "Network"
+msgstr "Hálózat"
+
+msgid "Subtitles"
+msgstr "Feliratok"
+
+msgid "Subtitle Delay"
+msgstr "Felirat késleltetés"
+
+msgid "Settings"
+msgstr "Beállítások"
+
+msgid "On"
+msgstr "Be"
+
+msgid "Off"
+msgstr "Ki"
+
+msgid "Always"
+msgstr "Mindig"
+
+msgid "Disabled"
+msgstr "Tiltva"
+
+msgid "Skip Backward"
+msgstr "Visszafelé"
+
+msgid "Pause"
+msgstr "Szünet"
+
+msgid "Skip Forward"
+msgstr "Előre"
+
+msgid "Single"
+msgstr "Egyet"
+
+msgid "now playing"
+msgstr "hallható"
+
+msgid "Previous"
+msgstr "Előző"
+
+msgid "Next"
+msgstr "Következő"
+
+msgid "Close"
+msgstr "Bezár"
+
+msgid "DVD"
+msgstr "DVD"
+
+msgid "Go back"
+msgstr "Vissza"
+
+msgid "Update Available"
+msgstr "Frissítés elérhető"
+
+msgid "An update is available!"
+msgstr "Frissítés érhető el!"
+
+msgid "Update now"
+msgstr "Frissíts most"
+
+msgid "Update later"
+msgstr "Később frissíts"
+
+msgid "Online media file not found."
+msgstr "Az online anyagot nem találtam."
+
+msgid "Unrecognized DVD format!"
+msgstr "Ismeretlen DVD formátum!"
+
+msgid "Port cannot be blank!"
+msgstr "A port nem lehet üres!"
+
+msgid "Port is not a number!"
+msgstr "A port szám legyen!"
+
+msgid "Port is outside the allowed range (4-49151)!"
+msgstr "A port nincs a megengedett tartományban (4-49151)!"
+
+msgid "Settings - Global"
+msgstr "Általános beállítások"
+
+msgid "Settings - Videos"
+msgstr "Videó beállítások"
+
+msgid "Settings - Music"
+msgstr "Zenék beállításai"
+
+msgid "Settings - Pictures"
+msgstr "Képek beállításai"
+
+msgid "Settings - Online Media"
+msgstr "Online média beállítások"
+
+msgid "Settings - Network"
+msgstr "Hálózati beállítások"
+
+msgid "Settings - DVD"
+msgstr "DVD beállítások"
+
+msgid "File Extensions"
+msgstr "Fájl kiterjesztéseket"
+
+msgid "Language"
+msgstr "Nyelv"
+
+msgid "Volume"
+msgstr "Hangerő"
+
+msgid "Exit Action"
+msgstr "Kilépéskor"
+
+msgid "Wiimote Rumble"
+msgstr "Wiimote rezgés"
+
+msgid "Hide"
+msgstr "Elrejt"
+
+msgid "Show"
+msgstr "Mutat"
+
+msgid "Auto"
+msgstr "Automatikus"
+
+msgid "Return to Wii Menu"
+msgstr "Vissza a Wii Menübe"
+
+msgid "Power Off Wii"
+msgstr "Lekapcsolás"
+
+msgid "Return to Loader"
+msgstr "Vissza a HBC-be"
+
+msgid "Screen Zoom"
+msgstr "Nagyítás"
+
+msgid "Screen Position"
+msgstr "Pozíció"
+
+msgid "Frame Dropping"
+msgstr "Képkocka kiejtés"
+
+msgid "Aspect Ratio"
+msgstr "Képarány"
+
+msgid "Cache Fill"
+msgstr "Előtöltés"
+
+msgid "Audio Delay"
+msgstr "Hang késleltetés"
+
+msgid "Auto-Resume"
+msgstr "Automatikus folytatás"
+
+msgid "Videos Files Folder"
+msgstr "Video fájlok mappája"
+
+msgid "Play Order"
+msgstr "Lejátszási sorrend"
+
+msgid "Music Files Folder"
+msgstr "Zene fájlok mappája"
+
+msgid "Pictures Files Folder"
+msgstr "Képfájlok mappája"
+
+msgid "Display Name"
+msgstr "Elnevezés"
+
+msgid "Share IP"
+msgstr "IP cím"
+
+msgid "Share Name"
+msgstr "Megosztás"
+
+msgid "Username"
+msgstr "Felhasználó"
+
+msgid "Password"
+msgstr "Jelszó"
+
+msgid "New Share"
+msgstr "Új megosztás"
+
+msgid "Delete"
+msgstr "Törlés"
+
+msgid "Delete Share"
+msgstr "Megosztás törlése"
+
+msgid "Are you sure that you want to delete this share?"
+msgstr "Biztos, hogy törölni akarod ezt a megosztást?"
+
+msgid "IP"
+msgstr "IP cím"
+
+msgid "Folder"
+msgstr "Mappa"
+
+msgid "Mode"
+msgstr "Mód"
+
+msgid "New Site"
+msgstr "Új hely"
+
+msgid "Passive"
+msgstr "Passzív"
+
+msgid "Active"
+msgstr "Aktív"
+
+msgid "Delete Site"
+msgstr "Hely törlése"
+
+msgid "Are you sure that you want to delete this site?"
+msgstr "Biztos, hogy törölni akarod ezt a helyet?"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Error loading file!"
+msgstr "Hiba a fájl betöltésekor!"
+
+msgid "Resume"
+msgstr "Folytatás"
+
+msgid "Stop Slideshow"
+msgstr "Vetítés leállítás"
+
+msgid "Start Slideshow"
+msgstr "Vetítés indítás"
+
+msgid "Slideshow Delay"
+msgstr "Várakozás diavetítéskor"
+
+msgid "Online Media Folder"
+msgstr "Online média mappája"
+
+msgid "Add SMB Share"
+msgstr "Új SMB megosztás"
+
+msgid "Add FTP Site"
+msgstr "Új FTP hely"
+
+msgid "DVD Menu"
+msgstr "DVD menü"
+
+msgid "Skip to Main Title"
+msgstr "Rögtön a filmet játssza le"
+
+msgid "Unable to Initialize MPlayer"
+msgstr "Nem sikerült az MPlayert elindítani."
+
+msgid "Unable to find a valid working path"
+msgstr "Nincs használható munkakönyvtár."
+
+msgid "Unable to change path to"
+msgstr "Nem sikerült a mappába lépni (létezik, elérhető?):"
+
+msgid "Out of memory: too many files!"
+msgstr "A memória elfogyott: túl sok fájl!"
+
+msgid "Directory name is too long!"
+msgstr "Túl hosszú mappanév!"
+
+msgid "SD Card"
+msgstr "SD kártya"
+
+msgid "USB Mass Storage"
+msgstr "USB tároló"
+
+msgid "Data DVD"
+msgstr "Adat DVD"
+
+msgid "USB drive not found!"
+msgstr "Az USB tároló nem található!"
+
+msgid "SD card not found!"
+msgstr "Az SD kártya nem található!"
+
+msgid "Loading DVD..."
+msgstr "DVD töltése..."
+
+msgid "No disc inserted!"
+msgstr "Nincs lemez!"
+
+msgid "Unsupported DVD."
+msgstr "Nem értelmezhető DVD."
+
+msgid "Up One Level"
+msgstr "Egy szinttel fel"
+
+msgid "Error opening"
+msgstr "Hiba megnyitáskor"
+
+msgid "Warning"
+msgstr "Figyelem! "
+
+msgid "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable."
+msgstr "E mappa egy vagy több képe nagyobb a maximálisan megjeleníthetőnél (6MB) és nem fog látszani."
+
+msgid "Error loading playlist!"
+msgstr "Hiba a lejátszási lista betöltésekor!"
+
+msgid "Playlist does not contain any supported entries!"
+msgstr "Nincs támogatott elem a lejátszási listában!"
+
+msgid "No Results Found"
+msgstr "Az eredmény nem található."
+
+msgid "Your search did not match any media files."
+msgstr "Nincs a keresettnek megfelelő média fájl."
+
+msgid "Error opening file!"
+msgstr "Hiba a fájlnyitáskor!"
+
+msgid "Saving..."
+msgstr "Mentés..."
+
+msgid "Error creating file!"
+msgstr "Hiba létrehozáskor!"
+
+msgid "Error saving file!"
+msgstr "Hiba mentéskor!"
+
+msgid "Playlist is Empty"
+msgstr "A dallista üres."
+
+msgid "Hover over items and push the + button to add them to your playlist."
+msgstr "Mutass egy elemre és a + gombbal add a dallistához."
+
+msgid "Exit Playlist"
+msgstr "Kilépés a listából"
+
+msgid "Update successful!"
+msgstr "Sikeres frissítés!"
+
+msgid "Update failed!"
+msgstr "Sikertelen frissítés!"
+
+msgid "Initializing network..."
+msgstr "Hálózat bekapcsolása..."
+
+msgid "Check settings file."
+msgstr "Ellenőrizze a beállításokat tartalmazó fájlt."
+
+msgid "Share name is blank."
+msgstr "Hiányzik a megosztás neve."
+
+msgid "Share IP is blank."
+msgstr "Hiányzik a megosztás IP címe."
+
+msgid "Invalid network share settings"
+msgstr "Hibás megosztás beállítások."
+
+msgid "Connecting to network share..."
+msgstr "Megosztáshoz kapcsolódás folyamatban..."
+
+msgid "Failed to connect to network share."
+msgstr "Nem sikerült a megosztásra kapcsolódni."
+
+msgid "IP is blank."
+msgstr "Üres az IP cím."
+
+msgid "Username is blank."
+msgstr "Üres felhasználónév."
+
+msgid "Password is blank."
+msgstr "Üres a jelszó."
+
+msgid "Invalid FTP site settings"
+msgstr "Téves FTP hely beállítások."
+
+msgid "Connecting to FTP site..."
+msgstr "FTP helyhez kapcsolódás folyamatban..."
+
+msgid "Failed to connect to FTP site."
+msgstr "Nem sikerüt az FTP helyhez kapcsolódni."
+
+msgid "Could not find a valid SD or USB device - one is required for normal operation."
+msgstr "A helyes működéshez szükséges egy SD vagy USB tároló és nem sikerült ilyet találni."
+
+msgid "Could not create folder"
+msgstr "A mappalétrehozás sikertelen."
+
+msgid "Saving settings..."
+msgstr "Beállítások mentése..."
+
+msgid "Could not save settings to"
+msgstr "A beállítások mentése nem sikerült:"
+
+msgid "Thanks to"
+msgstr "Köszönet nekik:"
+
+msgid "This software is open source and may be copied, distributed, or modified under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "Ez nyílt forráskódú szoftver, amely a  GNU General Public License második verziója (GPL Version 2) szerint másolható, terjeszthető és modosítható."
+
+msgid "Menu artwork"
+msgstr "Menü dizájn"
+
+msgid ""
+msgstr ""
+
+msgid "Coding & menu design"
+msgstr "Kódolás & menü tervezés"
+
+msgid "Logo"
+msgstr "Logó"
+
+msgid "Version"
+msgstr "Verzió"
+
+msgid "Buffering..."
+msgstr "Előtöltés..."
+
+msgid "Buffering"
+msgstr "Előtöltés"
+
+msgid "Unable to initialize network (Error #:"
+msgstr "A hálózatindítás sikertelen (Hibakód:"
+
+msgid "Settings - Subtitles"
+msgstr "Felirat beállítások"
+
+msgid "Visibility"
+msgstr "Mutatás"
+
+msgid "Delay"
+msgstr "Késleltetés"
+
+msgid "Codepage"
+msgstr "Kódlap"
+
+msgid "Subtitle Language"
+msgstr "Kedvenc nyelv"
+
+msgid "Default"
+msgstr "Alapértelmezett"
+
+msgid "Could not change language. Not enough memory!"
+msgstr "Nincs elég memória a nyelvváltáshoz."
+
+msgid "Font Required"
+msgstr "Fontra van szükség."
+
+msgid "A new font is required to display this language."
+msgstr "Egy új font szükséges eme nyelv megjelenítéséhez."
+
+msgid "Download font"
+msgstr "Font letöltése"
+
+msgid "Unable to save font file!"
+msgstr "A font mentése nem sikerült!"
+
+msgid "Out of Memory"
+msgstr "Kevés a memória"
+
+msgid "WiiMC does not have enough free memory to load the picture viewer."
+msgstr "Nincs elég memóriája a WiiMC-nek a képnézegető betöltéséhez."
+
+msgid "Close MPlayer"
+msgstr "Mplayer bezárása"
+
+msgid "Subtitle Codepage"
+msgstr "Felirat kódlapja"
+
+msgid "This directory contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "Ebben a mappában a megengedettnél több elem van. Nem mind fog látszani."
+
+msgid "This playlist contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "Ebben a dallistában a megengedettnél több elem van. Nem mind fog látszani."
+
+msgid "Downloading..."
+msgstr "Letöltés..."
+
+msgid "Unzipping..."
+msgstr "Kibontás..."
+
+msgid "Color"
+msgstr "Szín"
+
+msgid "Size"
+msgstr "Méret"
+
+msgid "White"
+msgstr "Fehér"
+
+msgid "Black"
+msgstr "Fekete"
+
+msgid "Yellow"
+msgstr "Sárga"
+
+msgid "Red"
+msgstr "Piros"
+
+msgid "Sleep Timer"
+msgstr "Elalvás-kikapcsoló"
+
+msgid "sec"
+msgstr "mp"
+
+msgid "min"
+msgstr "perc"
+
+msgid "Blue"
+msgstr "Kék"
+
+msgid "Green"
+msgstr "Zöld"
+
+msgid "Grey"
+msgstr "Szürke"
+
+msgid "Orange"
+msgstr "Narancs"
+
+msgid "Theme"
+msgstr "Téma"
+
+msgid "Purple (Default)"
+msgstr "Lila (Alapértelmezett)"
+
+msgid "Auto-Play Next Video"
+msgstr "Videó végén a következőt kezdje játszani"
+
+msgid "Adding files to playlist..."
+msgstr "Fájlok hozzáadása a lejátszási listához..."
+
+msgid "Browser Folders"
+msgstr "Böngésző mappák"
+
+msgid "Static"
+msgstr "Nem változnak"
+
+msgid "Use Last Browsed"
+msgstr "Legutóbb használatra változnak"
+
+msgid "Audio Language"
+msgstr "Hangsáv nyelve"
+
+msgid "DVD Support"
+msgstr "DVD támogatás"
+
+msgid "Enabled"
+msgstr "Bekapcsolva"

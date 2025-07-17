@@ -34,7 +34,7 @@
 #include <sys/sysi86.h>
 #include <sys/v86.h>
 
-static inline int enable_os_io(void)
+static __inline__ int enable_os_io(void)
 {
 #if defined(SI86IOPL)
     sysi86(SI86IOPL, 3);
@@ -44,7 +44,7 @@ static inline int enable_os_io(void)
     return 0;
 }
 
-static inline int disable_os_io(void)
+static __inline__ int disable_os_io(void)
 {
 #if defined(SI86IOPL)
     sysi86(SI86IOPL, 0);

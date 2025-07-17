@@ -1,1 +1,662 @@
-�
+msgid "********"
+msgstr "••••••••"
+
+msgid "Videos"
+msgstr "காணொளி"
+
+msgid "Music"
+msgstr "இசை"
+
+msgid "Pictures"
+msgstr "புகைப்படம்"
+
+msgid "Online Media"
+msgstr "இணைய ஊடகம்"
+
+msgid "Please Wait"
+msgstr "தயவுசெய்து காத்திருக்கவும்"
+
+msgid "Error"
+msgstr "பிழை"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Retry"
+msgstr "மறுமுயற்சி"
+
+msgid "Cancel"
+msgstr "இரத்து செய்"
+
+msgid "Information"
+msgstr "தகவல்"
+
+msgid "Credits"
+msgstr "ஆக்கம்"
+
+msgid "Play"
+msgstr "இயக்கு"
+
+msgid "Pause"
+msgstr "இடை நிறுத்தம்"
+
+msgid "Single Play"
+msgstr "ஒருமுறை இயக்கு"
+
+msgid "Continuous Play"
+msgstr "தொடர்ந்து இயக்கு"
+
+msgid "Shuffle"
+msgstr "கலைத்துவிடு"
+
+msgid "Loop"
+msgstr "வட்டமடி"
+
+msgid "Continuous"
+msgstr "தொடர்ச்சியாக"
+
+msgid "Playlist"
+msgstr "இசைப்பட்டியல்"
+
+msgid "Restart"
+msgstr "மறு துவக்கம்"
+
+msgid "Loading..."
+msgstr "ஏற்றப்படுகிறது..."
+
+msgid "Global"
+msgstr "உலகளாவிய"
+
+msgid "Network"
+msgstr "வலைப்பின்னல்"
+
+msgid "Subtitles"
+msgstr "துணை உரை"
+
+msgid "Subtitle Delay"
+msgstr "துணை உரை தாமதநேரம்"
+
+msgid "Settings"
+msgstr "அமைப்புகள்"
+
+msgid "On"
+msgstr "இயக்கு"
+
+msgid "Off"
+msgstr "அணை"
+
+msgid "Always"
+msgstr "எப்பொழுதும்"
+
+msgid "Disabled"
+msgstr "செயலிழக்கப் பட்டுள்ளது"
+
+msgid "Skip Backward"
+msgstr "பின்னோக்கி"
+
+msgid "Pause"
+msgstr "இடை நிறுத்தம்"
+
+msgid "Skip Forward"
+msgstr "Avanzar"
+
+msgid "Single"
+msgstr "தனி"
+
+msgid "now playing"
+msgstr "இப்போது இசைக்கிறது"
+
+msgid "Previous"
+msgstr "முந்தைய"
+
+msgid "Next"
+msgstr "அடுத்த"
+
+msgid "Close"
+msgstr "மூடு "
+
+msgid "DVD"
+msgstr "DVD காணொளி"
+
+msgid "Go back"
+msgstr "பின்னால் போ"
+
+msgid "Update Available"
+msgstr "நிகழ்நிலைப்படுத்து"
+
+msgid "An update is available!"
+msgstr "ஒரு புதிய நிகழ்நிலை இருக்கிறது !"
+
+msgid "Update now"
+msgstr "இப்போதே நிகழ்நிலைப்படுத்து"
+
+msgid "Update later"
+msgstr "பின்னர் நிகழ்நிலைப்படுத்து"
+
+msgid "Online media file not found."
+msgstr "இணைய ஊடக கோப்பினை காணவில்லை"
+
+msgid "Unrecognized DVD format!"
+msgstr "புரிந்துகொள்ள முடியாத DVD வடிவம்!"
+
+msgid "Port cannot be blank!"
+msgstr "துறை எண் (port) வெற்றிடமாக அமைய இயலாது!"
+
+msgid "Port is not a number!"
+msgstr "துறைஎண் எண்ணாக மட்டுமே அமைய முடியும்!"
+
+msgid "Port is outside the allowed range (4-49151)!"
+msgstr "துறைஎண் அனுமதிக்கப்பட்ட நெடுக்கத்துக்குள் வெளியே அமைதல் கூடாது(4-49151)!"
+
+msgid "Settings - Global"
+msgstr "அமைப்புகள் - முழு ஊடக மையம்"
+
+msgid "Settings - Videos"
+msgstr "அமைப்புகள் - காணொளி"
+
+msgid "Settings - Music"
+msgstr "அமைப்புகள் - இசை"
+
+msgid "Settings - Pictures"
+msgstr "அமைப்புகள் - புகைப்படம்"
+
+msgid "Settings - Online Media"
+msgstr "அமைப்புகள் - இணைய ஊடகம்"
+
+msgid "Settings - Network"
+msgstr "அமைப்புகள் - வலைப்பின்னல்"
+
+msgid "Settings - DVD"
+msgstr "அமைப்புகள் - DVD"
+
+msgid "File Extensions"
+msgstr "கோப்பு வகைப்பெயர்கள்"
+
+msgid "Language"
+msgstr "மொழி"
+
+msgid "Volume"
+msgstr "ஓலி அளவு"
+
+msgid "Exit Action"
+msgstr "வெளியேறும் நடவடிக்கை"
+
+msgid "Wiimote Rumble"
+msgstr "Wii தொலையியக்கி அதிர்வு"
+
+msgid "Hide"
+msgstr "மறை"
+
+msgid "Show"
+msgstr "காண்பி"
+
+msgid "Auto"
+msgstr "தானே"
+
+msgid "Return to Wii Menu"
+msgstr "Wii தெரிவு பட்டியலுக்கு திரும்பு"
+
+msgid "Power Off Wii"
+msgstr "Wii திறன் அணைப்பு "
+
+msgid "Return to Loader"
+msgstr " Homebrew ஏற்றிக்கு திரும்பு"
+
+msgid "Screen Zoom"
+msgstr "திரை பெரிதாக்கம்"
+
+msgid "Screen Position"
+msgstr "திரை குறியிடம் "
+
+msgid "Frame Dropping"
+msgstr "சட்டக(Frame) கைவிடல்"
+
+msgid "Aspect Ratio"
+msgstr "உருவ விகிதம்"
+
+msgid "Cache Fill"
+msgstr "பதுக்கக நிறைவு"
+
+msgid "Audio Delay"
+msgstr "ஓலி தாமதநேரம்"
+
+msgid "Auto-Resume"
+msgstr "தானியங்கு தொடர்தல்"
+
+msgid "Videos Files Folder"
+msgstr "காணொளி கோப்பு அடைவு"
+
+msgid "Play Order"
+msgstr "இயங்கு வரிசை"
+
+msgid "Music Files Folder"
+msgstr "இசை கோப்பு அடைவு"
+
+msgid "Pictures Files Folder"
+msgstr "புகைப்பட கோப்பு அடைவு"
+
+msgid "Display Name"
+msgstr "காண்பிக்கும் பெயர்"
+
+msgid "Share IP"
+msgstr "IP"
+
+msgid "Share Name"
+msgstr "பகிர்வு பெயர்"
+
+msgid "Username"
+msgstr "பயனர் பெயர்"
+
+msgid "Password"
+msgstr "கடவுச்சொல்"
+
+msgid "New Share"
+msgstr "புதிய பகிர்வு"
+
+msgid "Delete"
+msgstr "அழி"
+
+msgid "Delete Share"
+msgstr "பகிர்வை அழி"
+
+msgid "Are you sure that you want to delete this share?"
+msgstr "நிச்சயமாக இப்பகிர்வை அழிக்க விரும்புகிர்களா?"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "Folder"
+msgstr "அடைவு"
+
+msgid "Mode"
+msgstr "முறை"
+
+msgid "New Site"
+msgstr "புதிய தளம்"
+
+msgid "Passive"
+msgstr "செயலற்ற"
+
+msgid "Active"
+msgstr "இயக்கத்திலுள்ள"
+
+msgid "Delete Site"
+msgstr "தளத்தை அழி"
+
+msgid "Are you sure that you want to delete this site?"
+msgstr "நிச்சயமாக இத்தளத்தை அழிக்க விரும்புகிர்களா?"
+
+msgid "Port"
+msgstr "துறை எண்"
+
+msgid "Error loading file!"
+msgstr "கோப்பினை ஏற்றுவதில் பிழை ஏற்பட்டுள்ளது!"
+
+msgid "Resume"
+msgstr "மறு துவக்கம்"
+
+msgid "Stop Slideshow"
+msgstr "Parar வில்லைக்காட்சி"
+
+msgid "Start Slideshow"
+msgstr "வில்லைக்காட்சி இயக்கு"
+
+msgid "Slideshow Delay"
+msgstr "தாமதநேரம் - வில்லைக்காட்சி"
+
+msgid "Online Media Folder"
+msgstr "இணைய ஊடக அடைவு"
+
+msgid "Add SMB Share"
+msgstr "SMB பகிர்வை சேர்"
+
+msgid "Add FTP Site"
+msgstr "FTP தளத்தை சேர்"
+
+msgid "DVD Menu"
+msgstr "Menu DVD"
+
+msgid "Skip to Main Title"
+msgstr "முதல் தலைப்புக்கு செல்"
+
+msgid "Unable to Initialize MPlayer"
+msgstr "MPlayer தொடங்க இயலவில்லை"
+
+msgid "Unable to find a valid working path"
+msgstr "சரியான பாதையை கண்டறிய இயலவில்லை"
+
+msgid "Unable to change path to"
+msgstr "பாதையை இப்பாதைக்கு மாற்ற இயலவில்லை : "
+
+msgid "Out of memory: too many files!"
+msgstr "நினைவகம் நிரம்பியது: அளவுக்கு அதிகமான கோப்புகள்!"
+
+msgid "Directory name is too long!"
+msgstr "அடைவு பெயர் மிக நீண்டதாக உள்ளது!"
+
+msgid "SD Card"
+msgstr "SD அட்டை"
+
+msgid "USB Mass Storage"
+msgstr "USB பெருசேமிப்பகம்"
+
+msgid "Data DVD"
+msgstr "தரவு DVD"
+
+msgid "USB drive not found!"
+msgstr "USB இயக்கியை காணவில்லை!"
+
+msgid "SD card not found!"
+msgstr " SD அட்டையை காணவில்லை!"
+
+msgid "Loading DVD..."
+msgstr "DVD ஏற்றப்படுகிறது..."
+
+msgid "No disc inserted!"
+msgstr "DVD வட்டு சொருகப்படவில்லை!"
+
+msgid "Unsupported DVD."
+msgstr "ஏற்றுக்கொள்ள தகாத DVD"
+
+msgid "Up One Level"
+msgstr "ஒரு நிலை மேலே"
+
+msgid "Error opening"
+msgstr "திறப்பதில் பிழை"
+
+msgid "Warning"
+msgstr "எச்சரிக்கை"
+
+msgid "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable."
+msgstr "அடைவில் உள்ள சில புகைப்படங்கள் உச்ச வரம்பான 6 MB க்கு அதிகமாக உள்ளன. அவற்றை காண்பிக்க இயலாது."
+
+msgid "Error loading playlist!"
+msgstr "இசைப்பட்டியல் ஏற்றத்தில் தவறு நேர்ந்து விட்டது!"
+
+msgid "Playlist does not contain any supported entries!"
+msgstr "இசைப்பட்டியலில் இசைக்க கூடிய கோப்புகள் இல்லை!"
+
+msgid "No Results Found"
+msgstr "தேடல் முடிவுகளை எதுவும் இல்லை"
+
+msgid "Your search did not match any media files."
+msgstr "உங்கள் தேடல் எவ்வித ஊடக கோப்புகளையும் பொருந்தவில்லை ."
+
+msgid "Error opening file!"
+msgstr "கோப்புகளை திறப்பதில் பிழை!"
+
+msgid "Saving..."
+msgstr "சேமிக்கப்படுகிறது..."
+
+msgid "Error creating file!"
+msgstr "கோப்பு உருவாக்குவதில் பிழை!"
+
+msgid "Error saving file!"
+msgstr "கோப்பு சேமிப்பதில் பிழை!"
+
+msgid "Playlist is Empty"
+msgstr "இசைப்பட்டியல் காலியாக உள்ளது"
+
+msgid "Hover over items and push the + button to add them to your playlist."
+msgstr "இசைப்பட்டியலில் சேர்க்க பாடலுக்கு மேலே நகர்ந்து + பொத்தானை அழுத்தவும்."
+
+msgid "Exit Playlist"
+msgstr "இசைப்பட்டியலை விட்டு வெளியேறு"
+
+msgid "Update successful!"
+msgstr "நிகழ்நிலைப்படுத்துதல் வெற்றிகரமாக முடிந்தது!"
+
+msgid "Update failed!"
+msgstr "நிகழ்நிலைப்படுத்துதலில் பிழை!"
+
+msgid "Initializing network..."
+msgstr "வலைப்பின்னல் துவக்கநிலையாக்கம்..."
+
+msgid "Check settings file."
+msgstr "அமைப்பு கோப்பினை சரிபார்."
+
+msgid "Share name is blank."
+msgstr "பகிர்வு அடைவு பெயர் காலியாக உள்ளது."
+
+msgid "Share IP is blank."
+msgstr "பகிர்வு IP காலியாக உள்ளது."
+
+msgid "Invalid network share settings"
+msgstr "வலைப்பின்னல் பகிர்வு அமைப்புகளில் பிழை உள்ளது."
+
+msgid "Connecting to network share..."
+msgstr "வலைப்பின்னல் பகிர்வை தொடர்பு கொள்ளுதல்..."
+
+msgid "Failed to connect to network share."
+msgstr "வலைப்பின்னல் பகிர்வை தொடர்பு கொள்ளுதலில் பிழை"
+
+msgid "IP is blank."
+msgstr "IP காலியாக உள்ளது ."
+
+msgid "Username is blank."
+msgstr "பயனர்பெயர் காலியாக உள்ளது."
+
+msgid "Password is blank."
+msgstr "கடவுச்சொல் காலியாக உள்ளது."
+
+msgid "Invalid FTP site settings"
+msgstr "தவறான FTP அமைப்புகள்"
+
+msgid "Connecting to FTP site..."
+msgstr " FTP தொடர்பு கொள்ளுதல்..."
+
+msgid "Failed to connect to FTP site."
+msgstr " FTP தொடர்பு கொள்ளுதலில் பிழை."
+
+msgid "Could not find a valid SD or USB device - one is required for normal operation."
+msgstr "சரியாக இயங்கும் SD அல்லது USB நினைவகத்தை கண்டறிய இயலவில்லை ."
+
+msgid "Could not create folder"
+msgstr "அடைவு உருவாக்கத்தில் பிழை"
+
+msgid "Saving settings..."
+msgstr "அமைப்புகள் சேமிக்கப்படுகின்றன..."
+
+msgid "Could not save settings to"
+msgstr "அமைப்புகள் இவ்விடத்தில் சேமிக்க இயலவில்லை :"
+
+msgid "Thanks to"
+msgstr "எமது நன்றிகள்"
+
+msgid "This software is open source and may be copied, distributed, or modified under the terms of the GNU General Public License (GPL) Version 2."
+msgstr " இச்செயலி கட்டற்ற முறையில் உருவாக்கப்பட்டுள்ளதால் நீங்கள் இதை GNU General Public License (GPL) படி யாருக்கும் பகிர்ந்து அளிக்கலாம் "
+
+msgid "Menu artwork"
+msgstr "தெரிவு பட்டியல் கலை வடிவமைப்பு"
+
+msgid "Coding"
+msgstr "நிரலாக்கம்"
+
+msgid "Coding & menu design"
+msgstr "நிரலாக்கம் &தெரிவு பட்டியல் வடிவமைப்பு "
+
+msgid "Logo"
+msgstr "இலச்சினை"
+
+msgid "Version"
+msgstr "பதிப்பு"
+
+msgid "Buffering..."
+msgstr "இடையகப்படுத்தல்..."
+
+msgid "Buffering"
+msgstr "இடையகப்படுத்தல்"
+
+msgid "Unable to initialize network (Error #:"
+msgstr "வலைப்பின்னல் துவக்கநிலை படுத்துதலில் பிழை (பிழை #:"
+
+msgid "Settings - Subtitles"
+msgstr "அமைப்புகள் - துணையுரை"
+
+msgid "Visibility"
+msgstr "பார்வைதெளிவு"
+
+msgid "Delay"
+msgstr "தாமதம்"
+
+msgid "Codepage"
+msgstr "குறிமுறை"
+
+msgid "Subtitle Language"
+msgstr "துணையுரை மொழி"
+
+msgid "Default"
+msgstr "இயல்பிருப்பு"
+
+msgid "Could not change language. Not enough memory!"
+msgstr "மொழி மாற்றம் இயலாது. நினைவகம் இருப்பு இல்லை"
+
+msgid "Font Required"
+msgstr "எழுத்துரு தேவை"
+
+msgid "A new font is required to display this language."
+msgstr "இதை காண உங்களுக்கு ஒரு புதிய எழுத்துரு தேவை."
+
+msgid "Download font"
+msgstr "எழுத்துரு தரவிரக்கம் "
+
+msgid "Unable to save font file!"
+msgstr "எழுத்துருவை சேமிக்க இயலவில்லை!"
+
+msgid "Out of Memory"
+msgstr "நினைவகம் நிரம்பியது"
+
+msgid "WiiMC does not have enough free memory to load the picture viewer."
+msgstr "புகைப்படத்தை ஏற்ற WiiMC ல் தேவையான நினைவகம் இல்லை."
+
+msgid "Close MPlayer"
+msgstr "மூடு MPlayer"
+
+msgid "Subtitle Codepage"
+msgstr "துணையுரை குறிமுறை பக்கம்"
+
+msgid "This directory contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "இந்த அடைவில் உள்ளடக்கதிக்கு மேல் உள்ளதால் காண்பிக்க இயலாது." 
+
+msgid "This playlist contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "இந்த இசைப்பட்டியலில் உள்ளடக்கதிக்கு மேல் உள்ளதால் காண்பிக்க இயலாது. 
+
+msgid "Downloading..."
+msgstr "பதிவிறக்கம்..."
+
+msgid "Unzipping..."
+msgstr "விரி..."
+
+msgid "Color"
+msgstr "நிறம்"
+
+msgid "Size"
+msgstr "அளவு"
+
+msgid "White"
+msgstr "வெண்மை"
+
+msgid "Black"
+msgstr "கருப்பு"
+
+msgid "Yellow"
+msgstr "மஞ்சள்"
+
+msgid "Red"
+msgstr "சிவப்பு"
+
+msgid "Sleep Timer"
+msgstr "தூக்க காலமுடுக்கி"
+
+msgid "sec"
+msgstr "நொடி"
+
+msgid "min"
+msgstr "நிமிடம்"
+
+msgid "Blue"
+msgstr "நீலம்"
+
+msgid "Green"
+msgstr "பச்சை"
+
+msgid "Grey"
+msgstr "சாம்பல் "
+
+msgid "Orange"
+msgstr "செம்மஞ்சள்"
+
+msgid "Theme"
+msgstr "கருப்பொருள்"
+
+msgid "Purple (Default)"
+msgstr "ஊதா(இயல்பிருப்பு)"
+
+msgid "Auto-Play Next Video"
+msgstr "தானே-அடுத்த காணொளி இயக்கு"
+
+msgid "Adding files to playlist..."
+msgstr "கோப்புகள் இசைப்பட்டியலில் சேர்க்கப்படுகிறது..."
+
+msgid "Browser Folders"
+msgstr "உலாவி அடைவுகள்"
+
+msgid "Static"
+msgstr "நிலைத்த"
+
+msgid "Use Last Browsed"
+msgstr "கடைசியாக உலாவியதை பயன்படுத்து"
+
+msgid "Audio Language"
+msgstr "ஓலி மொழி"
+
+msgid "DVD Support"
+msgstr "DVD பயன்பாடு "
+
+msgid "Enabled"
+msgstr "செயல்பட வை"
+
+msgid "Error loading YouTube file!"
+msgstr " Youtube கோப்பு ஏற்றத்தில் பிழை !"
+
+msgid "Rotate"
+msgstr "சுழற்று"
+
+msgid "Resolution exceeds maximum allowed (1280x720)!"
+msgstr "திரை பிரிதிறன் உச்ச வரம்பு மீறப்பட்டுள்ளது (1280x720)!"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "தற்போதைய IOS போலி மாற்றம் செய்யப்பட்டுள்ளது. செயலாற்றலும்/ நிலைத் தன்மையும் பாதிக்கப்படலாம்."
+
+msgid "Online media file is invalid."
+msgstr "இணைய கோப்பு தவறு உடையது."
+
+msgid "Subtitle font file not found. Subtitles will not be visible."
+msgstr "துணையுரை எழுத்துருவுவை காணவில்லை. துணையுரை ஏற்றப்படாது."
+
+msgid "WiiMC does not have DVD access - AHBPROT is not enabled."
+msgstr "WiiMC யால் DVD அணுக முடியவில்லை - AHBPROT செயல்படுத்தப் படவில்லை ."
+
+msgid "Starting Area"
+msgstr "துவக்க இடம் "
+
+msgid "Error downloading font file!"
+msgstr "எழுத்துரு கோப்பு தரவிறக்கம் இயலவில்லை!"
+
+msgid "Error opening font file!"
+msgstr "எழுத்துரு கோப்பை திறக்க இயலவில்லை!"
+
+msgid "Could not change language. The font file is corrupted!"
+msgstr "மொழி மாற்றம் இயலவில்லை. எழுத்துரு கோப்பு தவறானது!"
+
+msgid "YouTube Quality"
+msgstr "YouTube தரம்"
+
+msgid "Low (400x240)"
+msgstr "குறைந்த (400x240)"
+
+msgid "Medium (480x360)"
+msgstr "நடுத்தர (480x360)"
+
+msgid "High (640x360)"
+msgstr "உயர்வான (640x360)"

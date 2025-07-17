@@ -1,5 +1,5 @@
-.\" $Revision: 34663 $
-.\" MPlayer (C) 2000-2012 MPlayer Team
+.\" $Revision: 33893 $
+.\" MPlayer (C) 2000-2010 MPlayer Team
 .\" This man page was/is done by Gabucino, Diego Biurrun, Jonas Jermann
 .
 .\" --------------------------------------------------------------------------
@@ -31,7 +31,7 @@
 .\" Title
 .\" --------------------------------------------------------------------------
 .
-.TH MPlayer 1 "2012-03-03" "The MPlayer Project" "The Movie Player"
+.TH MPlayer 1 "2009-03-25" "The MPlayer Project" "The Movie Player"
 .
 .SH NAME
 mplayer  \- movie player
@@ -533,8 +533,6 @@ flip=yes
 mf=type=png:fps=25
 # Eerie negative images are cool.
 vf=eq2=1.0:\-0.8
-# OSD progress bar vertical alignment
-progbar-align=50
 .fi
 .PP
 .I "EXAMPLE MENCODER CONFIGURATION FILE:"
@@ -2611,11 +2609,6 @@ still visible (default is to enable the support only for specific
 formats).
 .
 .TP
-.B \-progbar\-align <0-100>
-Specify the vertical alignment of the progress bar
-(0: top, 100: bottom, default is 50, i.e. centered).
-.
-.TP
 .B \-sid <ID> (also see \-slang, \-vobsubid)
 Display the subtitle stream specified by <ID> (0\-31).
 MPlayer prints the available subtitle IDs when run in verbose (\-v) mode.
@@ -3033,6 +3026,10 @@ you really know how to set it correctly.
 .PD 1
 .
 .TP
+.B "alsa5\ \ "
+ALSA 0.5 audio output driver
+.
+.TP
 .B "oss\ \ \ \ "
 OSS audio output driver
 .PD 0
@@ -3115,14 +3112,10 @@ Experimental OpenAL audio output driver
 PulseAudio audio output driver
 .PD 0
 .RSs
-.IPs "[<host>[:<output sink>[:broken_pause]]]"
+.IPs "[<host>][:<output sink>]"
 Specify the host and optionally output sink to use.
 An empty <host> string uses a local connection, "localhost"
 uses network transfer (most likely not what you want).
-You can also explicitly force the workaround for broken
-pause functionality (default: autodetected).
-To only enable that without specifying a host/sink the
-syntax is \-ao pulse:::broken_pause
 .RE
 .PD 1
 .
@@ -3292,11 +3285,7 @@ on.
 .
 .TP
 .B "\-dr \ \ \ "
-Turns on direct rendering (not supported by all codecs and video outputs).
-This can result in significantly faster blitting on some systems, on most
-the difference will be minimal.
-In some cases, particularly with decoders specifying their buffer requirements
-badly, it can be vastly slower.
+Turns on direct rendering (not supported by all codecs and video outputs)
 .br
 .I WARNING:
 May cause OSD/SUB corruption!
@@ -3474,8 +3463,7 @@ vdpau, x11, xv, xvmc, corevideo).
 .br
 .I NOTE:
 This option is only supported by the x11, xmga, xv, xvmc, xvidix,
-gl, gl2, direct3d, directx, fbdev, sdl, dfxfb and corevideo
-video output drivers.
+gl, gl2, directx, fbdev, tdfxfb and corevideo video output drivers.
 .sp 1
 .I EXAMPLE:
 .PD 0
@@ -3614,9 +3602,8 @@ Specify the screen width for video output drivers which
 do not know the screen resolution like fbdev, x11 and TV-out.
 .
 .TP
-.B \-(no)stop\-xscreensaver (X11 only)
-Turns off xscreensaver at startup and turns it on again on exit
-(default: enabled).
+.B \-stop\-xscreensaver (X11 only)
+Turns off xscreensaver at startup and turns it on again on exit.
 If your screensaver supports neither the XSS nor XResetScreenSaver
 API please use \-heartbeat\-cmd instead.
 .
@@ -4135,19 +4122,6 @@ even if you do not get any error message.
 Use glxinfo or a similar tool to display the supported OpenGL extensions.
 .PD 0
 .RSs
-.IPs backend=<n>
-Select the backend/OpenGL implementation to use (default: -1).
-.RSss
--1: Autoselect
-.br
-0: Win32/WGL
-.br
-1: X11/GLX
-.br
-2: SDL
-.br
-3: X11/EGL (highly experimental)
-.RE
 .IPs (no)ati\-hack
 ATI drivers may give a corrupted image when PBOs are used (when using \-dr
 or force\-pbo).
@@ -4282,13 +4256,9 @@ Select the scaling function to use for chrominance scaling.
 For details see lscale.
 .IPs filter-strength=<value>
 Set the effect strength for the lscale/cscale filters that support it.
-.IPs noise-strength=<value>
-Set how much noise to add. 0 to disable (default), 1.0 for level suitable
-for dithering to 6 bit.
 .IPs stereo=<value>
 Select a method for stereo display.
 You may have to use \-aspect to fix the aspect value.
-Add 32 to swap left and right side.
 Experimental, do not expect too much from it.
 .RSss
 .IPs 0
@@ -5181,9 +5151,6 @@ Visualize motion vectors.
 .REss
 .IPs vstats
 Prints some statistics and stores them in ./vstats_*.log.
-.IPs wait_keyframe
-Wait for a keyframe before displaying anything.
-Avoids broken frames at startup or after seeking with some formats.
 .RE
 .
 .TP
@@ -6109,17 +6076,7 @@ Changing playback speed, would change pitch, leaving audio tempo at 1.2x.
 Collects and prints statistics about the audio stream, especially the volume.
 These statistics are especially intended to help adjusting the volume while
 avoiding clipping.
-The volumes are printed in dB and compatible with the volume audio filter,
-they are always rounded towards -0dB.
-.sp 1
-The 'n_samples' field is the total number of samples seen by the filter.
-The 'mean_volume' field is the root mean square.
-The 'max_volume' field is exactly what it says.
-The 'histogram_Xdb' fields count how many samples were at -XdB, for X just
-below max_volume.
-.sp 1
-For example, if max_volume is -7dB and histogram_7dB is 19, 'volume=7' will
-not cause clipping and 'volume=8' will cause clipping on exactly 19 samples.
+The volumes are printed in dB and compatible with the volume audio filter.
 .
 .
 .
@@ -7028,26 +6985,6 @@ drop the frame (default: 0.15).
 .TP
 .B lavcdeint (OBSOLETE)
 FFmpeg deinterlacing filter, same as \-vf pp=fd
-.
-.TP
-.B lavfi=filtergraph
-FFmpeg libavfilter wrapper.
-\fIfiltergraph\fR defines a whole libavfilter graph with one input and one output.
-See http://www.ffmpeg.org/\:libavfilter.html#SEC4 for details.
-.sp 1
-As a special case, if \fIfiltergraph\fR is \fB$\fIword\fR then the value of
-the \fIword\fR environment variable is used; this is necessary if commas are
-present in the graph description, as mplayer uses them as a delimiter
-between filters.
-.sp 1
-.I NOTE:
-This filter is considered experimental, it may interact strangely with other
-filters.
-.sp 1
-.I EXAMPLE:
-.br
-overlay="movie=$small_video, scale=160:120 [ca]; [in] [ca] overlay=16:8"
-mplayer -vf lavfi='$overlay' $big_video
 .
 .TP
 .B kerndeint[=thresh[:map[:order[:sharp[:twoway]]]]]
@@ -10643,10 +10580,6 @@ different QP based on the frame's complexity.
 This option should generally be used instead of qp.
 .
 .TP
-.B crf_max=<float>
-With CRF and VBV, limit RF to this value (may cause VBV underflows!).
-.
-.TP
 .B pass=<1\-3>
 Enable 2 or 3-pass mode.
 It is recommended to always encode in 2 or 3-pass mode as it leads to a
@@ -10782,7 +10715,7 @@ values of keyint.
 .
 .TP
 .B keyint_min=<1\-keyint/2>
-Sets minimum interval between IDR-frames (default: auto).
+Sets minimum interval between IDR-frames (default: 25).
 If scenecuts appear within this interval, they are still encoded as
 I-frames, but do not start a new GOP.
 In H.264, I-frames do not necessarily bound a closed GOP because it is
@@ -10860,39 +10793,6 @@ Disallow P-frames referencing B-frames. Gives worse compression, but is
 required for Blu-ray compatibility.
 .IPs "none\ "
 Disable using B-frames as references.
-.RE
-.PD 1
-.
-.TP
-.B (no)open_gop
-Use recovery points to close GOPs; only available with bframes.
-.
-.TP
-.B (no)bluray_compat
-Enable compatibility hacks for Blu-Ray support.
-.
-.TP
-.B (no)fake_interlaced
-Flag stream as interlaced but encode progressive. Makes it posssible to
-encode 25p and 30p Blu-Ray streams. Ignored in interlaced mode.
-.
-.TP
-.B frame_packing=<0-5>
-Define frame arrangement for stereoscopic videos.
-.PD 0
-.RSs
-.IPs 0
-Checkerboard - pixels are alternately from L and R.
-.IPs 1
-Column alternation - L and R are interlaced by column.
-.IPs 2
-Row alternation - L and R are interlaced by row.
-.IPs 3
-Side by side - L is on the left, R is on the right.
-.IPs 4
-Top-bottom - L is on top, R is on the bottom.
-.IPs 5
-Frame alternation - one view per frame.
 .RE
 .PD 1
 .
@@ -11055,9 +10955,9 @@ Weighted P-frame prediction mode (default: 2).
 .IPs 0
 disabled (fastest)
 .IPs 1
-weighted refs (better quality)
+blind mode (slightly better quality)
 .IPs 2
-weighted refs + duplicates (best)
+smart mode (best)
 .RE
 .PD 1
 .
@@ -11131,7 +11031,7 @@ exhaustive search (very slow, and no better than umh)
 radius of exhaustive or multi-hexagon motion search (default: 16)
 .
 .TP
-.B subq=<0\-11>
+.B subq=<0\-9>
 Adjust subpel refinement quality.
 This parameter controls quality versus speed tradeoffs involved in the motion
 estimation decision process.
@@ -11171,11 +11071,7 @@ Enables rate-distortion optimization of macroblock types in all frames (default)
 .IPs 8
 Enables rate-distortion optimization of motion vectors and intra prediction modes in I- and P-frames.
 .IPs 9
-Enables rate-distortion optimization of motion vectors and intra prediction modes in all frames.
-.IPs 10
-QP-RD; requires trellis=2 and aq_mode=1 or higher (best).
-.IPs 11
-Full RD; disable all early terminations.
+Enables rate-distortion optimization of motion vectors and intra prediction modes in all frames (best).
 .RE
 .PD 1
 .RS
@@ -11358,11 +11254,6 @@ Use this parameter only if you know what it means,
 and you have a need to set it.
 .
 .TP
-.B (no)cpu_independent
-Ensure exact reproducibility across different CPUs instead of chosing
-different algorithms when available/better (default:enabled).
-.
-.TP
 .B threads=<0\-16>
 Spawn threads to encode in parallel on multiple CPUs (default: 0).
 This has a slight penalty to compression quality.
@@ -11408,30 +11299,14 @@ Some players, such as the Sony PSP, require the use of this option.
 The default behavior causes SPS and PPS to repeat prior to each IDR frame.
 .
 .TP
-.B (no)tff
-Enable interlaced mode, top field first (default: disabled)
-.
-.TP
-.B (no)bff
-Enable interlaced mode, bottom field first (default: disabled)
-.
-.TP
-.B nal_hrd=<none|vbr|cbr>
-Signal HRD information (requires vbv_bufsize) (default: none).
-.
-.TP
-.B (no)pic_struct
-Force pic_struct in Picture Timing SEI (default: disabled).
+.B (no)interlaced
+Treat the video content as interlaced.
 .
 .TP
 .B (no)constrained_intra
 Enable constrained intra prediction (default: disabled).
 This significantly reduces compression, but is required for the base layer of
 SVC encodes.
-.
-.TP
-.B output_csp=<i420|i422|i444|rgb>
-Specify output colorspace (default: i420).
 .
 .TP
 .B (no)aud
@@ -12318,7 +12193,7 @@ explains how to create useful bug reports.
 MPlayer was initially written by Arpad Gereoffy.
 See the AUTHORS file for a list of some of the many other contributors.
 .PP
-MPlayer is (C) 2000\-2012 The MPlayer Team
+MPlayer is (C) 2000\-2009 The MPlayer Team
 .PP
 This man page was written mainly by Gabucino, Jonas Jermann and Diego Biurrun.
 It is maintained by Diego Biurrun.

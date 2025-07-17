@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * menu.h
  * Menu flow routines - handles all menu logic
@@ -10,6 +10,8 @@
 #define _MENU_H_
 
 #include <ogcsys.h>
+
+#define MAX_PICTURE_SIZE (1024*1024*6) // 6 MB
 
 void WiiMenu();
 void MPlayerMenu();
@@ -26,6 +28,7 @@ bool OnScreenKeyboard(char * var, u32 maxlen);
 void ShowAction (const char *msg);
 void CancelAction();
 int WindowPrompt(const char *title, const char *msg, const char *btn1Label, const char *btn2Label);
+void SuspendPictureThread();
 void ChangeLanguage();
 void ChangeTheme();
 bool VideoVolumeLevelBarVisible();
@@ -59,12 +62,14 @@ enum
 {
 	MENU_BROWSE_VIDEOS,
 	MENU_BROWSE_MUSIC,
+	MENU_BROWSE_PICTURES,
 	MENU_DVD,
 	MENU_BROWSE_ONLINEMEDIA,
 	MENU_SETTINGS,
 	MENU_SETTINGS_GLOBAL,
 	MENU_SETTINGS_VIDEOS,
 	MENU_SETTINGS_MUSIC,
+	MENU_SETTINGS_PICTURES,
 	MENU_SETTINGS_DVD,
 	MENU_SETTINGS_ONLINEMEDIA,
 	MENU_SETTINGS_NETWORK,

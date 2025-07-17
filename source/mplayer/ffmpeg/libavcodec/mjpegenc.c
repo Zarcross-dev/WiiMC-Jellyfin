@@ -8,20 +8,20 @@
  * aspecting, new decode_frame mechanism and apple mjpeg-b support
  *                                  by Alex Beregszaszi
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -47,11 +47,6 @@
 av_cold int ff_mjpeg_encode_init(MpegEncContext *s)
 {
     MJpegContext *m;
-
-    if (s->width > 65500 || s->height > 65500) {
-        av_log(s, AV_LOG_ERROR, "JPEG does not support resolutions above 65500x65500\n");
-        return -1;
-    }
 
     m = av_malloc(sizeof(MJpegContext));
     if (!m)
@@ -161,13 +156,13 @@ static void jpeg_put_comments(MpegEncContext *s)
     int size;
     uint8_t *ptr;
 
-    if (s->avctx->sample_aspect_ratio.num /* && !lossless */)
+    if (s->aspect_ratio_info /* && !lossless */)
     {
     /* JFIF header */
     put_marker(p, APP0);
     put_bits(p, 16, 16);
     ff_put_string(p, "JFIF", 1); /* this puts the trailing zero-byte too */
-    put_bits(p, 16, 0x0102); /* v 1.02 */
+    put_bits(p, 16, 0x0201); /* v 1.02 */
     put_bits(p, 8, 0); /* units type: 0 - aspect ratio */
     put_bits(p, 16, s->avctx->sample_aspect_ratio.num);
     put_bits(p, 16, s->avctx->sample_aspect_ratio.den);
@@ -205,9 +200,6 @@ void ff_mjpeg_encode_picture_header(MpegEncContext *s)
 
     put_marker(&s->pb, SOI);
 
-    // hack for AMV mjpeg format
-    if(s->avctx->codec_id == CODEC_ID_AMV) return;
-
     jpeg_put_comments(s);
 
     jpeg_table_header(s);
@@ -219,9 +211,7 @@ void ff_mjpeg_encode_picture_header(MpegEncContext *s)
     }
 
     put_bits(&s->pb, 16, 17);
-    if(lossless && (s->avctx->pix_fmt == PIX_FMT_BGR0
-                    || s->avctx->pix_fmt == PIX_FMT_BGRA
-                    || s->avctx->pix_fmt == PIX_FMT_BGR24))
+    if(lossless && s->avctx->pix_fmt == PIX_FMT_BGRA)
         put_bits(&s->pb, 8, 9); /* 9 bits/component RCT */
     else
         put_bits(&s->pb, 8, 8); /* 8 bits/component */
@@ -455,50 +445,14 @@ void ff_mjpeg_encode_mb(MpegEncContext *s, DCTELEM block[6][64])
     s->i_tex_bits += get_bits_diff(s);
 }
 
-// maximum over s->mjpeg_vsample[i]
-#define V_MAX 2
-static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
-                              const AVFrame *pic_arg, int *got_packet)
-
-{
-    MpegEncContext *s = avctx->priv_data;
-    AVFrame pic = *pic_arg;
-    int i;
-
-    //CODEC_FLAG_EMU_EDGE have to be cleared
-    if(s->avctx->flags & CODEC_FLAG_EMU_EDGE)
-        return -1;
-
-    //picture should be flipped upside-down
-    for(i=0; i < 3; i++) {
-        pic.data[i] += (pic.linesize[i] * (s->mjpeg_vsample[i] * (8 * s->mb_height -((s->height/V_MAX)&7)) - 1 ));
-        pic.linesize[i] *= -1;
-    }
-    return ff_MPV_encode_picture(avctx, pkt, &pic, got_packet);
-}
-
 AVCodec ff_mjpeg_encoder = {
     .name           = "mjpeg",
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_MJPEG,
     .priv_data_size = sizeof(MpegEncContext),
-    .init           = ff_MPV_encode_init,
-    .encode2        = ff_MPV_encode_picture,
-    .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){
-        PIX_FMT_YUVJ420P, PIX_FMT_YUVJ422P, PIX_FMT_NONE
-    },
-    .long_name      = NULL_IF_CONFIG_SMALL("MJPEG (Motion JPEG)"),
-};
-
-AVCodec ff_amv_encoder = {
-    .name           = "amv",
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_AMV,
-    .priv_data_size = sizeof(MpegEncContext),
-    .init           = ff_MPV_encode_init,
-    .encode2        = amv_encode_picture,
-    .close          = ff_MPV_encode_end,
+    .init           = MPV_encode_init,
+    .encode         = MPV_encode_picture,
+    .close          = MPV_encode_end,
     .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUVJ420P, PIX_FMT_YUVJ422P, PIX_FMT_NONE},
-    .long_name      = NULL_IF_CONFIG_SMALL("AMV Video"),
+    .long_name= NULL_IF_CONFIG_SMALL("MJPEG (Motion JPEG)"),
 };

@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2008 Vladimir Voroshilov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -58,7 +58,7 @@ void ff_celp_circ_addf(float *out, const float *in,
 int ff_celp_lp_synthesis_filter(int16_t *out, const int16_t *filter_coeffs,
                                 const int16_t *in, int buffer_length,
                                 int filter_length, int stop_on_overflow,
-                                int shift, int rounder)
+                                int rounder)
 {
     int i,n;
 
@@ -67,7 +67,7 @@ int ff_celp_lp_synthesis_filter(int16_t *out, const int16_t *filter_coeffs,
         for (i = 1; i <= filter_length; i++)
             sum -= filter_coeffs[i-1] * out[n-i];
 
-        sum = ((sum >> 12) + in[n]) >> shift;
+        sum = (sum >> 12) + in[n];
 
         if (sum + 0x8000 > 0xFFFFU) {
             if (stop_on_overflow)
@@ -133,8 +133,9 @@ void ff_celp_lp_synthesis_filterf(float *out, const float *filter_coeffs,
         out2 -= val * old_out2;
         out3 -= val * old_out3;
 
+        old_out3 = out[-5];
+
         for (i = 5; i <= filter_length; i += 2) {
-            old_out3 = out[-i];
             val = filter_coeffs[i-1];
 
             out0 -= val * old_out3;
@@ -153,6 +154,7 @@ void ff_celp_lp_synthesis_filterf(float *out, const float *filter_coeffs,
 
             FFSWAP(float, old_out0, old_out2);
             old_out1 = old_out3;
+            old_out3 = out[-i-2];
         }
 
         tmp0 = out0;

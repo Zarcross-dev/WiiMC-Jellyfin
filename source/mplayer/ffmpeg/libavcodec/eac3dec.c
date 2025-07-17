@@ -3,20 +3,20 @@
  * Copyright (c) 2007 Bartlomiej Wolowiec <bartek.wolowiec@gmail.com>
  * Copyright (c) 2008 Justin Ruggles
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -140,7 +140,7 @@ void ff_eac3_apply_spectral_extension(AC3DecodeContext *s)
            each band. */
         bin = s->spx_src_start_freq;
         for (bnd = 0; bnd < s->num_spx_bands; bnd++) {
-            float nscale = s->spx_noise_blend[ch][bnd] * rms_energy[bnd] * (1.0f / INT32_MIN);
+            float nscale = s->spx_noise_blend[ch][bnd] * rms_energy[bnd] * (1.0f/(1<<31));
             float sscale = s->spx_signal_blend[ch][bnd];
             for (i = 0; i < s->spx_band_sizes[bnd]; i++) {
                 float noise  = nscale * (int32_t)av_lfg_get(&s->dith_state);
@@ -491,7 +491,7 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
     s->skip_syntax       = get_bits1(gbc);
     parse_spx_atten_data = get_bits1(gbc);
 
-    /* coupling strategy occurrence and coupling use per block */
+    /* coupling strategy occurance and coupling use per block */
     num_cpl_blocks = 0;
     if (s->channel_mode > 1) {
         for (blk = 0; blk < s->num_blocks; blk++) {

@@ -25,7 +25,9 @@
 #include <string.h>
 
 #include "stream/stream.h"
+#ifdef CONFIG_ASS
 #include "sub/ass_mp.h"
+#endif
 #include "m_option.h"
 
 #ifdef HAVE_BUILTIN_EXPECT
@@ -263,8 +265,6 @@ typedef struct demuxer {
   // pointer to teletext decoder private data, if demuxer stream contains teletext
   void *teletext;
 
-  int num_titles;
-
   demux_chapter_t* chapters;
   int num_chapters;
 
@@ -439,7 +439,7 @@ char* demux_info_get(demuxer_t *demuxer, const char *opt);
 int demux_info_print(demuxer_t *demuxer);
 int demux_control(demuxer_t *demuxer, int cmd, void *arg);
 
-double demuxer_get_current_time(demuxer_t *demuxer);
+int demuxer_get_current_time(demuxer_t *demuxer);
 double demuxer_get_time_length(demuxer_t *demuxer);
 int demuxer_get_percent_pos(demuxer_t *demuxer);
 int demuxer_switch_audio(demuxer_t *demuxer, int index);
@@ -472,9 +472,6 @@ int demuxer_get_current_angle(demuxer_t *demuxer);
 int demuxer_set_angle(demuxer_t *demuxer, int angle);
 /// Get number of angles.
 int demuxer_angles_count(demuxer_t *demuxer);
-
-int demuxer_audio_lang(demuxer_t *d, int id, char *buf, int buf_len);
-int demuxer_sub_lang(demuxer_t *d, int id, char *buf, int buf_len);
 
 // get the index of a track
 // lang is a comma-separated list

@@ -3,20 +3,20 @@
  * Copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  * Copyright (c) 2008 Peter Ross
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -32,6 +32,55 @@
 #include "libavutil/cpu.h"
 #include "avcodec.h"
 #include "libavutil/audioconvert.h"
+
+#if FF_API_OLD_SAMPLE_FMT
+/**
+ * @deprecated Use av_get_sample_fmt_string() instead.
+ */
+attribute_deprecated
+void avcodec_sample_fmt_string(char *buf, int buf_size, int sample_fmt);
+
+/**
+ * @deprecated Use av_get_sample_fmt_name() instead.
+ */
+attribute_deprecated
+const char *avcodec_get_sample_fmt_name(int sample_fmt);
+
+/**
+ * @deprecated Use av_get_sample_fmt() instead.
+ */
+attribute_deprecated
+enum AVSampleFormat avcodec_get_sample_fmt(const char* name);
+#endif
+
+#if FF_API_OLD_AUDIOCONVERT
+/**
+ * @deprecated Use av_get_channel_layout() instead.
+ */
+attribute_deprecated
+int64_t avcodec_get_channel_layout(const char *name);
+
+/**
+ * @deprecated Use av_get_channel_layout_string() instead.
+ */
+attribute_deprecated
+void avcodec_get_channel_layout_string(char *buf, int buf_size, int nb_channels, int64_t channel_layout);
+
+/**
+ * @deprecated Use av_get_channel_layout_nb_channels() instead.
+ */
+attribute_deprecated
+int avcodec_channel_layout_num_channels(int64_t channel_layout);
+#endif
+
+/**
+ * Guess the channel layout
+ * @param nb_channels
+ * @param codec_id Codec identifier, or CODEC_ID_NONE if unknown
+ * @param fmt_name Format name, or NULL if unknown
+ * @return Channel layout mask
+ */
+int64_t avcodec_guess_channel_layout(int nb_channels, enum CodecID codec_id, const char *fmt_name);
 
 struct AVAudioConvert;
 typedef struct AVAudioConvert AVAudioConvert;

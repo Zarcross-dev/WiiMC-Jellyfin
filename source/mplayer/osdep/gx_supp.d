@@ -1,291 +1,286 @@
 osdep/gx_supp.o: osdep/gx_supp.c \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/malloc.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/malloc.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/math.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/fastmath.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h \
- C:/devkitPro/libogc/include/ogc/mutex.h \
- C:/devkitPro/libogc/include/gctypes.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h \
- C:/devkitPro/libogc/include/ogc/lwp.h \
- C:/devkitPro/libogc/include/ogc/lwp_watchdog.h \
- C:/devkitPro/libogc/include/ogc/lwp_queue.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h \
- C:/devkitPro/libogc/include/wiiuse/wpad.h \
- C:/devkitPro/libogc/include/wiiuse/wiiuse.h \
- C:/devkitPro/libogc/include/bte/bte.h \
- C:/devkitPro/libogc/include/gccore.h \
- C:/devkitPro/libogc/include/ogc/dsp.h \
- C:/devkitPro/libogc/include/ogc/aram.h \
- C:/devkitPro/libogc/include/ogc/arqueue.h \
- C:/devkitPro/libogc/include/ogc/lwp_queue.h \
- C:/devkitPro/libogc/include/ogc/aram.h \
- C:/devkitPro/libogc/include/ogc/arqmgr.h \
- C:/devkitPro/libogc/include/ogc/audio.h \
- C:/devkitPro/libogc/include/ogc/cache.h \
- C:/devkitPro/libogc/include/ogc/card.h \
- C:/devkitPro/libogc/include/ogc/cast.h \
- C:/devkitPro/libogc/include/ogc/color.h \
- C:/devkitPro/libogc/include/ogc/consol.h \
- C:/devkitPro/libogc/include/ogc/gx_struct.h \
- C:/devkitPro/libogc/include/ogc/dvd.h \
- C:/devkitPro/libogc/include/ogc/disc_io.h \
- C:/devkitPro/libogc/include/ogc/exi.h \
- C:/devkitPro/libogc/include/ogc/gu.h \
- C:/devkitPro/libogc/include/ogc/gx.h \
- C:/devkitPro/libogc/include/ogc/lwp.h \
- C:/devkitPro/libogc/include/ogc/gu.h \
- C:/devkitPro/libogc/include/ogc/si.h \
- C:/devkitPro/libogc/include/ogc/gx_struct.h \
- C:/devkitPro/libogc/include/ogc/irq.h \
- C:/devkitPro/libogc/include/ogc/context.h \
- C:/devkitPro/libogc/include/ogc/lwp.h \
- C:/devkitPro/libogc/include/ogc/mutex.h \
- C:/devkitPro/libogc/include/ogc/message.h \
- C:/devkitPro/libogc/include/ogc/semaphore.h \
- C:/devkitPro/libogc/include/ogc/pad.h \
- C:/devkitPro/libogc/include/ogc/tpl.h \
- C:/devkitPro/libogc/include/ogc/gx.h \
- C:/devkitPro/libogc/include/ogc/system.h \
- C:/devkitPro/libogc/include/gcutil.h \
- C:/devkitPro/libogc/include/ogc/video.h \
- C:/devkitPro/libogc/include/ogc/video_types.h \
- C:/devkitPro/libogc/include/ogc/usbgecko.h \
- C:/devkitPro/libogc/include/ogc/video_types.h \
- C:/devkitPro/libogc/include/ogc/texconv.h \
- C:/devkitPro/libogc/include/ogc/ipc.h \
- C:/devkitPro/libogc/include/ogc/es.h \
- C:/devkitPro/libogc/include/ogc/stm.h \
- C:/devkitPro/libogc/include/ogc/ios.h \
- C:/devkitPro/libogc/include/ogc/usb.h \
- C:/devkitPro/libogc/include/ogc/isfs.h \
- C:/devkitPro/libogc/include/ogc/conf.h \
- C:/devkitPro/libogc/include/ogc/usbstorage.h \
- C:/devkitPro/libogc/include/ogc/system.h \
- C:/devkitPro/libogc/include/ogc/wiilaunch.h \
- C:/devkitPro/libogc/include/bte/bd_addr.h \
- C:/devkitPro/libogc/include/ogc/machine/processor.h \
- C:/devkitPro/libogc/include/ogc/machine/asm.h osdep/../libvo/video_out.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/malloc.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/malloc.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/math.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/fastmath.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/mutex.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/gctypes.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_watchdog.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_queue.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/wiiuse/wpad.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/wiiuse/wiiuse.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/bte/bte.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/gccore.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/dsp.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/aram.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/arqueue.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_queue.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/aram.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/arqmgr.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/audio.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/cache.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/card.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/cast.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/color.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/consol.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/gx_struct.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/dvd.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/disc_io.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/exi.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/gu.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/gx.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/gu.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/si.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/gx_struct.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/irq.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/context.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/mutex.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/message.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/semaphore.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/pad.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/tpl.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/gx.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/system.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/gcutil.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/video.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/video_types.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/usbgecko.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/video_types.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/texconv.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/ipc.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/es.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/stm.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/ios.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/usb.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/isfs.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/conf.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/usbstorage.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/system.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/wiilaunch.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/bte/bd_addr.h \
+ osdep/../libvo/video_out.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h \
  libmpcodecs/img_format.h config.h osdep/../libvo/csputils.h \
  osdep/gx_supp.h osdep/../../utils/mem2_manager.h osdep/../../video.h \
- C:/devkitPro/libogc/include/ogcsys.h osdep/timer.h
+ /opt/devkitpro-r24/portlibs/ppc/include/ogcsys.h
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/malloc.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/malloc.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/malloc.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/malloc.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/math.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/math.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/fastmath.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/fastmath.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h:
 
-C:/devkitPro/libogc/include/ogc/mutex.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/mutex.h:
 
-C:/devkitPro/libogc/include/gctypes.h:
+/opt/devkitpro-r24/portlibs/ppc/include/gctypes.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:
 
-C:/devkitPro/libogc/include/ogc/lwp.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp.h:
 
-C:/devkitPro/libogc/include/ogc/lwp_watchdog.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_watchdog.h:
 
-C:/devkitPro/libogc/include/ogc/lwp_queue.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_queue.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h:
 
-C:/devkitPro/libogc/include/wiiuse/wpad.h:
+/opt/devkitpro-r24/portlibs/ppc/include/wiiuse/wpad.h:
 
-C:/devkitPro/libogc/include/wiiuse/wiiuse.h:
+/opt/devkitpro-r24/portlibs/ppc/include/wiiuse/wiiuse.h:
 
-C:/devkitPro/libogc/include/bte/bte.h:
+/opt/devkitpro-r24/portlibs/ppc/include/bte/bte.h:
 
-C:/devkitPro/libogc/include/gccore.h:
+/opt/devkitpro-r24/portlibs/ppc/include/gccore.h:
 
-C:/devkitPro/libogc/include/ogc/dsp.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/dsp.h:
 
-C:/devkitPro/libogc/include/ogc/aram.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/aram.h:
 
-C:/devkitPro/libogc/include/ogc/arqueue.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/arqueue.h:
 
-C:/devkitPro/libogc/include/ogc/lwp_queue.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_queue.h:
 
-C:/devkitPro/libogc/include/ogc/aram.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/aram.h:
 
-C:/devkitPro/libogc/include/ogc/arqmgr.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/arqmgr.h:
 
-C:/devkitPro/libogc/include/ogc/audio.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/audio.h:
 
-C:/devkitPro/libogc/include/ogc/cache.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/cache.h:
 
-C:/devkitPro/libogc/include/ogc/card.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/card.h:
 
-C:/devkitPro/libogc/include/ogc/cast.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/cast.h:
 
-C:/devkitPro/libogc/include/ogc/color.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/color.h:
 
-C:/devkitPro/libogc/include/ogc/consol.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/consol.h:
 
-C:/devkitPro/libogc/include/ogc/gx_struct.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/gx_struct.h:
 
-C:/devkitPro/libogc/include/ogc/dvd.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/dvd.h:
 
-C:/devkitPro/libogc/include/ogc/disc_io.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/disc_io.h:
 
-C:/devkitPro/libogc/include/ogc/exi.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/exi.h:
 
-C:/devkitPro/libogc/include/ogc/gu.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/gu.h:
 
-C:/devkitPro/libogc/include/ogc/gx.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/gx.h:
 
-C:/devkitPro/libogc/include/ogc/lwp.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp.h:
 
-C:/devkitPro/libogc/include/ogc/gu.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/gu.h:
 
-C:/devkitPro/libogc/include/ogc/si.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/si.h:
 
-C:/devkitPro/libogc/include/ogc/gx_struct.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/gx_struct.h:
 
-C:/devkitPro/libogc/include/ogc/irq.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/irq.h:
 
-C:/devkitPro/libogc/include/ogc/context.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/context.h:
 
-C:/devkitPro/libogc/include/ogc/lwp.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp.h:
 
-C:/devkitPro/libogc/include/ogc/mutex.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/mutex.h:
 
-C:/devkitPro/libogc/include/ogc/message.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/message.h:
 
-C:/devkitPro/libogc/include/ogc/semaphore.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/semaphore.h:
 
-C:/devkitPro/libogc/include/ogc/pad.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/pad.h:
 
-C:/devkitPro/libogc/include/ogc/tpl.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/tpl.h:
 
-C:/devkitPro/libogc/include/ogc/gx.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/gx.h:
 
-C:/devkitPro/libogc/include/ogc/system.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/system.h:
 
-C:/devkitPro/libogc/include/gcutil.h:
+/opt/devkitpro-r24/portlibs/ppc/include/gcutil.h:
 
-C:/devkitPro/libogc/include/ogc/video.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/video.h:
 
-C:/devkitPro/libogc/include/ogc/video_types.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/video_types.h:
 
-C:/devkitPro/libogc/include/ogc/usbgecko.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/usbgecko.h:
 
-C:/devkitPro/libogc/include/ogc/video_types.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/video_types.h:
 
-C:/devkitPro/libogc/include/ogc/texconv.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/texconv.h:
 
-C:/devkitPro/libogc/include/ogc/ipc.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/ipc.h:
 
-C:/devkitPro/libogc/include/ogc/es.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/es.h:
 
-C:/devkitPro/libogc/include/ogc/stm.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/stm.h:
 
-C:/devkitPro/libogc/include/ogc/ios.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/ios.h:
 
-C:/devkitPro/libogc/include/ogc/usb.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/usb.h:
 
-C:/devkitPro/libogc/include/ogc/isfs.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/isfs.h:
 
-C:/devkitPro/libogc/include/ogc/conf.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/conf.h:
 
-C:/devkitPro/libogc/include/ogc/usbstorage.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/usbstorage.h:
 
-C:/devkitPro/libogc/include/ogc/system.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/system.h:
 
-C:/devkitPro/libogc/include/ogc/wiilaunch.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/wiilaunch.h:
 
-C:/devkitPro/libogc/include/bte/bd_addr.h:
-
-C:/devkitPro/libogc/include/ogc/machine/processor.h:
-
-C:/devkitPro/libogc/include/ogc/machine/asm.h:
+/opt/devkitpro-r24/portlibs/ppc/include/bte/bd_addr.h:
 
 osdep/../libvo/video_out.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h:
 
 libmpcodecs/img_format.h:
 
@@ -299,6 +294,4 @@ osdep/../../utils/mem2_manager.h:
 
 osdep/../../video.h:
 
-C:/devkitPro/libogc/include/ogcsys.h:
-
-osdep/timer.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogcsys.h:

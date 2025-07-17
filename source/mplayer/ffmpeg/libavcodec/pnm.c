@@ -2,20 +2,20 @@
  * PNM image format
  * Copyright (c) 2002, 2003 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -93,9 +93,7 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
             } else if (!strcmp(buf1, "MAXVAL")) {
                 pnm_get(s, buf1, sizeof(buf1));
                 maxval = strtol(buf1, NULL, 10);
-            } else if (!strcmp(buf1, "TUPLTYPE") ||
-                       /* libavcodec used to write invalid files */
-                       !strcmp(buf1, "TUPLETYPE")) {
+            } else if (!strcmp(buf1, "TUPLETYPE")) {
                 pnm_get(s, tuple_type, sizeof(tuple_type));
             } else if (!strcmp(buf1, "ENDHDR")) {
                 break;
@@ -109,30 +107,21 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
 
         avctx->width  = w;
         avctx->height = h;
-        s->maxval     = maxval;
         if (depth == 1) {
-            if (maxval == 1) {
-                avctx->pix_fmt = PIX_FMT_MONOBLACK;
-            } else if (maxval == 255) {
+            if (maxval == 1)
+                avctx->pix_fmt = PIX_FMT_MONOWHITE;
+            else
                 avctx->pix_fmt = PIX_FMT_GRAY8;
-            } else {
-                avctx->pix_fmt = PIX_FMT_GRAY16BE;
-            }
-        } else if (depth == 2) {
-            if (maxval == 255)
-                avctx->pix_fmt = PIX_FMT_GRAY8A;
         } else if (depth == 3) {
             if (maxval < 256) {
             avctx->pix_fmt = PIX_FMT_RGB24;
             } else {
-                avctx->pix_fmt = PIX_FMT_RGB48BE;
+                av_log(avctx, AV_LOG_ERROR, "16-bit components are only supported for grayscale\n");
+                avctx->pix_fmt = PIX_FMT_NONE;
+                return -1;
             }
         } else if (depth == 4) {
-            if (maxval < 256) {
-                avctx->pix_fmt = PIX_FMT_RGBA;
-            } else {
-                avctx->pix_fmt = PIX_FMT_RGBA64BE;
-            }
+            avctx->pix_fmt = PIX_FMT_RGB32;
         } else {
             return -1;
         }
@@ -146,9 +135,9 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
         return -1;
     pnm_get(s, buf1, sizeof(buf1));
     avctx->height = atoi(buf1);
-    if(avctx->height <= 0 || av_image_check_size(avctx->width, avctx->height, 0, avctx))
+    if(av_image_check_size(avctx->width, avctx->height, 0, avctx))
         return -1;
-    if (avctx->pix_fmt != PIX_FMT_MONOWHITE && avctx->pix_fmt != PIX_FMT_MONOBLACK) {
+    if (avctx->pix_fmt != PIX_FMT_MONOWHITE) {
         pnm_get(s, buf1, sizeof(buf1));
         s->maxval = atoi(buf1);
         if (s->maxval <= 0) {
@@ -198,8 +187,8 @@ av_cold int ff_pnm_init(AVCodecContext *avctx)
 {
     PNMContext *s = avctx->priv_data;
 
-    avcodec_get_frame_defaults(&s->picture);
-    avctx->coded_frame = &s->picture;
+    avcodec_get_frame_defaults((AVFrame*)&s->picture);
+    avctx->coded_frame = (AVFrame*)&s->picture;
 
     return 0;
 }

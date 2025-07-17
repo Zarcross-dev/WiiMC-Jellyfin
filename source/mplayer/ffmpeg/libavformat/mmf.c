@@ -2,24 +2,23 @@
  * Yamaha SMAF format
  * Copyright (c) 2005 Vidar Madsen
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
-#include "internal.h"
 #include "avio_internal.h"
 #include "pcm.h"
 #include "riff.h"
@@ -68,7 +67,7 @@ static int mmf_write_header(AVFormatContext *s)
 
     rate = mmf_rate_code(s->streams[0]->codec->sample_rate);
     if(rate < 0) {
-        av_log(s, AV_LOG_ERROR, "Unsupported sample rate %d, supported are 4000, 8000, 11025, 22050 and 44100\n", s->streams[0]->codec->sample_rate);
+        av_log(s, AV_LOG_ERROR, "Unsupported sample rate %d\n", s->streams[0]->codec->sample_rate);
         return -1;
     }
 
@@ -76,8 +75,8 @@ static int mmf_write_header(AVFormatContext *s)
     avio_wb32(pb, 0);
     pos = ff_start_tag(pb, "CNTI");
     avio_w8(pb, 0); /* class */
-    avio_w8(pb, 1); /* type */
-    avio_w8(pb, 1); /* code type */
+    avio_w8(pb, 0); /* type */
+    avio_w8(pb, 0); /* code type */
     avio_w8(pb, 0); /* status */
     avio_w8(pb, 0); /* counts */
     avio_write(pb, "VN:libavcodec,", sizeof("VN:libavcodec,") -1); /* metadata ("ST:songtitle,VN:version,...") */
@@ -101,7 +100,7 @@ static int mmf_write_header(AVFormatContext *s)
 
     mmf->awapos = ff_start_tag(pb, "Awa\x01");
 
-    avpriv_set_pts_info(s->streams[0], 64, 1, s->streams[0]->codec->sample_rate);
+    av_set_pts_info(s->streams[0], 64, 1, s->streams[0]->codec->sample_rate);
 
     avio_flush(pb);
 
@@ -180,7 +179,8 @@ static int mmf_probe(AVProbeData *p)
 }
 
 /* mmf input */
-static int mmf_read_header(AVFormatContext *s)
+static int mmf_read_header(AVFormatContext *s,
+                           AVFormatParameters *ap)
 {
     MMFContext *mmf = s->priv_data;
     unsigned int tag;
@@ -241,7 +241,7 @@ static int mmf_read_header(AVFormatContext *s)
     }
     mmf->data_size = size;
 
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -252,7 +252,7 @@ static int mmf_read_header(AVFormatContext *s)
     st->codec->bits_per_coded_sample = 4;
     st->codec->bit_rate = st->codec->sample_rate * st->codec->bits_per_coded_sample;
 
-    avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
+    av_set_pts_info(st, 64, 1, st->codec->sample_rate);
 
     return 0;
 }
@@ -265,7 +265,7 @@ static int mmf_read_packet(AVFormatContext *s,
     MMFContext *mmf = s->priv_data;
     int ret, size;
 
-    if (url_feof(s->pb))
+    if (s->pb->eof_reached)
         return AVERROR(EIO);
 
     size = MAX_SIZE;
@@ -275,13 +275,17 @@ static int mmf_read_packet(AVFormatContext *s,
     if(!size)
         return AVERROR(EIO);
 
-    ret = av_get_packet(s->pb, pkt, size);
-    if (ret < 0)
-        return ret;
-
+    if (av_new_packet(pkt, size))
+        return AVERROR(EIO);
     pkt->stream_index = 0;
+
+    ret = avio_read(s->pb, pkt->data, pkt->size);
+    if (ret < 0)
+        av_free_packet(pkt);
+
     mmf->data_size -= ret;
 
+    pkt->size = ret;
     return ret;
 }
 
@@ -293,7 +297,7 @@ AVInputFormat ff_mmf_demuxer = {
     .read_probe     = mmf_probe,
     .read_header    = mmf_read_header,
     .read_packet    = mmf_read_packet,
-    .read_seek      = ff_pcm_read_seek,
+    .read_seek      = pcm_read_seek,
 };
 #endif
 #if CONFIG_MMF_MUXER

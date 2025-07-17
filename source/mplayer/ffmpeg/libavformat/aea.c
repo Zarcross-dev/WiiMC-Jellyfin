@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2009 Benjamin Larsson
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -54,9 +54,10 @@ static int aea_read_probe(AVProbeData *p)
     return 0;
 }
 
-static int aea_read_header(AVFormatContext *s)
+static int aea_read_header(AVFormatContext *s,
+                           AVFormatParameters *ap)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -99,7 +100,8 @@ AVInputFormat ff_aea_demuxer = {
     .read_probe     = aea_read_probe,
     .read_header    = aea_read_header,
     .read_packet    = aea_read_packet,
-    .read_seek      = ff_pcm_read_seek,
-    .flags          = AVFMT_GENERIC_INDEX,
-    .extensions     = "aea",
+    .read_seek      = pcm_read_seek,
+    .flags= AVFMT_GENERIC_INDEX,
+    .extensions = "aea",
 };
+

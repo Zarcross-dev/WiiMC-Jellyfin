@@ -2,20 +2,20 @@
  * MxPEG decoder
  * Copyright (c) 2011 Anatoly Nenashev
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -47,7 +47,9 @@ static av_cold int mxpeg_decode_init(AVCodecContext *avctx)
 
     s->picture[0].reference = s->picture[1].reference = 3;
     s->jpg.picture_ptr      = &s->picture[0];
-    return ff_mjpeg_decode_init(avctx);
+    ff_mjpeg_decode_init(avctx);
+
+    return 0;
 }
 
 static int mxpeg_decode_app(MXpegDecodeContext *s,
@@ -80,7 +82,6 @@ static int mxpeg_decode_mxm(MXpegDecodeContext *s,
     }
 
     if (s->bitmask_size != bitmask_size) {
-        s->bitmask_size = 0;
         av_freep(&s->mxm_bitmask);
         s->mxm_bitmask = av_malloc(bitmask_size);
         if (!s->mxm_bitmask) {
@@ -275,11 +276,11 @@ static int mxpeg_decode_frame(AVCodecContext *avctx,
                     }
 
                     ret = ff_mjpeg_decode_sos(jpg, s->mxm_bitmask, reference_ptr);
-                    if (ret < 0 && (avctx->err_recognition & AV_EF_EXPLODE))
+                    if (ret < 0 && avctx->error_recognition >= FF_ER_EXPLODE)
                         return ret;
                 } else {
                     ret = ff_mjpeg_decode_sos(jpg, NULL, NULL);
-                    if (ret < 0 && (avctx->err_recognition & AV_EF_EXPLODE))
+                    if (ret < 0 && avctx->error_recognition >= FF_ER_EXPLODE)
                         return ret;
                 }
 
@@ -339,5 +340,5 @@ AVCodec ff_mxpeg_decoder = {
     .close          = mxpeg_decode_end,
     .decode         = mxpeg_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .max_lowres     = 3,
+    .max_lowres     = 3
 };

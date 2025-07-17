@@ -2,20 +2,20 @@
  * H.26L/H.264/AVC/JVT/14496-10/... cabac decoding
  * Copyright (c) 2003 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,11 +26,7 @@
  */
 
 #define CABAC 1
-#define UNCHECKED_BITSTREAM_READER 1
 
-#include "config.h"
-#include "cabac.h"
-#include "cabac_functions.h"
 #include "internal.h"
 #include "dsputil.h"
 #include "avcodec.h"
@@ -39,6 +35,7 @@
 #include "h264_mvpred.h"
 #include "golomb.h"
 
+#include "cabac.h"
 #if ARCH_X86
 #include "x86/h264_i386.h"
 #endif
@@ -1561,12 +1558,14 @@ static av_always_inline int get_cabac_cbf_ctx( H264Context *h, int cat, int idx,
     return base_ctx[cat] + ctx;
 }
 
-static av_always_inline void
-decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
-                               int cat, int n, const uint8_t *scantable,
-                               const uint32_t *qmul, int max_coeff,
-                               int is_dc, int chroma422)
-{
+DECLARE_ASM_CONST(1, uint8_t, last_coeff_flag_offset_8x8)[63] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
+    5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8
+};
+
+static av_always_inline void decode_cabac_residual_internal( H264Context *h, DCTELEM *block, int cat, int n, const uint8_t *scantable, const uint32_t *qmul, int max_coeff, int is_dc ) {
     static const int significant_coeff_flag_offset[2][14] = {
       { 105+0, 105+15, 105+29, 105+44, 105+47, 402, 484+0, 484+15, 484+29, 660, 528+0, 528+15, 528+29, 718 },
       { 277+0, 277+15, 277+29, 277+44, 277+47, 436, 776+0, 776+15, 776+29, 675, 820+0, 820+15, 820+29, 733 }
@@ -1588,16 +1587,12 @@ decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
         9, 9,10,10, 8,11,12,11, 9, 9,10,10, 8,13,13, 9,
         9,10,10, 8,13,13, 9, 9,10,10,14,14,14,14,14 }
     };
-    static const uint8_t sig_coeff_offset_dc[7] = { 0, 0, 1, 1, 2, 2, 2 };
     /* node ctx: 0..3: abslevel1 (with abslevelgt1 == 0).
      * 4..7: abslevelgt1 + 3 (and abslevel1 doesn't matter).
      * map node ctx => cabac ctx for level=1 */
     static const uint8_t coeff_abs_level1_ctx[8] = { 1, 2, 3, 4, 0, 0, 0, 0 };
     /* map node ctx => cabac ctx for level>1 */
-    static const uint8_t coeff_abs_levelgt1_ctx[2][8] = {
-        { 5, 5, 5, 5, 6, 7, 8, 9 },
-        { 5, 5, 5, 5, 6, 7, 8, 8 }, // 422/dc case
-    };
+    static const uint8_t coeff_abs_levelgt1_ctx[8] = { 5, 5, 5, 5, 6, 7, 8, 9 };
     static const uint8_t coeff_abs_level_transition[2][8] = {
     /* update node ctx after decoding a level=1 */
         { 1, 2, 3, 3, 4, 5, 6, 7 },
@@ -1652,24 +1647,16 @@ decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
             index[coeff_count++] = last;\
         }
         const uint8_t *sig_off = significant_coeff_flag_offset_8x8[MB_FIELD];
-#if ARCH_X86 && HAVE_7REGS
+#if ARCH_X86 && HAVE_7REGS && HAVE_EBX_AVAILABLE && !defined(BROKEN_RELOCATIONS)
         coeff_count= decode_significance_8x8_x86(CC, significant_coeff_ctx_base, index,
                                                  last_coeff_ctx_base, sig_off);
     } else {
-        if (is_dc && chroma422) { // dc 422
-            DECODE_SIGNIFICANCE(7, sig_coeff_offset_dc[last], sig_coeff_offset_dc[last]);
-        } else {
-            coeff_count= decode_significance_x86(CC, max_coeff, significant_coeff_ctx_base, index,
-                                                 last_coeff_ctx_base-significant_coeff_ctx_base);
-        }
+        coeff_count= decode_significance_x86(CC, max_coeff, significant_coeff_ctx_base, index,
+                                             last_coeff_ctx_base-significant_coeff_ctx_base);
 #else
-        DECODE_SIGNIFICANCE( 63, sig_off[last], ff_h264_last_coeff_flag_offset_8x8[last] );
+        DECODE_SIGNIFICANCE( 63, sig_off[last], last_coeff_flag_offset_8x8[last] );
     } else {
-        if (is_dc && chroma422) { // dc 422
-            DECODE_SIGNIFICANCE(7, sig_coeff_offset_dc[last], sig_coeff_offset_dc[last]);
-        } else {
-            DECODE_SIGNIFICANCE(max_coeff - 1, last, last);
-        }
+        DECODE_SIGNIFICANCE( max_coeff - 1, last, last );
 #endif
     }
     assert(coeff_count > 0);
@@ -1689,7 +1676,6 @@ decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
         }
     }
 
-
 #define STORE_BLOCK(type) \
     do { \
         uint8_t *ctx = coeff_abs_level1_ctx[node_ctx] + abs_level_m1_ctx_base; \
@@ -1705,7 +1691,7 @@ decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
             } \
         } else { \
             int coeff_abs = 2; \
-            ctx = coeff_abs_levelgt1_ctx[is_dc && chroma422][node_ctx] + abs_level_m1_ctx_base; \
+            ctx = coeff_abs_levelgt1_ctx[node_ctx] + abs_level_m1_ctx_base; \
             node_ctx = coeff_abs_level_transition[1][node_ctx]; \
 \
             while( coeff_abs < 15 && get_cabac( CC, ctx ) ) { \
@@ -1733,11 +1719,11 @@ decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
         } \
     } while ( coeff_count );
 
-        if (h->pixel_shift) {
-            STORE_BLOCK(int32_t)
-        } else {
-            STORE_BLOCK(int16_t)
-        }
+    if (h->pixel_shift) {
+        STORE_BLOCK(int32_t)
+    } else {
+        STORE_BLOCK(int16_t)
+    }
 #ifdef CABAC_ON_STACK
             h->cabac.range     = cc.range     ;
             h->cabac.low       = cc.low       ;
@@ -1747,18 +1733,11 @@ decode_cabac_residual_internal(H264Context *h, DCTELEM *block,
 }
 
 static void decode_cabac_residual_dc_internal( H264Context *h, DCTELEM *block, int cat, int n, const uint8_t *scantable, int max_coeff ) {
-    decode_cabac_residual_internal(h, block, cat, n, scantable, NULL, max_coeff, 1, 0);
-}
-
-static void decode_cabac_residual_dc_internal_422(H264Context *h, DCTELEM *block,
-                                                  int cat, int n, const uint8_t *scantable,
-                                                  int max_coeff)
-{
-    decode_cabac_residual_internal(h, block, cat, n, scantable, NULL, max_coeff, 1, 1);
+    decode_cabac_residual_internal(h, block, cat, n, scantable, NULL, max_coeff, 1);
 }
 
 static void decode_cabac_residual_nondc_internal( H264Context *h, DCTELEM *block, int cat, int n, const uint8_t *scantable, const uint32_t *qmul, int max_coeff ) {
-    decode_cabac_residual_internal(h, block, cat, n, scantable, qmul, max_coeff, 0, 0);
+    decode_cabac_residual_internal(h, block, cat, n, scantable, qmul, max_coeff, 0);
 }
 
 /* cat: 0-> DC 16x16  n = 0
@@ -1780,19 +1759,6 @@ static av_always_inline void decode_cabac_residual_dc( H264Context *h, DCTELEM *
         return;
     }
     decode_cabac_residual_dc_internal( h, block, cat, n, scantable, max_coeff );
-}
-
-static av_always_inline void
-decode_cabac_residual_dc_422(H264Context *h, DCTELEM *block,
-                             int cat, int n, const uint8_t *scantable,
-                             int max_coeff)
-{
-    /* read coded block flag */
-    if (get_cabac(&h->cabac, &h->cabac_state[get_cabac_cbf_ctx(h, cat, n, max_coeff, 1)]) == 0) {
-        h->non_zero_count_cache[scan8[n]] = 0;
-        return;
-    }
-    decode_cabac_residual_dc_internal_422(h, block, cat, n, scantable, max_coeff);
 }
 
 static av_always_inline void decode_cabac_residual_nondc( H264Context *h, DCTELEM *block, int cat, int n, const uint8_t *scantable, const uint32_t *qmul, int max_coeff ) {
@@ -1859,8 +1825,8 @@ static av_always_inline void decode_cabac_luma_residual( H264Context *h, const u
 }
 
 /**
- * Decode a macroblock.
- * @return 0 if OK, ER_AC_ERROR / ER_DC_ERROR / ER_MV_ERROR if an error is noticed
+ * decodes a macroblock
+ * @return 0 if OK, AC_ERROR / DC_ERROR / MV_ERROR if an error is noticed
  */
 int ff_h264_decode_mb_cabac(H264Context *h) {
     MpegEncContext * const s = &h->s;
@@ -1977,8 +1943,8 @@ decode_intra_mb:
     h->slice_table[ mb_xy ]= h->slice_num;
 
     if(IS_INTRA_PCM(mb_type)) {
-        const int mb_size = ff_h264_mb_sizes[h->sps.chroma_format_idc] *
-                            h->sps.bit_depth_luma >> 3;
+        static const uint16_t mb_sizes[4] = {256,384,512,768};
+        const int mb_size = mb_sizes[h->sps.chroma_format_idc]*h->sps.bit_depth_luma >> 3;
         const uint8_t *ptr;
 
         // We assume these blocks are very rare so we do not optimize it.
@@ -1991,8 +1957,6 @@ decode_intra_mb:
         }
 
         // The pixels are stored in the same order as levels in h->mb array.
-        if ((int) (h->cabac.bytestream_end - ptr) < mb_size)
-            return -1;
         memcpy(h->mb, ptr, mb_size); ptr+=mb_size;
 
         ff_init_cabac_decoder(&h->cabac, ptr, h->cabac.bytestream_end - ptr);
@@ -2037,14 +2001,14 @@ decode_intra_mb:
             write_back_intra_pred_mode(h);
             if( ff_h264_check_intra4x4_pred_mode(h) < 0 ) return -1;
         } else {
-            h->intra16x16_pred_mode= ff_h264_check_intra_pred_mode( h, h->intra16x16_pred_mode, 0 );
+            h->intra16x16_pred_mode= ff_h264_check_intra_pred_mode( h, h->intra16x16_pred_mode );
             if( h->intra16x16_pred_mode < 0 ) return -1;
         }
         if(decode_chroma){
             h->chroma_pred_mode_table[mb_xy] =
             pred_mode                        = decode_cabac_mb_chroma_pre_mode( h );
 
-            pred_mode= ff_h264_check_intra_pred_mode( h, pred_mode, 1 );
+            pred_mode= ff_h264_check_intra_pred_mode( h, pred_mode );
             if( pred_mode < 0 ) return -1;
             h->chroma_pred_mode= pred_mode;
         } else {
@@ -2349,36 +2313,7 @@ decode_intra_mb:
         if(CHROMA444){
             decode_cabac_luma_residual(h, scan, scan8x8, pixel_shift, mb_type, cbp, 1);
             decode_cabac_luma_residual(h, scan, scan8x8, pixel_shift, mb_type, cbp, 2);
-        } else if (CHROMA422) {
-            if( cbp&0x30 ){
-                int c;
-                for( c = 0; c < 2; c++ ) {
-                    //av_log( s->avctx, AV_LOG_ERROR, "INTRA C%d-DC\n",c );
-                    decode_cabac_residual_dc_422(h, h->mb + ((256 + 16*16*c) << pixel_shift), 3,
-                                                 CHROMA_DC_BLOCK_INDEX + c,
-                                                 chroma422_dc_scan, 8);
-                }
-            }
-
-            if( cbp&0x20 ) {
-                int c, i, i8x8;
-                for( c = 0; c < 2; c++ ) {
-                    DCTELEM *mb = h->mb + (16*(16 + 16*c) << pixel_shift);
-                    qmul = h->dequant4_coeff[c+1+(IS_INTRA( mb_type ) ? 0:3)][h->chroma_qp[c]];
-                    for (i8x8 = 0; i8x8 < 2; i8x8++) {
-                        for (i = 0; i < 4; i++) {
-                            const int index = 16 + 16 * c + 8*i8x8 + i;
-                            //av_log(s->avctx, AV_LOG_ERROR, "INTRA C%d-AC %d\n",c, index - 16);
-                            decode_cabac_residual_nondc(h, mb, 4, index, scan + 1, qmul, 15);
-                            mb += 16<<pixel_shift;
-                        }
-                    }
-                }
-            } else {
-                fill_rectangle(&h->non_zero_count_cache[scan8[16]], 4, 4, 8, 0, 1);
-                fill_rectangle(&h->non_zero_count_cache[scan8[32]], 4, 4, 8, 0, 1);
-            }
-        } else /* yuv420 */ {
+        } else {
             if( cbp&0x30 ){
                 int c;
                 for( c = 0; c < 2; c++ ) {

@@ -2,20 +2,20 @@
  * Matroska common data
  * Copyright (c) 2003-2004 The ffmpeg Project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -31,7 +31,6 @@ const CodecTags ff_mkv_codec_tags[]={
     {"A_MPEG/L2"        , CODEC_ID_MP2},
     {"A_MPEG/L1"        , CODEC_ID_MP2},
     {"A_MPEG/L3"        , CODEC_ID_MP3},
-    {"A_OPUS"           , CODEC_ID_OPUS},
     {"A_PCM/FLOAT/IEEE" , CODEC_ID_PCM_F32LE},
     {"A_PCM/FLOAT/IEEE" , CODEC_ID_PCM_F64LE},
     {"A_PCM/INT/BIG"    , CODEC_ID_PCM_S16BE},
@@ -99,28 +98,4 @@ const AVMetadataConv ff_mkv_metadata_conv[] = {
     { "LEAD_PERFORMER", "performer" },
     { "PART_NUMBER"   , "track"  },
     { 0 }
-};
-
-const char * const matroska_video_stereo_mode[MATROSKA_VIDEO_STEREO_MODE_COUNT] = {
-    "mono",
-    "left_right",
-    "bottom_top",
-    "top_bottom",
-    "checkerboard_rl",
-    "checkerboard_lr"
-    "row_interleaved_rl",
-    "row_interleaved_lr",
-    "col_interleaved_rl",
-    "col_interleaved_lr",
-    "anaglyph_cyan_red",
-    "right_left",
-    "anaglyph_green_magenta",
-    "block_lr",
-    "block_rl",
-};
-
-const char * const matroska_video_stereo_plane[MATROSKA_VIDEO_STEREO_PLANE_COUNT] = {
-    "left",
-    "right",
-    "background",
 };

@@ -3,20 +3,20 @@
  * Copyright (c) 2003 Fabrice Bellard
  * Copyright (c) 2003 Michael Niedermayer
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -37,12 +37,28 @@ typedef struct ParseContext{
     uint64_t state64;           ///< contains the last 8 bytes in MSB order
 } ParseContext;
 
+struct MpegEncContext;
+
+typedef struct ParseContext1{
+    ParseContext pc;
+/* XXX/FIXME PC1 vs. PC */
+    /* MPEG-2-specific */
+    AVRational frame_rate;
+    int progressive_sequence;
+    int width, height;
+
+    /* XXX: suppress that, needed by MPEG-4 */
+    struct MpegEncContext *enc;
+    int first_picture;
+} ParseContext1;
+
 #define END_NOT_FOUND (-100)
 
 int ff_combine_frame(ParseContext *pc, int next, const uint8_t **buf, int *buf_size);
 int ff_mpeg4video_split(AVCodecContext *avctx, const uint8_t *buf,
                         int buf_size);
 void ff_parse_close(AVCodecParserContext *s);
+void ff_parse1_close(AVCodecParserContext *s);
 
 /**
  * Fetch timestamps for a specific byte within the current access unit.

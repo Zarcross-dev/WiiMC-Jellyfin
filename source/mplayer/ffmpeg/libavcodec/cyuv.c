@@ -6,20 +6,20 @@
  *
  * Copyright (C) 2003 the ffmpeg project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -53,7 +53,6 @@ static av_cold int cyuv_decode_init(AVCodecContext *avctx)
         return -1;
     s->height = avctx->height;
     avctx->pix_fmt = PIX_FMT_YUV411P;
-    avcodec_get_frame_defaults(&s->frame);
 
     return 0;
 }
@@ -188,7 +187,7 @@ AVCodec ff_aura_decoder = {
     .close          = cyuv_decode_end,
     .decode         = cyuv_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Auravision AURA"),
+    .long_name = NULL_IF_CONFIG_SMALL("Auravision AURA"),
 };
 #endif
 
@@ -202,6 +201,6 @@ AVCodec ff_cyuv_decoder = {
     .close          = cyuv_decode_end,
     .decode         = cyuv_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Creative YUV (CYUV)"),
+    .long_name = NULL_IF_CONFIG_SMALL("Creative YUV (CYUV)"),
 };
 #endif

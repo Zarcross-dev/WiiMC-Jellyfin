@@ -2,20 +2,20 @@
  * QCP format (.qcp) demuxer
  * Copyright (c) 2009 Kenan Gillet
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -80,11 +80,11 @@ static int qcp_probe(AVProbeData *pd)
     return 0;
 }
 
-static int qcp_read_header(AVFormatContext *s)
+static int qcp_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     AVIOContext *pb = s->pb;
     QCPContext    *c  = s->priv_data;
-    AVStream      *st = avformat_new_stream(s, NULL);
+    AVStream      *st = av_new_stream(s, 0);
     uint8_t       buf[16];
     int           i, nb_rates;
 
@@ -92,7 +92,8 @@ static int qcp_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
 
     avio_rb32(pb);                    // "RIFF"
-    avio_skip(pb, 4 + 8 + 4 + 1 + 1);    // filesize + "QLCMfmt " + chunk-size + major-version + minor-version
+    s->file_size = avio_rl32(pb) + 8;
+    avio_skip(pb, 8 + 4 + 1 + 1);    // "QLCMfmt " + chunk-size + major-version + minor-version
 
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codec->channels   = 1;
@@ -139,7 +140,7 @@ static int qcp_read_packet(AVFormatContext *s, AVPacket *pkt)
     QCPContext    *c  = s->priv_data;
     unsigned int  chunk_size, tag;
 
-    while(!url_feof(pb)) {
+    while(!pb->eof_reached) {
         if (c->data_size) {
             int pkt_size, ret, mode = avio_r8(pb);
 

@@ -1,25 +1,23 @@
 /*
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef AVUTIL_PARSEUTILS_H
 #define AVUTIL_PARSEUTILS_H
-
-#include <time.h>
 
 #include "rational.h"
 
@@ -27,30 +25,6 @@
  * @file
  * misc parsing utilities
  */
-
-/**
- * Parse str and store the parsed ratio in q.
- *
- * Note that a ratio with infinite (1/0) or negative value is
- * considered valid, so you should check on the returned value if you
- * want to exclude those values.
- *
- * The undefined value can be expressed using the "0:0" string.
- *
- * @param[in,out] q pointer to the AVRational which will contain the ratio
- * @param[in] str the string to parse: it has to be a string in the format
- * num:den, a float number or an expression
- * @param[in] max the maximum allowed numerator and denominator
- * @param[in] log_offset log level offset which is applied to the log
- * level of log_ctx
- * @param[in] log_ctx parent logging context
- * @return >= 0 on success, a negative error code otherwise
- */
-int av_parse_ratio(AVRational *q, const char *str, int max,
-                   int log_offset, void *log_ctx);
-
-#define av_parse_ratio_quiet(rate, str, max) \
-    av_parse_ratio(rate, str, max, AV_LOG_MAX_OFFSET, NULL)
 
 /**
  * Parse str and put in width_ptr and height_ptr the detected values.
@@ -99,7 +73,7 @@ int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
                    void *log_ctx);
 
 /**
- * Parse timestr and return in *time a corresponding number of
+ * Parses timestr and returns in *time a corresponding number of
  * microseconds.
  *
  * @param timeval puts here the number of microseconds corresponding
@@ -112,7 +86,7 @@ int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
  * @param timestr a string representing a date or a duration.
  * - If a date the syntax is:
  * @code
- * [{YYYY-MM-DD|YYYYMMDD}[T|t| ]]{{HH:MM:SS[.m...]]]}|{HHMMSS[.m...]]]}}[Z]
+ * [{YYYY-MM-DD|YYYYMMDD}[T|t| ]]{{HH[:MM[:SS[.m...]]]}|{HH[MM[SS[.m...]]]}}[Z]
  * now
  * @endcode
  * If the value is "now" it takes the current time.
@@ -122,7 +96,7 @@ int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
  * year-month-day.
  * - If a duration the syntax is:
  * @code
- * [-]HH:MM:SS[.m...]]]
+ * [-]HH[:MM[:SS[.m...]]]
  * [-]S+[.m...]
  * @endcode
  * @param duration flag which tells how to interpret timestr, if not
@@ -139,10 +113,5 @@ int av_parse_time(int64_t *timeval, const char *timestr, int duration);
  * Return 1 if found.
  */
 int av_find_info_tag(char *arg, int arg_size, const char *tag1, const char *info);
-
-/**
- * Convert the decomposed UTC time in tm to a time_t value.
- */
-time_t av_timegm(struct tm *tm);
 
 #endif /* AVUTIL_PARSEUTILS_H */

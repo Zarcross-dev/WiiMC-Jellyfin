@@ -1,24 +1,24 @@
-/*
+/**
  * VP8 compatible video decoder
  *
  * Copyright (C) 2010 David Conrad
  * Copyright (C) 2010 Ronald S. Bultje
  * Copyright (C) 2010 Jason Garrett-Glaser
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -130,6 +130,7 @@ typedef struct {
 
     uint8_t *intra4x4_pred_mode_top;
     uint8_t intra4x4_pred_mode_left[4];
+    uint8_t *segmentation_map;
 
     /**
      * Macroblocks can have one of 4 different quants in a frame when
@@ -236,16 +237,6 @@ typedef struct {
     H264PredContext hpc;
     vp8_mc_func put_pixels_tab[3][3][3];
     AVFrame frames[5];
-
-    /**
-     * A list of segmentation_map buffers that are to be free()'ed in
-     * the next decoding iteration. We can't free() them right away
-     * because the map may still be used by subsequent decoding threads.
-     * Unused if frame threading is off.
-     */
-    uint8_t *segmentation_maps[5];
-    int num_maps_to_be_freed;
-    int maps_are_invalid;
 } VP8Context;
 
 #endif /* AVCODEC_VP8_H */

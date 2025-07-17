@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * input.h
  * Wii/GameCube controller management
@@ -11,10 +11,9 @@
 
 #include <gccore.h>
 #include <wiiuse/wpad.h>
-#include "utils/3ds.h"
 
 #define PI 				3.14159265f
-#define PADCAL			30
+#define PADCAL			50
 
 void SetupPads();
 void UpdatePads();

@@ -2,20 +2,20 @@
  * RAW demuxers
  * Copyright (C) 2007  Aurelien Jacobs <aurel@gnuage.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -24,7 +24,6 @@
 
 #include "avformat.h"
 #include "libavutil/log.h"
-#include "libavutil/opt.h"
 
 typedef struct RawAudioDemuxerContext {
     AVClass *class;
@@ -39,26 +38,18 @@ typedef struct FFRawVideoDemuxerContext {
     char *framerate;          /**< String describing framerate, set by a private option. */
 } FFRawVideoDemuxerContext;
 
-extern const AVOption ff_rawvideo_options[];
+extern const AVClass ff_rawaudio_demuxer_class;
+extern const AVClass ff_rawvideo_demuxer_class;
 
-int ff_raw_read_header(AVFormatContext *s);
+int ff_raw_read_header(AVFormatContext *s, AVFormatParameters *ap);
 
 int ff_raw_read_partial_packet(AVFormatContext *s, AVPacket *pkt);
 
-int ff_raw_audio_read_header(AVFormatContext *s);
+int ff_raw_audio_read_header(AVFormatContext *s, AVFormatParameters *ap);
 
-int ff_raw_video_read_header(AVFormatContext *s);
-
-#define FF_RAWVIDEO_DEMUXER_CLASS(name)\
-static const AVClass name ## _demuxer_class = {\
-    .class_name = #name " demuxer",\
-    .item_name  = av_default_item_name,\
-    .option     = ff_rawvideo_options,\
-    .version    = LIBAVUTIL_VERSION_INT,\
-};
+int ff_raw_video_read_header(AVFormatContext *s, AVFormatParameters *ap);
 
 #define FF_DEF_RAWVIDEO_DEMUXER(shortname, longname, probe, ext, id)\
-FF_RAWVIDEO_DEMUXER_CLASS(shortname)\
 AVInputFormat ff_ ## shortname ## _demuxer = {\
     .name           = #shortname,\
     .long_name      = NULL_IF_CONFIG_SMALL(longname),\
@@ -67,9 +58,9 @@ AVInputFormat ff_ ## shortname ## _demuxer = {\
     .read_packet    = ff_raw_read_partial_packet,\
     .extensions     = ext,\
     .flags          = AVFMT_GENERIC_INDEX,\
-    .raw_codec_id   = id,\
+    .value          = id,\
     .priv_data_size = sizeof(FFRawVideoDemuxerContext),\
-    .priv_class     = &shortname ## _demuxer_class,\
+    .priv_class     = &ff_rawvideo_demuxer_class,\
 };
 
 #endif /* AVFORMAT_RAWDEC_H */

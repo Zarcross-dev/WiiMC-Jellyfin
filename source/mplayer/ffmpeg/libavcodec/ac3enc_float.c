@@ -4,20 +4,20 @@
  * Copyright (c) 2006-2010 Justin Ruggles <justin.ruggles@gmail.com>
  * Copyright (c) 2006-2010 Prakash Punnoor <prakash@punnoor.de>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -27,7 +27,6 @@
  */
 
 #define CONFIG_AC3ENC_FLOAT 1
-#include "internal.h"
 #include "ac3enc.h"
 #include "eac3enc.h"
 #include "kbdwin.h"
@@ -45,8 +44,6 @@ static const AVClass ac3enc_class = { "AC-3 Encoder", av_default_item_name,
 
 /**
  * Finalize MDCT and free allocated memory.
- *
- * @param s  AC-3 encoder private context
  */
 av_cold void ff_ac3_float_mdct_end(AC3EncodeContext *s)
 {
@@ -57,9 +54,7 @@ av_cold void ff_ac3_float_mdct_end(AC3EncodeContext *s)
 
 /**
  * Initialize MDCT tables.
- *
- * @param s  AC-3 encoder private context
- * @return   0 on success, negative error code on failure
+ * @param nbits log2(MDCT size)
  */
 av_cold int ff_ac3_float_mdct_init(AC3EncodeContext *s)
 {
@@ -83,7 +78,7 @@ av_cold int ff_ac3_float_mdct_init(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Apply KBD window to input samples prior to MDCT.
  */
 static void apply_window(DSPContext *dsp, float *output, const float *input,
@@ -93,7 +88,7 @@ static void apply_window(DSPContext *dsp, float *output, const float *input,
 }
 
 
-/*
+/**
  * Normalize the input samples.
  * Not needed for the floating-point encoder.
  */
@@ -103,26 +98,19 @@ static int normalize_samples(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Scale MDCT coefficients from float to 24-bit fixed-point.
  */
 static void scale_coefficients(AC3EncodeContext *s)
 {
     int chan_size = AC3_MAX_COEFS * s->num_blocks;
-    int cpl       = s->cpl_on;
-    s->ac3dsp.float_to_fixed24(s->fixed_coef_buffer + (chan_size * !cpl),
-                               s->mdct_coef_buffer  + (chan_size * !cpl),
-                               chan_size * (s->channels + cpl));
+    s->ac3dsp.float_to_fixed24(s->fixed_coef_buffer + chan_size,
+                               s->mdct_coef_buffer  + chan_size,
+                               chan_size * s->channels);
 }
 
-static void sum_square_butterfly(AC3EncodeContext *s, float sum[4],
-                                 const float *coef0, const float *coef1,
-                                 int len)
-{
-    s->ac3dsp.sum_square_butterfly_float(sum, coef0, coef1, len);
-}
 
-/*
+/**
  * Clip MDCT coefficients to allowable range.
  */
 static void clip_coefficients(DSPContext *dsp, float *coef, unsigned int len)
@@ -131,32 +119,18 @@ static void clip_coefficients(DSPContext *dsp, float *coef, unsigned int len)
 }
 
 
-/*
- * Calculate a single coupling coordinate.
- */
-static CoefType calc_cpl_coord(CoefSumType energy_ch, CoefSumType energy_cpl)
-{
-    float coord = 0.125;
-    if (energy_cpl > 0)
-        coord *= sqrtf(energy_ch / energy_cpl);
-    return FFMIN(coord, COEF_MAX);
-}
-
-
 #if CONFIG_AC3_ENCODER
 AVCodec ff_ac3_encoder = {
-    .name            = "ac3",
-    .type            = AVMEDIA_TYPE_AUDIO,
-    .id              = CODEC_ID_AC3,
-    .priv_data_size  = sizeof(AC3EncodeContext),
-    .init            = ff_ac3_encode_init,
-    .encode2         = ff_ac3_float_encode_frame,
-    .close           = ff_ac3_encode_close,
-    .sample_fmts     = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLT,
-                                                      AV_SAMPLE_FMT_NONE },
-    .long_name       = NULL_IF_CONFIG_SMALL("ATSC A/52A (AC-3)"),
-    .priv_class      = &ac3enc_class,
+    .name           = "ac3",
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = CODEC_ID_AC3,
+    .priv_data_size = sizeof(AC3EncodeContext),
+    .init           = ff_ac3_encode_init,
+    .encode         = ff_ac3_float_encode_frame,
+    .close          = ff_ac3_encode_close,
+    .sample_fmts = (const enum AVSampleFormat[]){AV_SAMPLE_FMT_FLT,AV_SAMPLE_FMT_NONE},
+    .long_name = NULL_IF_CONFIG_SMALL("ATSC A/52A (AC-3)"),
+    .priv_class = &ac3enc_class,
     .channel_layouts = ff_ac3_channel_layouts,
-    .defaults        = ac3_defaults,
 };
 #endif

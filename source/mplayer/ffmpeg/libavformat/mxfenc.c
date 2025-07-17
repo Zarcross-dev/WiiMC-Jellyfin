@@ -3,20 +3,20 @@
  * Copyright (c) 2008 GUCAS, Zhentan Feng <spyfeng at gmail dot com>
  * Copyright (c) 2008 Baptiste Coudurier <baptiste dot coudurier at gmail dot com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -35,19 +35,15 @@
 #include <math.h>
 #include <time.h>
 
-#include "libavutil/opt.h"
 #include "libavutil/random_seed.h"
-#include "libavutil/timecode.h"
 #include "libavcodec/bytestream.h"
 #include "audiointerleave.h"
 #include "avformat.h"
 #include "internal.h"
 #include "mxf.h"
 
-static const int NTSC_samples_per_frame[]    = { 1602, 1601, 1602, 1601, 1602, 0 };
-static const int NTSC_60_samples_per_frame[] = { 801, 801, 801, 801, 800, 0 };
-static const int PAL_samples_per_frame[]     = { 1920, 0 };
-static const int PAL_50_samples_per_frame[]  = { 960, 0 };
+static const int NTSC_samples_per_frame[] = { 1602, 1601, 1602, 1601, 1602, 0 };
+static const int PAL_samples_per_frame[]  = { 1920, 0 };
 
 extern AVOutputFormat ff_mxf_d10_muxer;
 
@@ -72,7 +68,7 @@ typedef struct {
     int index;               ///< index in mxf_essence_container_uls table
     const UID *codec_ul;
     int order;               ///< interleaving order if dts are equal
-    int interlaced;          ///< whether picture is interlaced
+    int interlaced;          ///< wether picture is interlaced
     int temporal_reordering;
     AVRational aspect_ratio; ///< display aspect ratio
     int closed_gop;          ///< gop is closed, used in mpeg-2 frame parsing
@@ -175,7 +171,6 @@ static const MXFContainerEssenceEntry mxf_essence_container_uls[] = {
 };
 
 typedef struct MXFContext {
-    AVClass *av_class;
     int64_t footer_partition_offset;
     int essence_container_count;
     AVRational time_base;
@@ -189,10 +184,10 @@ typedef struct MXFContext {
     unsigned body_partitions_count;
     int last_key_index;  ///< index of last key frame
     uint64_t duration;
-    char *tc_opt_str;    ///< timecode option string
-    AVTimecode tc;       ///< timecode context
     AVStream *timecode_track;
     int timecode_base;       ///< rounded time code base (25 or 30)
+    int timecode_start;      ///< frame number computed from mpeg-2 gop header timecode
+    int timecode_drop_frame; ///< time code use drop frame method frop mpeg-2 essence gop header
     int edit_unit_byte_count; ///< fixed edit unit byte count
     uint64_t body_offset;
     uint32_t instance_number;
@@ -505,7 +500,7 @@ static void mxf_write_identification(AVFormatContext *s)
 {
     MXFContext *mxf = s->priv_data;
     AVIOContext *pb = s->pb;
-    const char *company = "FFmpeg";
+    const char *company = "Libav";
     const char *product = "OP1a Muxer";
     const char *version;
     int length;
@@ -670,7 +665,7 @@ static void mxf_write_timecode_component(AVFormatContext *s, AVStream *st, enum 
 
     // Start Time Code
     mxf_write_local_tag(pb, 8, 0x1501);
-    avio_wb64(pb, mxf->tc.start);
+    avio_wb64(pb, mxf->timecode_start);
 
     // Rounded Time Code Base
     mxf_write_local_tag(pb, 2, 0x1502);
@@ -678,7 +673,7 @@ static void mxf_write_timecode_component(AVFormatContext *s, AVStream *st, enum 
 
     // Drop Frame
     mxf_write_local_tag(pb, 1, 0x1503);
-    avio_w8(pb, !!(mxf->tc.flags & AV_TIMECODE_FLAG_DROPFRAME));
+    avio_w8(pb, mxf->timecode_drop_frame);
 }
 
 static void mxf_write_structural_component(AVFormatContext *s, AVStream *st, enum MXFMetadataSetType type)
@@ -1290,8 +1285,6 @@ static const UID mxf_mpeg2_codec_uls[] = {
     { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x03,0x04,0x01,0x02,0x02,0x01,0x03,0x03,0x00 }, // MP-HL Long GOP
     { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x03,0x04,0x01,0x02,0x02,0x01,0x04,0x02,0x00 }, // 422P-HL I-Frame
     { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x03,0x04,0x01,0x02,0x02,0x01,0x04,0x03,0x00 }, // 422P-HL Long GOP
-    { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x03,0x04,0x01,0x02,0x02,0x01,0x05,0x02,0x00 }, // MP@H-14 I-Frame
-    { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x03,0x04,0x01,0x02,0x02,0x01,0x05,0x03,0x00 }, // MP@H-14 Long GOP
 };
 
 static const UID *mxf_get_mpeg2_codec_ul(AVCodecContext *avctx)
@@ -1303,8 +1296,6 @@ static const UID *mxf_get_mpeg2_codec_ul(AVCodecContext *avctx)
             return &mxf_mpeg2_codec_uls[0+long_gop];
         else if (avctx->level == 4) // High
             return &mxf_mpeg2_codec_uls[4+long_gop];
-        else if (avctx->level == 6) // High 14
-            return &mxf_mpeg2_codec_uls[8+long_gop];
     } else if (avctx->profile == 0) { // 422
         if (avctx->level == 5) // Main
             return &mxf_mpeg2_codec_uls[2+long_gop];
@@ -1318,6 +1309,7 @@ static int mxf_parse_mpeg2_frame(AVFormatContext *s, AVStream *st,
                                  AVPacket *pkt, MXFIndexEntry *e)
 {
     MXFStreamContext *sc = st->priv_data;
+    MXFContext *mxf = s->priv_data;
     uint32_t c = -1;
     int i;
 
@@ -1336,6 +1328,21 @@ static int mxf_parse_mpeg2_frame(AVFormatContext *s, AVStream *st,
                 sc->closed_gop = 1;
                 if (e->flags & 0x40) // sequence header present
                     e->flags |= 0x80; // random access
+            }
+            if (!mxf->header_written) {
+                unsigned hours   =  (pkt->data[i+1]>>2) & 0x1f;
+                unsigned minutes = ((pkt->data[i+1] & 0x03) << 4) | (pkt->data[i+2]>>4);
+                unsigned seconds = ((pkt->data[i+2] & 0x07) << 3) | (pkt->data[i+3]>>5);
+                unsigned frames  = ((pkt->data[i+3] & 0x1f) << 1) | (pkt->data[i+4]>>7);
+                mxf->timecode_drop_frame = !!(pkt->data[i+1] & 0x80);
+                mxf->timecode_start = (hours*3600 + minutes*60 + seconds) *
+                    mxf->timecode_base + frames;
+                if (mxf->timecode_drop_frame) {
+                    unsigned tminutes = 60 * hours + minutes;
+                    mxf->timecode_start -= 2 * (tminutes - tminutes / 10);
+                }
+                av_log(s, AV_LOG_DEBUG, "frame %d %d:%d:%d%c%d\n", mxf->timecode_start,
+                       hours, minutes, seconds, mxf->timecode_drop_frame ? ';':':', frames);
             }
         } else if (c == 0x1b3) { // seq
             e->flags |= 0x40;
@@ -1398,7 +1405,7 @@ static void mxf_gen_umid(AVFormatContext *s)
 static int mxf_write_header(AVFormatContext *s)
 {
     MXFContext *mxf = s->priv_data;
-    int i, ret;
+    int i;
     uint8_t present[FF_ARRAY_ELEMS(mxf_essence_container_uls)] = {0};
     const int *samples_per_frame = NULL;
     AVDictionaryEntry *t;
@@ -1414,42 +1421,24 @@ static int mxf_write_header(AVFormatContext *s)
             return AVERROR(ENOMEM);
         st->priv_data = sc;
 
-        if ((i == 0) ^ (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)) {
-            av_log(s, AV_LOG_ERROR, "there must be exactly one video stream and it must be the first one\n");
-            return -1;
-        }
-
         if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-            AVRational rate;
+            if (i != 0) {
+                av_log(s, AV_LOG_ERROR, "video stream must be first track\n");
+                return -1;
+            }
             if (fabs(av_q2d(st->codec->time_base) - 1/25.0) < 0.0001) {
                 samples_per_frame = PAL_samples_per_frame;
                 mxf->time_base = (AVRational){ 1, 25 };
                 mxf->timecode_base = 25;
-            } else if (fabs(av_q2d(st->codec->time_base) - 1/50.0) < 0.0001) {
-                samples_per_frame = PAL_50_samples_per_frame;
-                mxf->time_base = (AVRational){ 1, 50 };
-                mxf->timecode_base = 50;
             } else if (fabs(av_q2d(st->codec->time_base) - 1001/30000.0) < 0.0001) {
                 samples_per_frame = NTSC_samples_per_frame;
                 mxf->time_base = (AVRational){ 1001, 30000 };
                 mxf->timecode_base = 30;
-            } else if (fabs(av_q2d(st->codec->time_base) - 1001/60000.0) < 0.0001) {
-                samples_per_frame = NTSC_60_samples_per_frame;
-                mxf->time_base = (AVRational){ 1001, 60000 };
-                mxf->timecode_base = 60;
             } else {
                 av_log(s, AV_LOG_ERROR, "unsupported video frame rate\n");
                 return -1;
             }
-            rate = (AVRational){mxf->time_base.den, mxf->time_base.num};
-            avpriv_set_pts_info(st, 64, mxf->time_base.num, mxf->time_base.den);
-            if (mxf->tc_opt_str)
-                ret = av_timecode_init_from_string(&mxf->tc, rate,
-                                                   mxf->tc_opt_str, s);
-            else
-                ret = av_timecode_init(&mxf->tc, rate, 0, 0, s);
-            if (ret < 0)
-                return ret;
+            av_set_pts_info(st, 64, mxf->time_base.num, mxf->time_base.den);
             if (s->oformat == &ff_mxf_d10_muxer) {
                 if (st->codec->bit_rate == 50000000)
                     if (mxf->time_base.den == 25) sc->index = 3;
@@ -1477,7 +1466,7 @@ static int mxf_write_header(AVFormatContext *s)
                 av_log(s, AV_LOG_ERROR, "only 48khz is implemented\n");
                 return -1;
             }
-            avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
+            av_set_pts_info(st, 64, 1, st->codec->sample_rate);
             if (s->oformat == &ff_mxf_d10_muxer) {
                 if (st->index != 1) {
                     av_log(s, AV_LOG_ERROR, "MXF D-10 only support one audio track\n");
@@ -1526,6 +1515,11 @@ static int mxf_write_header(AVFormatContext *s)
         sc->order = AV_RB32(sc->track_essence_element_key+12);
     }
 
+#if FF_API_TIMESTAMP
+    if (s->timestamp)
+        timestamp = s->timestamp;
+    else
+#endif
     if (t = av_dict_get(s->metadata, "creation_time", NULL, 0))
         timestamp = ff_iso8601_to_unix_time(t->value);
     if (timestamp)
@@ -1552,6 +1546,24 @@ static int mxf_write_header(AVFormatContext *s)
 static const uint8_t system_metadata_pack_key[]        = { 0x06,0x0E,0x2B,0x34,0x02,0x05,0x01,0x01,0x0D,0x01,0x03,0x01,0x04,0x01,0x01,0x00 };
 static const uint8_t system_metadata_package_set_key[] = { 0x06,0x0E,0x2B,0x34,0x02,0x43,0x01,0x01,0x0D,0x01,0x03,0x01,0x04,0x01,0x02,0x01 };
 
+static uint32_t ff_framenum_to_12m_time_code(unsigned frame, int drop, int fps)
+{
+    return (0                                    << 31) | // color frame flag
+           (drop                                 << 30) | // drop  frame flag
+           ( ((frame % fps) / 10)                << 28) | // tens  of frames
+           ( ((frame % fps) % 10)                << 24) | // units of frames
+           (0                                    << 23) | // field phase (NTSC), b0 (PAL)
+           ((((frame / fps) % 60) / 10)          << 20) | // tens  of seconds
+           ((((frame / fps) % 60) % 10)          << 16) | // units of seconds
+           (0                                    << 15) | // b0 (NTSC), b2 (PAL)
+           ((((frame / (fps * 60)) % 60) / 10)   << 12) | // tens  of minutes
+           ((((frame / (fps * 60)) % 60) % 10)   <<  8) | // units of minutes
+           (0                                    <<  7) | // b1
+           (0                                    <<  6) | // b2 (NTSC), field phase (PAL)
+           ((((frame / (fps * 3600) % 24)) / 10) <<  4) | // tens  of hours
+           (  (frame / (fps * 3600) % 24)) % 10;          // units of hours
+}
+
 static void mxf_write_system_item(AVFormatContext *s)
 {
     MXFContext *mxf = s->priv_data;
@@ -1559,7 +1571,7 @@ static void mxf_write_system_item(AVFormatContext *s)
     unsigned frame;
     uint32_t time_code;
 
-    frame = mxf->last_indexed_edit_unit + mxf->edit_units_count;
+    frame = mxf->timecode_start + mxf->last_indexed_edit_unit + mxf->edit_units_count;
 
     // write system metadata pack
     avio_write(pb, system_metadata_pack_key, 16);
@@ -1568,7 +1580,7 @@ static void mxf_write_system_item(AVFormatContext *s)
     avio_w8(pb, 0x04); // content package rate
     avio_w8(pb, 0x00); // content package type
     avio_wb16(pb, 0x00); // channel handle
-    avio_wb16(pb, mxf->tc.start + frame); // continuity count
+    avio_wb16(pb, frame); // continuity count
     if (mxf->essence_container_count > 1)
         avio_write(pb, multiple_desc_ul, 16);
     else {
@@ -1580,7 +1592,7 @@ static void mxf_write_system_item(AVFormatContext *s)
     avio_wb64(pb, 0); // creation date/time stamp
 
     avio_w8(pb, 0x81); // SMPTE 12M time code
-    time_code = av_timecode_get_smpte_from_framenum(&mxf->tc, frame);
+    time_code = ff_framenum_to_12m_time_code(frame, mxf->timecode_drop_frame, mxf->timecode_base);
     avio_wb32(pb, time_code);
     avio_wb32(pb, 0); // binary group data
     avio_wb64(pb, 0);
@@ -1877,26 +1889,6 @@ static int mxf_interleave(AVFormatContext *s, AVPacket *out, AVPacket *pkt, int 
                                mxf_interleave_get_packet, mxf_compare_timestamps);
 }
 
-static const AVClass mxf_class = {
-    .class_name = "mxf",
-    .item_name  = av_default_item_name,
-    .version    = LIBAVUTIL_VERSION_INT,
-    .option     = (const AVOption[]){
-        {AV_TIMECODE_OPTION(MXFContext, tc_opt_str, AV_OPT_FLAG_ENCODING_PARAM)},
-        {NULL}
-    },
-};
-
-static const AVClass mxf_d10_class = {
-    .class_name = "mxf_d10",
-    .item_name  = av_default_item_name,
-    .version    = LIBAVUTIL_VERSION_INT,
-    .option     = (const AVOption[]){
-        {AV_TIMECODE_OPTION(MXFContext, tc_opt_str, AV_OPT_FLAG_ENCODING_PARAM)},
-        {NULL}
-    },
-};
-
 AVOutputFormat ff_mxf_muxer = {
     .name              = "mxf",
     .long_name         = NULL_IF_CONFIG_SMALL("Material eXchange Format"),
@@ -1910,7 +1902,6 @@ AVOutputFormat ff_mxf_muxer = {
     .write_trailer     = mxf_write_footer,
     .flags             = AVFMT_NOTIMESTAMPS,
     .interleave_packet = mxf_interleave,
-    .priv_class        = &mxf_class,
 };
 
 AVOutputFormat ff_mxf_d10_muxer = {
@@ -1925,5 +1916,4 @@ AVOutputFormat ff_mxf_d10_muxer = {
     .write_trailer     = mxf_write_footer,
     .flags             = AVFMT_NOTIMESTAMPS,
     .interleave_packet = mxf_interleave,
-    .priv_class        = &mxf_d10_class,
 };

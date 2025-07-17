@@ -1,1 +1,638 @@
-�
+msgid "********"
+msgstr "········"
+
+msgid "Videos"
+msgstr "视频"
+
+msgid "Music"
+msgstr "音乐"
+
+msgid "Pictures"
+msgstr "图片"
+
+msgid "Online Media"
+msgstr "在线媒体"
+
+msgid "Please Wait"
+msgstr "请等待"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Retry"
+msgstr "重试"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Information"
+msgstr "信息"
+
+msgid "Credits"
+msgstr "感谢"
+
+msgid "Play"
+msgstr "播放"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Single Play"
+msgstr "单独播放"
+
+msgid "Continuous Play"
+msgstr "连续播放"
+
+msgid "Shuffle"
+msgstr "缓冲"
+
+msgid "Loop"
+msgstr "循环"
+
+msgid "Continuous"
+msgstr "继续"
+
+msgid "Playlist"
+msgstr "播放列表"
+
+msgid "Restart"
+msgstr "重新启动"
+
+msgid "Loading..."
+msgstr "读取中..."
+
+msgid "Global"
+msgstr "全局设置"
+
+msgid "Network"
+msgstr "网络"
+
+msgid "Subtitles"
+msgstr "字幕"
+
+msgid "Subtitle Delay"
+msgstr "字幕延迟"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "On"
+msgstr "开启"
+
+msgid "Off"
+msgstr "关闭"
+
+msgid "Always"
+msgstr "始终"
+
+msgid "Disabled"
+msgstr "禁用"
+
+msgid "Skip Backward"
+msgstr "后退"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Skip Forward"
+msgstr "向前"
+
+msgid "Single"
+msgstr "单独播放"
+
+msgid "now playing"
+msgstr "正在播放中"
+
+msgid "Previous"
+msgstr "向前"
+
+msgid "Next"
+msgstr "向后"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "DVD"
+msgstr "DVD光盘"
+
+msgid "Go back"
+msgstr "返回"
+
+msgid "Update Available"
+msgstr "可用更新"
+
+msgid "An update is available!"
+msgstr "存在可用更新！"
+
+msgid "Update now"
+msgstr "立刻更新"
+
+msgid "Update later"
+msgstr "稍后更新"
+
+msgid "Online media file not found."
+msgstr "没有找到在线媒体文件."
+
+msgid "Unrecognized DVD format!"
+msgstr "无法识别的DVD格式!"
+
+msgid "Port cannot be blank!"
+msgstr "端口不能为空!"
+
+msgid "Port is not a number!"
+msgstr "端口必须是一个数字"
+
+msgid "Port is outside the allowed range (4-49151)!"
+msgstr "端口的数值范围必须在 (4-49151)之间"
+
+msgid "Settings - Global"
+msgstr "设置 - 全局"
+
+msgid "Settings - Videos"
+msgstr "设置 - 视频"
+
+msgid "Settings - Music"
+msgstr "设置 - 音乐"
+
+msgid "Settings - Pictures"
+msgstr "设置 - 图片"
+
+msgid "Settings - Online Media"
+msgstr "设置 - 在线网络"
+
+msgid "Settings - Network"
+msgstr "设置 - 网络k"
+
+msgid "Settings - DVD"
+msgstr "设置 - DVD"
+
+msgid "File Extensions"
+msgstr "文件扩展"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Volume"
+msgstr "音量"
+
+msgid "Exit Action"
+msgstr "退出操作"
+
+msgid "Wiimote Rumble"
+msgstr "Wiimote震动"
+
+msgid "Hide"
+msgstr "隐藏"
+
+msgid "Show"
+msgstr "显示"
+
+msgid "Auto"
+msgstr "自动"
+
+msgid "Return to Wii Menu"
+msgstr "返回Wii主界面"
+
+msgid "Power Off Wii"
+msgstr "关闭Wii"
+
+msgid "Return to Loader"
+msgstr "返回HBC"
+
+msgid "Screen Zoom"
+msgstr "屏幕缩放"
+
+msgid "Screen Position"
+msgstr "屏幕位置"
+
+msgid "Frame Dropping"
+msgstr "掉帧"
+
+msgid "Aspect Ratio"
+msgstr "屏幕高宽比"
+
+msgid "Cache Fill"
+msgstr "缓存大小"
+
+msgid "Audio Delay"
+msgstr "音频延迟"
+
+msgid "Auto-Resume"
+msgstr "自动恢复"
+
+msgid "Videos Files Folder"
+msgstr "视频文件夹"
+
+msgid "Play Order"
+msgstr "播放顺序"
+
+msgid "Music Files Folder"
+msgstr "音乐文件夹"
+
+msgid "Pictures Files Folder"
+msgstr "图片文件夹"
+
+msgid "Display Name"
+msgstr "显示名字"
+
+msgid "Share IP"
+msgstr "共享ip"
+
+msgid "Share Name"
+msgstr "共享文件名"
+
+msgid "Username"
+msgstr "用户名"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "New Share"
+msgstr "新建网络共享"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Delete Share"
+msgstr "删除网络共享"
+
+msgid "Are you sure that you want to delete this share?"
+msgstr "是否删除此网络共享设置?"
+
+msgid "IP"
+msgstr "IP地址"
+
+msgid "Folder"
+msgstr "文件夹"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "New Site"
+msgstr "新站点"
+
+msgid "Passive"
+msgstr "被动"
+
+msgid "Active"
+msgstr "活动"
+
+msgid "Delete Site"
+msgstr "删除站点"
+
+msgid "Are you sure that you want to delete this site?"
+msgstr "是否删除此站点？"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Error loading file!"
+msgstr "读取文件错误!"
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Stop Slideshow"
+msgstr "停止播放幻灯片"
+
+msgid "Start Slideshow"
+msgstr "开始幻灯片播放"
+
+msgid "Slideshow Delay"
+msgstr "幻灯片延迟"
+
+msgid "Online Media Folder"
+msgstr "在线媒体文件夹"
+
+msgid "Add SMB Share"
+msgstr "添加网络共享"
+
+msgid "Add FTP Site"
+msgstr "添加FTP站点"
+
+msgid "DVD Menu"
+msgstr "DVD菜单"
+
+msgid "Skip to Main Title"
+msgstr "略过主标题"
+
+msgid "Unable to Initialize MPlayer"
+msgstr "无法初始化MPlayer"
+
+msgid "Unable to find a valid working path"
+msgstr "没有找到可以运行程序的路径"
+
+msgid "Unable to change path to"
+msgstr "不能更改路径到"
+
+msgid "Out of memory: too many files!"
+msgstr "内存溢出: 文件过多!"
+
+msgid "Directory name is too long!"
+msgstr "文件夹名字过长！"
+
+msgid "SD Card"
+msgstr "SD卡"
+
+msgid "USB Mass Storage"
+msgstr "USB存储设备"
+
+msgid "Data DVD"
+msgstr "数据DVD光盘"
+
+msgid "USB drive not found!"
+msgstr "没有发现usb设备!"
+
+msgid "SD card not found!"
+msgstr "没有发现SD卡!"
+
+msgid "Loading DVD..."
+msgstr "读取DVD..."
+
+msgid "No disc inserted!"
+msgstr "没有放入DVD光盘!"
+
+msgid "Unsupported DVD."
+msgstr "无效的DVD光盘。"
+
+msgid "Up One Level"
+msgstr "返回上级菜单"
+
+msgid "Error opening"
+msgstr "运行错误"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable."
+msgstr "在此文件夹中有一个或多个图片文件超过6m所以无法查看！"
+
+msgid "Error loading playlist!"
+msgstr "读取播放列表错误!"
+
+msgid "Playlist does not contain any supported entries!"
+msgstr "播放列表没有包含可支持的文件!"
+
+msgid "No Results Found"
+msgstr "没有发现任何文件。"
+
+msgid "Your search did not match any media files."
+msgstr "没有找到任何可以播放的媒体文件。"
+
+msgid "Error opening file!"
+msgstr "文件播放错误!"
+
+msgid "Saving..."
+msgstr "保存中..."
+
+msgid "Error creating file!"
+msgstr "文件建立错误!"
+
+msgid "Error saving file!"
+msgstr "文件保存错误!"
+
+msgid "Playlist is Empty"
+msgstr "播放列表空"
+
+msgid "Hover over items and push the + button to add them to your playlist."
+msgstr "选择播放文件并且按+键添加到播放列表中。"
+
+msgid "Exit Playlist"
+msgstr "退出播放列表"
+
+msgid "Update successful!"
+msgstr "更新成功!"
+
+msgid "Update failed!"
+msgstr "更新失败!"
+
+msgid "Initializing network..."
+msgstr "初始化网络汇中..."
+
+msgid "Check settings file."
+msgstr "检查设置文件"
+
+msgid "Share name is blank."
+msgstr "没有设置共享名"
+
+msgid "Share IP is blank."
+msgstr "没有输入共享ip地址"
+
+msgid "Invalid network share settings"
+msgstr "无效的网络共享设置"
+
+msgid "Connecting to network share..."
+msgstr "正在连接到网络共享..."
+
+msgid "Failed to connect to network share."
+msgstr "网络共享连接失败"
+
+msgid "IP is blank."
+msgstr "IP地址为空"
+
+msgid "Username is blank."
+msgstr "用户名是空"
+
+msgid "Password is blank."
+msgstr "密码为空"
+
+msgid "Invalid FTP site settings"
+msgstr "FTP站点设置无效"
+
+msgid "Connecting to FTP site..."
+msgstr "正在连接到FTP站点..."
+
+msgid "Failed to connect to FTP site."
+msgstr "连接到FTP站点失败"
+
+msgid "Could not find a valid SD or USB device - one is required for normal operation."
+msgstr "无法到一个可用的SD卡或者USb设备-需要一个设备才能进行正常操作"
+
+msgid "Could not create folder"
+msgstr "无法建立文件夹"
+
+msgid "Saving settings..."
+msgstr "设置保存中..."
+
+msgid "Could not save settings to"
+msgstr "无法保存设置"
+
+msgid "Thanks to"
+msgstr "感谢"
+
+msgid "This software is open source and may be copied, distributed, or modified under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "此软件是开源软件并你可以复制，发行和在GNU General Public License (GPL) Version 2规则下修改。"
+
+msgid "Menu artwork"
+msgstr "菜单图片"
+
+msgid "Coding"
+msgstr "代码编写"
+
+msgid "Coding & menu design"
+msgstr "代码和菜单设计"
+
+msgid "Logo"
+msgstr "标识"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Buffering..."
+msgstr "缓冲中..."
+
+msgid "Buffering"
+msgstr "缓冲中"
+
+msgid "Unable to initialize network (Error #:"
+msgstr "无法初始化网络 (错误 #:"
+
+msgid "Settings - Subtitles"
+msgstr "设置 - 字幕"
+
+msgid "Visibility"
+msgstr "清晰度"
+
+msgid "Delay"
+msgstr "延迟"
+
+msgid "Codepage"
+msgstr "代码页"
+
+msgid "Subtitle Language"
+msgstr "字幕语言"
+
+msgid "Default"
+msgstr "缺省"
+
+msgid "Could not change language. Not enough memory!"
+msgstr "不能更换语言。内存不足！"
+
+msgid "Font Required"
+msgstr "需要字库支持"
+
+msgid "A new font is required to display this language."
+msgstr "为了能正确显示此语言需要一个字库。"
+
+msgid "Download font"
+msgstr "下载字库"
+
+msgid "Unable to save font file!"
+msgstr "无法保存字库文件！"
+
+msgid "Out of Memory"
+msgstr "内存溢出"
+
+msgid "WiiMC does not have enough free memory to load the picture viewer."
+msgstr "Wiimc内存不足用来读取图片查看器"
+
+msgid "Close MPlayer"
+msgstr "关闭Mplayer播放器"
+
+msgid "Subtitle Codepage"
+msgstr "字幕代码页"
+
+msgid "This directory contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "此目录中文件超过 个，超过 将会有文件不会显示出来。"
+
+msgid "This playlist contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "播放列表文件数最大不能超过 条，超过 将会有文件不会显示出"
+
+msgid "Downloading..."
+msgstr "下载中..."
+
+msgid "Unzipping..."
+msgstr "解压缩中..."
+
+msgid "Color"
+msgstr "颜色"
+
+msgid "Size"
+msgstr "尺寸"
+
+msgid "White"
+msgstr "白色"
+
+msgid "Black"
+msgstr "黑色"
+
+msgid "Yellow"
+msgstr "黄色"
+
+msgid "Red"
+msgstr "红色"
+
+msgid "Sleep Timer"
+msgstr "睡眠定时器"
+
+msgid "sec"
+msgstr "秒"
+
+msgid "min"
+msgstr "分"
+
+msgid "Blue"
+msgstr "蓝色"
+
+msgid "Green"
+msgstr "绿色"
+
+msgid "Grey"
+msgstr "灰色"
+
+msgid "Orange"
+msgstr "橙色"
+
+msgid "Theme"
+msgstr "主题"
+
+msgid "Purple (Default)"
+msgstr "紫色(默认)"
+
+msgid "Auto-Play Next Video"
+msgstr "自动播放下一个视频"
+
+msgid "Adding files to playlist..."
+msgstr "正在添加播放列表..."
+
+msgid "Browser Folders"
+msgstr "查看文件夹"
+
+msgid "Static"
+msgstr "状态"
+
+msgid "Use Last Browsed"
+msgstr "使用最后查看过的"
+
+msgid "Audio Language"
+msgstr "音频语言"
+
+msgid "DVD Support"
+msgstr "DVD支持"
+
+msgid "Enabled"
+msgstr "开启"
+
+msgid "Error loading YouTube file!"
+msgstr "读取YouTube文件错误"
+
+msgid "Rotate"
+msgstr "旋转"
+
+msgid "Resolution exceeds maximum allowed (1280x720)!"
+msgstr "分辨率超出所允许的(1280x720)!"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "当前IOS已更改（虚假签名漏洞）。功能或者稳定性上可能造成不良的影响。"
+
+msgid "Online media file is invalid."
+msgstr "网络媒体无效。"
+
+msgid "Subtitle font file not found. Subtitles will not be visible."
+msgstr "字幕字体文件没有找到。字幕文件不可用。"
+
+msgid "WiiMC does not have DVD access - AHBPROT is not enabled."
+msgstr "WiiMC不能读取DVD-AHBPROT没有开启"

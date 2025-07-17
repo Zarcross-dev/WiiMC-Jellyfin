@@ -355,11 +355,11 @@ parse_pls(play_tree_parser_t* p) {
       entry = play_tree_new();
 #ifdef GEKKO
 	  // Get the title of .pls entry
-	  if(entries[num].title != NULL && entries[num].title[0] != 0) play_tree_set_param(entry, PLAY_TREE_PARAM_PRETTYFORMAT_TITLE, entries[num].title, NULL);
+	  if(entries[num].title != NULL && entries[num].title[0] != 0) play_tree_set_param(entry, PLAY_TREE_PARAM_PRETTYFORMAT_TITLE, entries[num].title);
 #endif
       play_tree_add_file(entry,entries[num].file);
       if (entries[num].length)
-        play_tree_set_param(entry, "endpos", entries[num].length, NULL);
+        play_tree_set_param(entry, "endpos", entries[num].length);
       free(entries[num].file);
       if(list)
 	play_tree_append_entry(last_entry,entry);
@@ -434,7 +434,6 @@ parse_m3u(play_tree_parser_t* p) {
   play_tree_t *list = NULL, *entry = NULL, *last_entry = NULL;
 #ifdef GEKKO
   char title[256] = { 0 };
-  char logo[256] = { 0 };
 #endif
 
   mp_msg(MSGT_PLAYTREE,MSGL_V,"Trying extended m3u playlist...\n");
@@ -465,17 +464,9 @@ parse_m3u(play_tree_parser_t* p) {
 #endif
 #ifdef GEKKO
       if(strncasecmp(line,"#EXTINF:",8) == 0) {
-        char *eq = strchr(line, '=');
 	    // Get the title of .m3u entry
         char *comma = strchr(line, ',');
         if(comma) snprintf(title, 256, "%s", comma+1);
-		
-        if(eq) snprintf(logo, 256, "%s", eq+2);
-		//static const u16 twobyte[1] = { 0x222C };
-		//strtok(logo, twobyte);
-		strtok(logo, "\",");
-		
-		//printf("check thumb: %s", logo);
       }
 #endif
       continue;
@@ -486,9 +477,8 @@ parse_m3u(play_tree_parser_t* p) {
 	// Add the title parameter if it exists
     if(title[0])
     {
-    	play_tree_set_param(entry, PLAY_TREE_PARAM_PRETTYFORMAT_TITLE, title, logo);
+    	play_tree_set_param(entry, PLAY_TREE_PARAM_PRETTYFORMAT_TITLE, title);
     	title[0] = 0;
-		logo[0] = 0;
     }
 #endif
     if(!list)
@@ -659,7 +649,7 @@ parse_smil(play_tree_parser_t* p) {
 #ifdef GEKKO
 		// Add the title parameter if it exists
 		if(exists_title)
-			play_tree_set_param(entry, PLAY_TREE_PARAM_PRETTYFORMAT_TITLE, title, NULL);
+			play_tree_set_param(entry, PLAY_TREE_PARAM_PRETTYFORMAT_TITLE, title);
 #endif
         if(!list)  //Insert new entry
           list = entry;
@@ -926,13 +916,7 @@ play_tree_add_basepath(play_tree_t* pt, char* bp) {
     fl = strlen(pt->files[i]);
     // if we find a full unix path, url:// or X:\ at the beginning,
     // don't mangle it.
-    if(fl <= 0 || strstr(pt->files[i],"://") || (pt->files[i][0] == '/')
-#if HAVE_DOS_PATHS
-               || (strstr(pt->files[i],":\\") == pt->files[i] + 1)
-               // the X:/ format is allowed as well
-               || (strstr(pt->files[i],":/") == pt->files[i] + 1)
-#endif
-                                                                        )
+    if(fl <= 0 || strstr(pt->files[i],"://") || (strstr(pt->files[i],":\\") == pt->files[i] + 1) || (pt->files[i][0] == '/') )
       continue;
     // if the path begins with \ then prepend drive letter to it.
     if (pt->files[i][0] == '\\') {

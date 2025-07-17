@@ -1,18 +1,18 @@
 /*
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -696,9 +696,9 @@ av_cold void ff_intrax8_common_init(IntraX8Context * w, MpegEncContext * const s
     assert(s->mb_width>0);
     w->prediction_table=av_mallocz(s->mb_width*2*2);//two rows, 2 blocks per cannon mb
 
-    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[0], ff_wmv1_scantable[0]);
-    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[1], ff_wmv1_scantable[2]);
-    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[2], ff_wmv1_scantable[3]);
+    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[0], wmv1_scantable[0]);
+    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[1], wmv1_scantable[2]);
+    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[2], wmv1_scantable[3]);
 }
 
 /**
@@ -721,7 +721,7 @@ av_cold void ff_intrax8_common_end(IntraX8Context * w)
  * @param dquant doubled quantizer, it would be odd in case of VC-1 halfpq==1.
  * @param quant_offset offset away from zero
  */
-//FIXME extern uint8_t ff_wmv3_dc_scale_table[32];
+//FIXME extern uint8_t wmv3_dc_scale_table[32];
 int ff_intrax8_decode_picture(IntraX8Context * const w, int dquant, int quant_offset){
     MpegEncContext * const s= w->s;
     int mb_xy;
@@ -784,6 +784,6 @@ int ff_intrax8_decode_picture(IntraX8Context * const w, int dquant, int quant_of
 error:
     ff_er_add_slice(s, s->resync_mb_x, s->resync_mb_y,
                         (s->mb_x>>1)-1, (s->mb_y>>1)-1,
-                        ER_MB_END );
+                        (AC_END|DC_END|MV_END) );
     return 0;
 }

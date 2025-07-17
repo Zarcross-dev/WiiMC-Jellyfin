@@ -19,14 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define RTSPCLIENT_SYNCHRONOUS_INTERFACE 1
-
 extern "C" {
 // on MinGW, we must include windows.h before the things it conflicts
 #ifdef __MINGW32__    // with.  they are each protected from
 #include <windows.h>  // windows.h, but not the other way around.
 #endif
-#include "mp_msg.h"
 #include "demuxer.h"
 #include "demux_rtp.h"
 #include "stheader.h"
@@ -149,6 +146,7 @@ extern "C" demuxer_t* demux_open_rtp(demuxer_t* demuxer) {
       // we were given a RTSP or SIP URL:
       char const* protocol = demuxer->stream->streaming_ctrl->url->protocol;
       char const* url = demuxer->stream->streaming_ctrl->url->url;
+      extern int verbose;
       if (strcmp(protocol, "rtsp") == 0) {
 	if (rtsp_transport_http == 1) {
 	  rtsp_transport_http = demuxer->stream->streaming_ctrl->url->port;

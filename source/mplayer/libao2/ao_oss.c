@@ -473,8 +473,14 @@ static void audio_pause(void)
 // resume playing, after audio_pause()
 static void audio_resume(void)
 {
+    int fillcnt;
     reset();
-    mp_ao_resume_refill(&audio_out_oss, prepause_space);
+    fillcnt = get_space() - prepause_space;
+    if (fillcnt > 0 && !(ao_data.format & AF_FORMAT_SPECIAL_MASK)) {
+      void *silence = calloc(fillcnt, 1);
+      play(silence, fillcnt, 0);
+      free(silence);
+    }
 }
 
 

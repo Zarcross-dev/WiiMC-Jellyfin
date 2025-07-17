@@ -71,7 +71,7 @@ struct m_config;
 /// end denper's changes
 #endif
 
-/// \defgroup playtree Playtree
+/// \defgroup Playtree
 ///@{
 
 typedef struct play_tree play_tree_t;
@@ -95,7 +95,6 @@ struct play_tree_info {
 struct play_tree_param {
   char* name;
   char* value;
-  char* image;
 };
 
 
@@ -199,7 +198,7 @@ play_tree_remove_file(play_tree_t* pt,const char* file);
 
 /// Add a config paramter to an item.
 void
-play_tree_set_param(play_tree_t* pt, const char* name, const char* val, const char* img);
+play_tree_set_param(play_tree_t* pt, const char* name, const char* val);
 
 /// Remove a config parameter from an item.
 int

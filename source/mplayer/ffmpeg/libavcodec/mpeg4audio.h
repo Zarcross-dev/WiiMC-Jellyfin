@@ -2,20 +2,20 @@
  * MPEG-4 Audio common header
  * Copyright (c) 2008 Baptiste Coudurier <baptiste.coudurier@free.fr>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -31,28 +31,25 @@ typedef struct {
     int sampling_index;
     int sample_rate;
     int chan_config;
-    int sbr; ///< -1 implicit, 1 presence
+    int sbr; //< -1 implicit, 1 presence
     int ext_object_type;
     int ext_sampling_index;
     int ext_sample_rate;
     int ext_chan_config;
     int channels;
-    int ps;  ///< -1 implicit, 1 presence
+    int ps;  //< -1 implicit, 1 presence
 } MPEG4AudioConfig;
 
-extern const int avpriv_mpeg4audio_sample_rates[16];
+extern const int ff_mpeg4audio_sample_rates[16];
 extern const uint8_t ff_mpeg4audio_channels[8];
-
 /**
  * Parse MPEG-4 systems extradata to retrieve audio configuration.
  * @param[in] c        MPEG4AudioConfig structure to fill.
  * @param[in] buf      Extradata from container.
- * @param[in] bit_size Extradata size in bits.
- * @param[in] sync_extension look for a sync extension after config if true.
+ * @param[in] buf_size Extradata size.
  * @return On error -1 is returned, on success AudioSpecificConfig bit index in extradata.
  */
-int avpriv_mpeg4audio_get_config(MPEG4AudioConfig *c, const uint8_t *buf,
-                                 int bit_size, int sync_extension);
+int ff_mpeg4audio_get_config(MPEG4AudioConfig *c, const uint8_t *buf, int buf_size);
 
 enum AudioObjectType {
     AOT_NULL,
@@ -104,6 +101,6 @@ enum AudioObjectType {
 #define MAX_PCE_SIZE 304 ///<Maximum size of a PCE including the 3-bit ID_PCE
                          ///<marker and the comment
 
-int avpriv_copy_pce_data(PutBitContext *pb, GetBitContext *gb);
+int ff_copy_pce_data(PutBitContext *pb, GetBitContext *gb);
 
 #endif /* AVCODEC_MPEG4AUDIO_H */

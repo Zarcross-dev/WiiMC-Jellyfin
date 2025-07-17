@@ -2,20 +2,20 @@
  * Matroska constants
  * Copyright (c) 2003-2004 The ffmpeg Project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -24,7 +24,6 @@
 
 #include "libavcodec/avcodec.h"
 #include "metadata.h"
-#include "internal.h"
 
 /* EBML version supported */
 #define EBML_VERSION 1
@@ -78,13 +77,8 @@
 #define MATROSKA_ID_TRACKNUMBER 0xD7
 #define MATROSKA_ID_TRACKUID   0x73C5
 #define MATROSKA_ID_TRACKTYPE  0x83
-#define MATROSKA_ID_TRACKVIDEO     0xE0
-#define MATROSKA_ID_TRACKAUDIO     0xE1
-#define MATROSKA_ID_TRACKOPERATION 0xE2
-#define MATROSKA_ID_TRACKCOMBINEPLANES 0xE3
-#define MATROSKA_ID_TRACKPLANE         0xE4
-#define MATROSKA_ID_TRACKPLANEUID      0xE5
-#define MATROSKA_ID_TRACKPLANETYPE     0xE6
+#define MATROSKA_ID_TRACKAUDIO 0xE1
+#define MATROSKA_ID_TRACKVIDEO 0xE0
 #define MATROSKA_ID_CODECID    0x86
 #define MATROSKA_ID_CODECPRIVATE 0x63A2
 #define MATROSKA_ID_CODECNAME  0x258688
@@ -117,7 +111,6 @@
 #define MATROSKA_ID_VIDEOPIXELCROPR 0x54DD
 #define MATROSKA_ID_VIDEODISPLAYUNIT 0x54B2
 #define MATROSKA_ID_VIDEOFLAGINTERLACED 0x9A
-#define MATROSKA_ID_VIDEOFIELDORDER 0x9D
 #define MATROSKA_ID_VIDEOSTEREOMODE 0x53B8
 #define MATROSKA_ID_VIDEOASPECTRATIO 0x54B3
 #define MATROSKA_ID_VIDEOCOLORSPACE 0x2EB524
@@ -226,21 +219,6 @@ typedef enum {
 } MatroskaTrackEncodingCompAlgo;
 
 typedef enum {
-    MATROSKA_VIDEO_INTERLACE_FLAG_UNDETERMINED = 0,
-    MATROSKA_VIDEO_INTERLACE_FLAG_INTERLACED   = 1,
-    MATROSKA_VIDEO_INTERLACE_FLAG_PROGRESSIVE  = 2
-} MatroskaVideoInterlaceFlag;
-
-typedef enum {
-    MATROSKA_VIDEO_FIELDORDER_PROGRESSIVE  = 0,
-    MATROSKA_VIDEO_FIELDORDER_UNDETERMINED = 2,
-    MATROSKA_VIDEO_FIELDORDER_TT           = 1,
-    MATROSKA_VIDEO_FIELDORDER_BB           = 6,
-    MATROSKA_VIDEO_FIELDORDER_BT           = 9,
-    MATROSKA_VIDEO_FIELDORDER_TB           = 14,
-} MatroskaVideoFieldOrder;
-
-typedef enum {
   MATROSKA_VIDEO_STEREOMODE_TYPE_MONO               = 0,
   MATROSKA_VIDEO_STEREOMODE_TYPE_LEFT_RIGHT         = 1,
   MATROSKA_VIDEO_STEREOMODE_TYPE_BOTTOM_TOP         = 2,
@@ -267,16 +245,16 @@ typedef struct CodecTags{
     enum CodecID id;
 }CodecTags;
 
+typedef struct CodecMime{
+    char str[32];
+    enum CodecID id;
+}CodecMime;
+
 /* max. depth in the EBML tree structure */
 #define EBML_MAX_DEPTH 16
-
-#define MATROSKA_VIDEO_STEREO_MODE_COUNT  15
-#define MATROSKA_VIDEO_STEREO_PLANE_COUNT  3
 
 extern const CodecTags ff_mkv_codec_tags[];
 extern const CodecMime ff_mkv_mime_tags[];
 extern const AVMetadataConv ff_mkv_metadata_conv[];
-extern const char * const matroska_video_stereo_mode[MATROSKA_VIDEO_STEREO_MODE_COUNT];
-extern const char * const matroska_video_stereo_plane[MATROSKA_VIDEO_STEREO_PLANE_COUNT];
 
 #endif /* AVFORMAT_MATROSKA_H */

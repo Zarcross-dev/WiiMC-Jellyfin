@@ -3,26 +3,25 @@
  * Copyright (c) 2004 Roman Shaposhnik
  * Copyright (c) 2008 Alessandro Sappia
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "config.h"
 #include "libavformat/avformat.h"
-#include "libavformat/internal.h"
 #include "libavutil/log.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
@@ -101,11 +100,11 @@ struct dc1394_frame_rate {
 #define DEC AV_OPT_FLAG_DECODING_PARAM
 static const AVOption options[] = {
 #if HAVE_LIBDC1394_1
-    { "channel", "", offsetof(dc1394_data, channel), AV_OPT_TYPE_INT, {.dbl = 0}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
+    { "channel", "", offsetof(dc1394_data, channel), FF_OPT_TYPE_INT, {.dbl = 0}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
 #endif
-    { "video_size", "A string describing frame size, such as 640x480 or hd720.", OFFSET(video_size), AV_OPT_TYPE_STRING, {.str = "qvga"}, 0, 0, DEC },
-    { "pixel_format", "", OFFSET(pixel_format), AV_OPT_TYPE_STRING, {.str = "uyvy422"}, 0, 0, DEC },
-    { "framerate", "", OFFSET(framerate), AV_OPT_TYPE_STRING, {.str = "ntsc"}, 0, 0, DEC },
+    { "video_size", "A string describing frame size, such as 640x480 or hd720.", OFFSET(video_size), FF_OPT_TYPE_STRING, {.str = "qvga"}, 0, 0, DEC },
+    { "pixel_format", "", OFFSET(pixel_format), FF_OPT_TYPE_STRING, {.str = "uyvy422"}, 0, 0, DEC },
+    { "framerate", "", OFFSET(framerate), FF_OPT_TYPE_STRING, {.str = "ntsc"}, 0, 0, DEC },
     { NULL },
 };
 
@@ -117,7 +116,7 @@ static const AVClass libdc1394_class = {
 };
 
 
-static inline int dc1394_read_common(AVFormatContext *c,
+static inline int dc1394_read_common(AVFormatContext *c, AVFormatParameters *ap,
                                      struct dc1394_frame_format **select_fmt, struct dc1394_frame_rate **select_fps)
 {
     dc1394_data* dc1394 = c->priv_data;
@@ -161,12 +160,12 @@ static inline int dc1394_read_common(AVFormatContext *c,
     }
 
     /* create a video stream */
-    vst = avformat_new_stream(c, NULL);
+    vst = av_new_stream(c, 0);
     if (!vst) {
         ret = AVERROR(ENOMEM);
         goto out;
     }
-    avpriv_set_pts_info(vst, 64, 1, 1000);
+    av_set_pts_info(vst, 64, 1, 1000);
     vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codec->codec_id = CODEC_ID_RAWVIDEO;
     vst->codec->time_base.den = framerate.num;
@@ -191,7 +190,7 @@ out:
 }
 
 #if HAVE_LIBDC1394_1
-static int dc1394_v1_read_header(AVFormatContext *c)
+static int dc1394_v1_read_header(AVFormatContext *c, AVFormatParameters * ap)
 {
     dc1394_data* dc1394 = c->priv_data;
     AVStream* vst;
@@ -200,7 +199,7 @@ static int dc1394_v1_read_header(AVFormatContext *c)
     struct dc1394_frame_format *fmt = NULL;
     struct dc1394_frame_rate *fps = NULL;
 
-    if (dc1394_read_common(c, &fmt, &fps) != 0)
+    if (dc1394_read_common(c,ap,&fmt,&fps) != 0)
         return -1;
 
     /* Now let us prep the hardware. */
@@ -285,7 +284,7 @@ static int dc1394_v1_close(AVFormatContext * context)
 }
 
 #elif HAVE_LIBDC1394_2
-static int dc1394_v2_read_header(AVFormatContext *c)
+static int dc1394_v2_read_header(AVFormatContext *c, AVFormatParameters * ap)
 {
     dc1394_data* dc1394 = c->priv_data;
     dc1394camera_list_t *list;
@@ -293,7 +292,7 @@ static int dc1394_v2_read_header(AVFormatContext *c)
     struct dc1394_frame_format *fmt = NULL;
     struct dc1394_frame_rate *fps = NULL;
 
-    if (dc1394_read_common(c, &fmt, &fps) != 0)
+    if (dc1394_read_common(c,ap,&fmt,&fps) != 0)
        return -1;
 
     /* Now let us prep the hardware. */
@@ -371,8 +370,8 @@ static int dc1394_v2_read_packet(AVFormatContext *c, AVPacket *pkt)
 
     res = dc1394_capture_dequeue(dc1394->camera, DC1394_CAPTURE_POLICY_WAIT, &dc1394->frame);
     if (res == DC1394_SUCCESS) {
-        dc1394->packet.data = (uint8_t *) dc1394->frame->image;
-        dc1394->packet.pts  = dc1394->current_frame * 1000000 / dc1394->frame_rate;
+        dc1394->packet.data = (uint8_t *)(dc1394->frame->image);
+        dc1394->packet.pts = (dc1394->current_frame  * 1000000) / (dc1394->frame_rate);
         res = dc1394->frame->image_bytes;
     } else {
         av_log(c, AV_LOG_ERROR, "DMA capture failed\n");

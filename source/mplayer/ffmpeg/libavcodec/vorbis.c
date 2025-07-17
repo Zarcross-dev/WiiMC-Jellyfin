@@ -1,22 +1,18 @@
-/**
- * @file
- * Common code for Vorbis I encoder and decoder
- * @author Denes Balatoni  ( dbalatoni programozo hu )
+/*
+ * This file is part of Libav.
  *
- * This file is part of FFmpeg.
- *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,7 +22,7 @@
  * @author Denes Balatoni  ( dbalatoni programozo hu )
  */
 
-#define BITSTREAM_READER_LE
+#define ALT_BITSTREAM_READER_LE
 #include "avcodec.h"
 #include "get_bits.h"
 
@@ -156,7 +152,7 @@ void ff_vorbis_ready_floor1_list(vorbis_floor1_entry * list, int values)
     }
 }
 
-static inline void render_line_unrolled(intptr_t x, int y, int x1,
+static inline void render_line_unrolled(intptr_t x, intptr_t y, int x1,
                                         intptr_t sy, int ady, int adx,
                                         float *buf)
 {
@@ -168,14 +164,14 @@ static inline void render_line_unrolled(intptr_t x, int y, int x1,
         if (err >= 0) {
             err += ady - adx;
             y   += sy;
-            buf[x++] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
+            buf[x++] = ff_vorbis_floor1_inverse_db_table[y];
         }
-        buf[x] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
+        buf[x] = ff_vorbis_floor1_inverse_db_table[y];
     }
     if (x <= 0) {
         if (err + ady >= 0)
             y += sy;
-        buf[x] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
+        buf[x] = ff_vorbis_floor1_inverse_db_table[y];
     }
 }
 
@@ -185,14 +181,14 @@ static void render_line(int x0, int y0, int x1, int y1, float *buf)
     int adx = x1 - x0;
     int ady = FFABS(dy);
     int sy  = dy < 0 ? -1 : 1;
-    buf[x0] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y0)];
+    buf[x0] = ff_vorbis_floor1_inverse_db_table[y0];
     if (ady*2 <= adx) { // optimized common case
         render_line_unrolled(x0, y0, x1, sy, ady, adx, buf);
     } else {
-        int base  = dy / adx;
-        int x     = x0;
-        int y     = y0;
-        int err   = -adx;
+        int base = dy / adx;
+        int x    = x0;
+        int y    = y0;
+        int err  = -adx;
         ady -= FFABS(base) * adx;
         while (++x < x1) {
             y += base;
@@ -201,7 +197,7 @@ static void render_line(int x0, int y0, int x1, int y1, float *buf)
                 err -= adx;
                 y   += sy;
             }
-            buf[x] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
+            buf[x] = ff_vorbis_floor1_inverse_db_table[y];
         }
     }
 }

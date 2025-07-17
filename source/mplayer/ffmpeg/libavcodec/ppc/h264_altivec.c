@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2004 Romain Dolbeau <romain@dolbeau.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -72,7 +72,7 @@
 
 #define H264_MC(OPNAME, SIZE, CODETYPE) \
 static void OPNAME ## h264_qpel ## SIZE ## _mc00_ ## CODETYPE (uint8_t *dst, uint8_t *src, int stride){\
-    ff_ ## OPNAME ## pixels ## SIZE ## _ ## CODETYPE(dst, src, stride, SIZE);\
+    OPNAME ## pixels ## SIZE ## _ ## CODETYPE(dst, src, stride, SIZE);\
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc10_ ## CODETYPE(uint8_t *dst, uint8_t *src, int stride){ \
@@ -616,8 +616,8 @@ static inline void write16x4(uint8_t *dst, int dst_stride,
     *(dst_int+15*int_dst_stride) = *(src_int + 15);
 }
 
-/** @brief performs a 6x16 transpose of data in src, and stores it to dst
-    @todo FIXME: see if we can't spare some vec_lvsl() by them factorizing
+/** \brief performs a 6x16 transpose of data in src, and stores it to dst
+    \todo FIXME: see if we can't spare some vec_lvsl() by them factorizing
     out of unaligned_load() */
 #define readAndTranspose16x6(src, src_stride, r8, r9, r10, r11, r12, r13) {\
     register vec_u8 r0  = unaligned_load(0,             src);            \
@@ -843,8 +843,7 @@ static void h264_h_loop_filter_luma_altivec(uint8_t *pix, int stride, int alpha,
 }
 
 static av_always_inline
-void weight_h264_W_altivec(uint8_t *block, int stride, int height,
-                           int log2_denom, int weight, int offset, int w)
+void weight_h264_WxH_altivec(uint8_t *block, int stride, int log2_denom, int weight, int offset, int w, int h)
 {
     int y, aligned;
     vec_u8 vblock;
@@ -865,7 +864,7 @@ void weight_h264_W_altivec(uint8_t *block, int stride, int height,
     voffset = vec_splat(vtemp, 5);
     aligned = !((unsigned long)block & 0xf);
 
-    for (y = 0; y < height; y++) {
+    for (y=0; y<h; y++) {
         vblock = vec_ld(0, block);
 
         v0 = (vec_s16)vec_mergeh(zero_u8v, vblock);
@@ -889,8 +888,8 @@ void weight_h264_W_altivec(uint8_t *block, int stride, int height,
 }
 
 static av_always_inline
-void biweight_h264_W_altivec(uint8_t *dst, uint8_t *src, int stride, int height,
-                             int log2_denom, int weightd, int weights, int offset, int w)
+void biweight_h264_WxH_altivec(uint8_t *dst, uint8_t *src, int stride, int log2_denom,
+                               int weightd, int weights, int offset, int w, int h)
 {
     int y, dst_aligned, src_aligned;
     vec_u8 vsrc, vdst;
@@ -913,7 +912,7 @@ void biweight_h264_W_altivec(uint8_t *dst, uint8_t *src, int stride, int height,
     dst_aligned = !((unsigned long)dst & 0xf);
     src_aligned = !((unsigned long)src & 0xf);
 
-    for (y = 0; y < height; y++) {
+    for (y=0; y<h; y++) {
         vdst = vec_ld(0, dst);
         vsrc = vec_ld(0, src);
 
@@ -953,20 +952,21 @@ void biweight_h264_W_altivec(uint8_t *dst, uint8_t *src, int stride, int height,
     }
 }
 
-#define H264_WEIGHT(W) \
-static void ff_weight_h264_pixels ## W ## _altivec(uint8_t *block, int stride, int height, \
-                                                   int log2_denom, int weight, int offset){ \
-    weight_h264_W_altivec(block, stride, height, log2_denom, weight, offset, W); \
+#define H264_WEIGHT(W,H) \
+static void ff_weight_h264_pixels ## W ## x ## H ## _altivec(uint8_t *block, int stride, int log2_denom, int weight, int offset){ \
+    weight_h264_WxH_altivec(block, stride, log2_denom, weight, offset, W, H); \
 }\
-static void ff_biweight_h264_pixels ## W ## _altivec(uint8_t *dst, uint8_t *src, int stride, int height, \
-                                                     int log2_denom, int weightd, int weights, int offset){ \
-    biweight_h264_W_altivec(dst, src, stride, height, log2_denom, weightd, weights, offset, W); \
+static void ff_biweight_h264_pixels ## W ## x ## H ## _altivec(uint8_t *dst, uint8_t *src, int stride, int log2_denom, int weightd, int weights, int offset){ \
+    biweight_h264_WxH_altivec(dst, src, stride, log2_denom, weightd, weights, offset, W, H); \
 }
 
-H264_WEIGHT(16)
-H264_WEIGHT( 8)
+H264_WEIGHT(16,16)
+H264_WEIGHT(16, 8)
+H264_WEIGHT( 8,16)
+H264_WEIGHT( 8, 8)
+H264_WEIGHT( 8, 4)
 
-void ff_dsputil_h264_init_ppc(DSPContext* c, AVCodecContext *avctx) {
+void dsputil_h264_init_ppc(DSPContext* c, AVCodecContext *avctx) {
     const int high_bit_depth = avctx->bits_per_raw_sample > 8;
 
     if (av_get_cpu_flags() & AV_CPU_FLAG_ALTIVEC) {
@@ -999,13 +999,12 @@ void ff_dsputil_h264_init_ppc(DSPContext* c, AVCodecContext *avctx) {
     }
 }
 
-void ff_h264dsp_init_ppc(H264DSPContext *c, const int bit_depth, const int chroma_format_idc)
+void ff_h264dsp_init_ppc(H264DSPContext *c, const int bit_depth)
 {
     if (av_get_cpu_flags() & AV_CPU_FLAG_ALTIVEC) {
     if (bit_depth == 8) {
         c->h264_idct_add = ff_h264_idct_add_altivec;
-        if (chroma_format_idc == 1)
-            c->h264_idct_add8 = ff_h264_idct_add8_altivec;
+        c->h264_idct_add8 = ff_h264_idct_add8_altivec;
         c->h264_idct_add16 = ff_h264_idct_add16_altivec;
         c->h264_idct_add16intra = ff_h264_idct_add16intra_altivec;
         c->h264_idct_dc_add= h264_idct_dc_add_altivec;
@@ -1015,10 +1014,16 @@ void ff_h264dsp_init_ppc(H264DSPContext *c, const int bit_depth, const int chrom
         c->h264_v_loop_filter_luma= h264_v_loop_filter_luma_altivec;
         c->h264_h_loop_filter_luma= h264_h_loop_filter_luma_altivec;
 
-        c->weight_h264_pixels_tab[0] = ff_weight_h264_pixels16_altivec;
-        c->weight_h264_pixels_tab[1] = ff_weight_h264_pixels8_altivec;
-        c->biweight_h264_pixels_tab[0] = ff_biweight_h264_pixels16_altivec;
-        c->biweight_h264_pixels_tab[1] = ff_biweight_h264_pixels8_altivec;
+        c->weight_h264_pixels_tab[0] = ff_weight_h264_pixels16x16_altivec;
+        c->weight_h264_pixels_tab[1] = ff_weight_h264_pixels16x8_altivec;
+        c->weight_h264_pixels_tab[2] = ff_weight_h264_pixels8x16_altivec;
+        c->weight_h264_pixels_tab[3] = ff_weight_h264_pixels8x8_altivec;
+        c->weight_h264_pixels_tab[4] = ff_weight_h264_pixels8x4_altivec;
+        c->biweight_h264_pixels_tab[0] = ff_biweight_h264_pixels16x16_altivec;
+        c->biweight_h264_pixels_tab[1] = ff_biweight_h264_pixels16x8_altivec;
+        c->biweight_h264_pixels_tab[2] = ff_biweight_h264_pixels8x16_altivec;
+        c->biweight_h264_pixels_tab[3] = ff_biweight_h264_pixels8x8_altivec;
+        c->biweight_h264_pixels_tab[4] = ff_biweight_h264_pixels8x4_altivec;
     }
     }
 }

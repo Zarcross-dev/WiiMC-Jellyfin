@@ -55,7 +55,6 @@ const LIBVO_EXTERN (png)
 static int z_compression;
 static char *png_outdir;
 static char *png_outfile_prefix;
-static uint32_t png_format;
 static int framenum;
 static int use_alpha;
 static AVCodecContext *avctx;
@@ -123,22 +122,6 @@ config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uin
     png_mkdir(buf, 1);
     mp_msg(MSGT_VO,MSGL_DBG2, "PNG Compression level %i\n", z_compression);
 
-
-    if (avctx && png_format != format) {
-        avcodec_close(avctx);
-        av_freep(&avctx);
-    }
-
-    if (!avctx) {
-        avctx = avcodec_alloc_context3(NULL);
-        avctx->compression_level = z_compression;
-        avctx->pix_fmt = imgfmt2pixfmt(format);
-        if (avcodec_open2(avctx, avcodec_find_encoder(CODEC_ID_PNG), NULL) < 0) {
-            uninit();
-            return -1;
-        }
-        png_format = format;
-    }
     return 0;
 }
 
@@ -162,6 +145,7 @@ static uint32_t draw_image(mp_image_t* mpi){
 
     avctx->width = mpi->w;
     avctx->height = mpi->h;
+    avctx->pix_fmt = imgfmt2pixfmt(mpi->imgfmt);
     pic.data[0] = mpi->planes[0];
     pic.linesize[0] = mpi->stride[0];
     buffersize = mpi->w * mpi->h * 8;
@@ -205,7 +189,7 @@ query_format(uint32_t format)
     switch(format){
     case IMGFMT_RGB24:
         return use_alpha ? 0 : supported_flags;
-    case IMGFMT_RGBA:
+    case IMGFMT_BGR32:
         return use_alpha ? supported_flags : 0;
     }
     return 0;
@@ -248,6 +232,12 @@ static int preinit(const char *arg)
         return -1;
     }
     avcodec_register_all();
+    avctx = avcodec_alloc_context();
+    if (avcodec_open(avctx, avcodec_find_encoder(CODEC_ID_PNG)) < 0) {
+        uninit();
+        return -1;
+    }
+    avctx->compression_level = z_compression;
     return 0;
 }
 

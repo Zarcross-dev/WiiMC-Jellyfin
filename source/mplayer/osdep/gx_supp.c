@@ -4,7 +4,7 @@
 *	dhewg 2008
 *	sepp256 2008-2011 - Coded YUV->RGB conversion and filters in TEV
 *	Extrems 2009-2011
-*	Tantric / rodries 2009-2012
+*	Tantric / rodries 2009-2011
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@
 #include <ogc/lwp.h>
 #include <ogc/lwp_watchdog.h>
 #include <wiiuse/wpad.h>
-#include <ogc/machine/processor.h>
 
 #include "../libvo/video_out.h"
 #include "../libvo/csputils.h"
@@ -62,19 +61,13 @@ float g_brightness = 0.0f;
 float g_contrast = 0.0f;
 
 /*** 2D ***/
-extern bool need_wait;
+static bool need_wait=false;
 extern u8 whichfb;
 extern unsigned int *xfb[2];
-
-extern bool flip_pending;
-//extern int delay_amount;
-extern bool wiiTiledRender;
-extern unsigned guiDelay;
 
 static int hor_pos=0, vert_pos=0;
 static float hor_zoom = 1.0f, vert_zoom = 1.0f;
 static int video_diffx, video_diffy, video_haspect, video_vaspect;
-double sub_dar = 0; // for subtitles
 int mplayerwidth = 640;
 int mplayerheight = 480;
 
@@ -82,10 +75,6 @@ int colorspace = MP_CSP_DEFAULT;
 int levelconv = 1;
 
 /*** 3D GX ***/
-static u8 dlist[32] ATTRIBUTE_ALIGN(32);
-
-extern bool safe_gc;
-extern bool point_on;
 
 /*** Texture memory ***/
 static u8 *Yltexture = NULL;
@@ -161,13 +150,7 @@ void GX_SetScreenPos(int _hor_pos, int _vert_pos, float _hor_zoom, float _vert_z
 {
 	hor_pos = _hor_pos;
 	vert_pos = _vert_pos;
-#if 1
-	if(wiiTiledRender)
-		hor_zoom = CONF_GetAspectRatio() == CONF_ASPECT_16_9 ? _hor_zoom+.003f : _hor_zoom;
-	else
-#endif
-		hor_zoom = _hor_zoom;
-
+	hor_zoom = _hor_zoom;
 	vert_zoom = _vert_zoom;
 	GX_UpdateScaling();
 }
@@ -403,27 +386,13 @@ static void draw_initYUV()
 	GX_InitTexObj(&VtexObj, Vtexture, (u16) UVwidth, (u16) UVheight, GX_TF_I8, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_InitTexObjLOD(&VtexObj, GX_LINEAR, GX_LINEAR, 0.0, 0.0, 0.0, GX_TRUE, GX_TRUE, GX_ANISO_4);
 
-	GX_LoadTexObj(&YltexObj, GX_TEXMAP0);	// MAP0 <- Yl
-	GX_LoadTexObj(&YrtexObj, GX_TEXMAP1);	// MAP1 <- Yr
-	GX_LoadTexObj(&UtexObj, GX_TEXMAP2);	// MAP2 <- U
-	GX_LoadTexObj(&VtexObj, GX_TEXMAP3);	// MAP3 <- V
-
-#if 1
-	GX_BeginDispList(dlist, 32);
-	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-		GX_Position1x8(0); GX_Color1x8(0); GX_TexCoord1x8(0); GX_TexCoord1x8(4); GX_TexCoord1x8(0);
-		GX_Position1x8(1); GX_Color1x8(0); GX_TexCoord1x8(1); GX_TexCoord1x8(5); GX_TexCoord1x8(1);
-		GX_Position1x8(2); GX_Color1x8(0); GX_TexCoord1x8(2); GX_TexCoord1x8(6); GX_TexCoord1x8(2);
-		GX_Position1x8(3); GX_Color1x8(0); GX_TexCoord1x8(3); GX_TexCoord1x8(7); GX_TexCoord1x8(3);
-	GX_End();
-	GX_EndDispList();
-#endif
 }
 
 //------- rodries change: to avoid image_buffer intermediate ------
 static int w1,w2,h1,h2,wl,wr,st0,st1;
 static int p01,p02,p03,p11,p12,p13;
-static u16 Yrowpitch,UVrowpitch;
+static u16 Yrowpitch;
+static u16 UVrowpitch;
 static u64 *Yldst, *Yrdst, *Udst, *Vdst;
 
 static void draw_scaling()
@@ -435,11 +404,11 @@ static void draw_scaling()
 	guMtxTransApply(m, m, 0, 0, -100);
 	guMtxConcat(view, m, mv);
 	GX_LoadPosMtxImm(mv, GX_PNMTX0);
-	GX_SetViewport(1.0f/24.0f,1.0f/24.0f, vmode->fbWidth, vmode->efbHeight, 0, 1);
+	GX_SetViewport(0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
 }
 
 void GX_ConfigTextureYUV(u16 width, u16 height, u16 chroma_width, u16 chroma_height)
-{	
+{
 	int wp;
 
 	Ywidth=(width+7)&~7;
@@ -488,47 +457,25 @@ void GX_ConfigTextureYUV(u16 width, u16 height, u16 chroma_width, u16 chroma_hei
 	draw_initYUV();
 	draw_scaling();
 }
-#include "osdep/timer.h"
-
-bool goBackto = false;
-extern int sync_interlace;
-extern timerFadeBlack; // not an actual fade, just delay drawing mplayer to avoid 1 frame flicker.
 
 inline void DrawMPlayer()
 {
-	//PauseAndGotoGUI();
-	if(timerFadeBlack) {
-		--timerFadeBlack;
-		return;
-	}
-	
 	DCFlushRange(Yltexture, Yltexsize);
-	if (wr>0) DCFlushRange(Yrtexture, Yrtexsize);
+	DCFlushRange(Yrtexture, Yrtexsize);
 	DCFlushRange(Utexture, UVtexsize);
 	DCFlushRange(Vtexture, UVtexsize);
 
-	if(need_wait == true) {
+	if(need_wait)
 		GX_WaitDrawDone();
-	}
-
+	
 	GX_InvVtxCache();
 	GX_InvalidateTexAll();
 
-/*	u32 level = 0;
-	_CPU_ISR_Disable(level);
-	if(sync_interlace == 1 && vmode->fbWidth > 640) {
-		do VIDEO_WaitVSync();
-		while (!VIDEO_GetNextField()); // This allows TV deinterlacing but it does have a speed cost.
-	}
-	else if(sync_interlace == 2 && vmode->fbWidth > 640) {
-		do VIDEO_WaitVSync();
-		while (VIDEO_GetNextField());
-	}
-	else*/ if(flip_pending)
-		VIDEO_WaitVSync();
-	//_CPU_ISR_Restore(level);
+	GX_LoadTexObj(&YltexObj, GX_TEXMAP0);	// MAP0 <- Yl
+	GX_LoadTexObj(&YrtexObj, GX_TEXMAP1);	// MAP1 <- Yr
+	GX_LoadTexObj(&UtexObj, GX_TEXMAP2);	// MAP2 <- U
+	GX_LoadTexObj(&VtexObj, GX_TEXMAP3);	// MAP3 <- V
 
-	if(!wiiTiledRender || goBackto) {
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 		GX_Position1x8(0); GX_Color1x8(0); GX_TexCoord1x8(0); GX_TexCoord1x8(4); GX_TexCoord1x8(0);
 		GX_Position1x8(1); GX_Color1x8(0); GX_TexCoord1x8(1); GX_TexCoord1x8(5); GX_TexCoord1x8(1);
@@ -541,11 +488,6 @@ inline void DrawMPlayer()
 		if(controlledbygui != 2)
 			TakeScreenshot();
 		copyScreen = 2;
-		if(goBackto) {
-			wiiPause();
-			wiiPause();
-			goBackto = false;
-		}
 	}
 	else
 	{
@@ -555,17 +497,10 @@ inline void DrawMPlayer()
 	if(copyScreen == 2)
 	{
 		copyScreen = 0;
-		pause_gui = 1;		
+		pause_gui = 1;
 	}
 	else if(drawMode != 0)
 	{
-		if(guiDelay != 0) {
-			// fixes seekbar info remaining after a new video.
-			DrawMPlayerGui();
-			DrawMPlayerGui();
-			--guiDelay;
-		}
-		
 		// reconfigure GX for MPlayer
 		Mtx44 p;
 		draw_initYUV();
@@ -574,116 +509,23 @@ inline void DrawMPlayer()
 		GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 		drawMode = 0;
 	}
+	whichfb ^= 1; // flip framebuffer
 	
-	//whichfb ^= 1; // flip framebuffer
-	}
-#if 1
-else {
-	if(!point_on) {
-		if(copyScreen == 1) // For GC controller
-		{
-			;
-		}
-		else
-		{
-			safe_gc = true;
-			drawMode = DrawMPlayerGui();
-		}
-	}
-	
-	//set interlace mode if needed
-	if(sync_interlace > 0)
-		SetInterlace();
-	
-	// Switch to tile rendering
-	SetMplTiled();
-	
-	//int half_ht = vmode->efbHeight / 2;
-	int half_ht = vmode->efbHeight; // don't do height for now
-	int half_wh = vmode->fbWidth / 2;
-
-	bool pad_wh = (half_wh / 8) % 2;
-	int corr_wh = half_wh + (8 * pad_wh);
-	
-	// don't do height
-	int y = 0;
-
-	//whichfb ^= 1;
-	//for (int y = 0; y < 2; y++)
-	//{
-		for (int x = 0; x < 2; x++)
-		{
-			int hor_offset = (half_wh - (8 * pad_wh)) * x;
-
-			GX_SetScissor(hor_offset, half_ht * y, corr_wh + ((8 * pad_wh) * x), half_ht);
-			GX_SetScissorBoxOffset(hor_offset, half_ht * y);
-			GX_SetDispCopySrc(0, 0, corr_wh, half_ht);
-			GX_CallDispList(dlist, 32);
-
-		if(copyScreen == 1)
-		{
-			if(controlledbygui != 2) {
-				SetMplTiledOff();
-				if(sync_interlace > 0)
-					SetInterlaceOff();
-				goBackto = true;
-				break;
-			}
-			copyScreen = 2;
-		}
-		else
-		{
-			safe_gc = false;
-			drawMode = DrawMPlayerGui();
-		}
-
-		if(copyScreen == 2)
-		{
-			copyScreen = 0;
-			pause_gui = 1;
-		}
-		else if(drawMode != 0)
-		{
-			//SetMplTiled();
-			
-			// Fixes gui bar from not displaying
-			// the left chunk on the first frame.
-			if(guiDelay != 0) {
-				DrawMPlayerGui();
-				DrawMPlayerGui();
-				--guiDelay;
-			}
-			
-			//DrawMPlayerGui(); //fixes left chunk seek bar from remaining after loading a new video.
-			// reconfigure GX for MPlayer
-			Mtx44 p;
-			draw_initYUV();
-			draw_scaling();
-			guOrtho(p, mplayerheight/2, -(mplayerheight/2), -(mplayerwidth/2), mplayerwidth/2, 10, 1000);
-			GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
-			drawMode = 0;
-		}
-
-		//	GX_SetColorUpdate(GX_TRUE);
-			u32 xfb_offset = (((vmode->fbWidth * VI_DISPLAY_PIX_SZ) * (vmode->xfbHeight / 2)) * y) + ((half_wh * VI_DISPLAY_PIX_SZ) * x);
-			GX_CopyDisp((void *)((u32)xfb[whichfb] + xfb_offset), GX_TRUE);
-		}
-//	}
-#endif
-	}
-	if(!wiiTiledRender)
-		GX_CopyDisp(xfb[whichfb], GX_TRUE);
+	GX_CopyDisp(xfb[whichfb], GX_TRUE);
+	VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	GX_SetDrawDone();
-	//VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	need_wait=true;
 }
 
 void GX_AllocTextureMemory()
 {
-	Yltexture = (u8*)mem2_memalign(32, 1024*MAX_HEIGHT, MEM2_VIDEO);
-	Yrtexture = (u8*)mem2_memalign(32, (MAX_WIDTH-1024)*MAX_HEIGHT, MEM2_VIDEO);
-	Utexture = (u8*)mem2_memalign(32, 1024*(MAX_HEIGHT/2), MEM2_VIDEO);
-	Vtexture = (u8*)mem2_memalign(32, 1024*(MAX_HEIGHT/2), MEM2_VIDEO);        
+        //make memory fixed (max texture 1024*1024, gx can't manage more)
+        if(Yltexture) return;
+
+        Yltexture = (u8 *) (mem2_memalign(32, 1024*MAX_HEIGHT, MEM2_VIDEO));
+        Yrtexture = (u8 *) (mem2_memalign(32, (MAX_WIDTH-1024)*MAX_HEIGHT, MEM2_VIDEO));
+        Utexture = (u8 *) (mem2_memalign(32, 1024*(MAX_HEIGHT/2), MEM2_VIDEO));
+        Vtexture = (u8 *) (mem2_memalign(32, 1024*(MAX_HEIGHT/2), MEM2_VIDEO));  
 }
 
 /****************************************************************************
@@ -707,19 +549,18 @@ void GX_StartYUV(u16 width, u16 height, u16 haspect, u16 vaspect)
 	Yltexsize = (wYl*h);
     Yrtexsize = (wYr*h);
 	UVtexsize = (w*h)/4;
-
+        
     memset(Yltexture, 0, 1024*MAX_HEIGHT);
     memset(Yrtexture, 0, (MAX_WIDTH-1024)*MAX_HEIGHT);
     memset(Utexture, 0x80, 1024*(MAX_HEIGHT/2));
     memset(Vtexture, 0x80, 1024*(MAX_HEIGHT/2));	
+	
 
 	// center, to correct difference between pitch and real width
 	video_diffx = (w - width)/2.0;
 	video_diffy = (h - height)/2.0;
 	video_haspect = haspect;
 	video_vaspect = vaspect;
-	// for subtitles
-	sub_dar = (double)video_haspect / (double)video_vaspect;
 
 	GX_UpdateScaling();
 
@@ -727,7 +568,7 @@ void GX_StartYUV(u16 width, u16 height, u16 haspect, u16 vaspect)
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetClipMode(GX_DISABLE);
 	GX_SetZMode(GX_FALSE, GX_ALWAYS, GX_TRUE);
-	GX_CopyDisp(xfb[0], GX_TRUE);
+	GX_CopyDisp(xfb[whichfb ^ 1], GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
 	guOrtho(p, mplayerheight/2.0, -(mplayerheight/2.0), -(mplayerwidth/2.0), mplayerwidth/2.0, 10.0, 1000.0);
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
@@ -745,30 +586,27 @@ void GX_StartYUV(u16 width, u16 height, u16 haspect, u16 vaspect)
 	type *Yldst = (type *)Yltexture - 1; \
 	type *Yrdst = (type *)Yrtexture - 1; \
 	 \
-	type *Ysrc1 = (type *) (buffer[0]) - 1; \
-	type *Ysrc2 = (type *)((buffer[0]) + stride[0]) - 1; \
-	type *Ysrc3 = (type *)((buffer[0]) + (stride[0] * 2)) - 1; \
-	type *Ysrc4 = (type *)((buffer[0]) + (stride[0] * 3)) - 1; \
+	type *Ysrc1 = (type *)buffer[0] - 1; \
+	type *Ysrc2 = (type *)(buffer[0] + stride[0]) - 1; \
+	type *Ysrc3 = (type *)(buffer[0] + (stride[0] * 2)) - 1; \
+	type *Ysrc4 = (type *)(buffer[0] + (stride[0] * 3)) - 1; \
 	 \
 	Yrdst += 4; \
 	int rows = Yheight / 4; \
-	int tiles; \
 	while (rows--) { \
-		tiles = wl; \
+		int tiles = wl; \
 		 \
-		while (tiles--) { \		
-			__asm__ volatile("dcbz 0,%0" : : "b" (++Yldst)); \ 
-			*Yldst = *++Ysrc1; \
+		while (tiles--) { \
+			*++Yldst = *++Ysrc1; \
 			*++Yldst = *++Ysrc2; \
 			*++Yldst = *++Ysrc3; \
 			*++Yldst = *++Ysrc4; \
-		} \	
+		} \
 		if (wr>0){ \
 			tiles = wr; \
 			 \
 			while (tiles--) { \
-				__asm__ volatile("dcbz 0,%0" : : "b" (++Yrdst)); \
-				*Yrdst = *++Ysrc1; \
+				*++Yrdst = *++Ysrc1; \
 				*++Yrdst = *++Ysrc2; \
 				*++Yrdst = *++Ysrc3; \
 				*++Yrdst = *++Ysrc4; \
@@ -789,30 +627,28 @@ void GX_StartYUV(u16 width, u16 height, u16 haspect, u16 vaspect)
 	type *Udst = (type *)Utexture - 1; \
 	type *Vdst = (type *)Vtexture - 1; \
 	 \
-	type *Usrc1 = (type *) (buffer[1]) - 1; \
-	type *Usrc2 = (type *)((buffer[1]) + stride[1]) - 1; \
-	type *Usrc3 = (type *)((buffer[1]) + (stride[1] * 2)) - 1; \
-	type *Usrc4 = (type *)((buffer[1]) + (stride[1] * 3)) - 1; \
+	type *Usrc1 = (type *)buffer[1] - 1; \
+	type *Usrc2 = (type *)(buffer[1] + stride[1]) - 1; \
+	type *Usrc3 = (type *)(buffer[1] + (stride[1] * 2)) - 1; \
+	type *Usrc4 = (type *)(buffer[1] + (stride[1] * 3)) - 1; \
 	 \
-	type *Vsrc1 = (type *) (buffer[2]) - 1; \
-	type *Vsrc2 = (type *)((buffer[2]) + stride[2]) - 1; \
-	type *Vsrc3 = (type *)((buffer[2]) + (stride[2] * 2)) - 1; \
-	type *Vsrc4 = (type *)((buffer[2]) + (stride[2] * 3)) - 1; \
+	type *Vsrc1 = (type *)buffer[2] - 1; \
+	type *Vsrc2 = (type *)(buffer[2] + stride[2]) - 1; \
+	type *Vsrc3 = (type *)(buffer[2] + (stride[2] * 2)) - 1; \
+	type *Vsrc4 = (type *)(buffer[2] + (stride[2] * 3)) - 1; \
 	 \
 	int rows = UVheight / 4; \
-	int tiles, ntiles = UVwidth / 8; \
-		\
+	 \
 	while (rows--) { \
-		tiles = ntiles; \
+		int tiles = UVwidth / 8; \
+		 \
 		while (tiles--) { \
-			__asm__ volatile("dcbz 0,%0" : : "b" (++Udst) ); \
-			*Udst = *++Usrc1; \
+			*++Udst = *++Usrc1; \
 			*++Udst = *++Usrc2; \
 			*++Udst = *++Usrc3; \
 			*++Udst = *++Usrc4; \
 			 \
-			__asm__ volatile("dcbz 0,%0" : : "b" (++Vdst) ); \ 
-			*Vdst = *++Vsrc1; \
+			*++Vdst = *++Vsrc1; \
 			*++Vdst = *++Vsrc2; \
 			*++Vdst = *++Vsrc3; \
 			*++Vdst = *++Vsrc4; \
@@ -829,11 +665,9 @@ void GX_StartYUV(u16 width, u16 height, u16 haspect, u16 vaspect)
 		Vsrc4 = (type *)((u32)Vsrc4 + UVrowpitch); \
 	} \
 }
-
-
+	
 void GX_FillTextureYUV(u8 *buffer[3], int stride[3])
 {
-	
 	if(st0!=stride[0] || st1!=stride[1])
 	{
 		st0=stride[0];
@@ -841,10 +675,9 @@ void GX_FillTextureYUV(u8 *buffer[3], int stride[3])
 		Yrowpitch = (stride[0] * 4) - Ywidth;
 		UVrowpitch = (stride[1] * 4) - UVwidth;
 	}
-
-	if(need_wait == true) {
+	
+	if(need_wait)
 		GX_WaitDrawDone();
-	}
 
 	if (stride[0] & 7)
 		LUMA_COPY(u64)
@@ -859,7 +692,7 @@ void GX_FillTextureYUV(u8 *buffer[3], int stride[3])
 
 void GX_RenderTexture()
 {
-	DrawMPlayer();  
+	DrawMPlayer();
 }
 
 void vo_draw_alpha_gekko(int x0, int y0, int w, int h, unsigned char *src, unsigned char *srca, int stride)
@@ -867,40 +700,24 @@ void vo_draw_alpha_gekko(int x0, int y0, int w, int h, unsigned char *src, unsig
 	s16 pitch = stride - w;
 	u8 *Ydst;
 
-	int dxs,x;
+	int dxs;
 	int dys = y0;
-	int w1 = w < 1024 ? w : 1024;
-	u8 *yt;
-
-	h = h < 1024 ? h : 1024;
-
+	
 	for (int y = 0; y < h; y++) 
 	{
-		yt = Yltexture + ((dys & (~3)) * Ylwidth) + ((dys & 3) << 3);
 		dxs = x0;
-		for (x = 0; x < w1; x++) 
+		for (int x = 0; x < w; x++) 
 		{
 			if (*srca) 
 			{
-				Ydst = yt + ((dxs & (~7)) << 2)  + (dxs & 7);
+				if (dxs < 1024)
+					Ydst = Yltexture + ((dys & (~3)) * Ylwidth) + ((dxs & (~7)) << 2) + ((dys & 3) << 3) + (dxs & 7);
+				else
+					Ydst = Yrtexture + ((dys & (~3)) * Yrwidth) + ((dxs & (~7)) << 2) + ((dys & 3) << 3) + (dxs & 7);
 				*Ydst = (((*Ydst) * (*srca)) >> 8) + (*src);
 			}
 			dxs++;
 			src++; srca++;
-		}
-		if(w>1024)
-		{
-			yt = Yrtexture + ((dys & (~3)) * Yrwidth) + ((dys & 3) << 3);
-			for (; x < w; x++) 
-			{
-				if (*srca) 
-				{
-					Ydst = yt + ((dxs & (~7)) << 2) + (dxs & 7);
-					*Ydst = (((*Ydst) * (*srca)) >> 8) + (*src);
-				}
-				dxs++;
-				src++; srca++;
-			}
 		}
 		dys++;
 		src += pitch;

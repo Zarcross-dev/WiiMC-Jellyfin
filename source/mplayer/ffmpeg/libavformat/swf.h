@@ -3,31 +3,25 @@
  * Copyright (c) 2000 Fabrice Bellard
  * Copyright (c) 2003 Tinic Uro
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef AVFORMAT_SWF_H
 #define AVFORMAT_SWF_H
-
-#include "config.h"
-
-#if CONFIG_ZLIB
-#include <zlib.h>
-#endif
 
 #include "libavutil/fifo.h"
 #include "avformat.h"
@@ -82,13 +76,6 @@ typedef struct {
     int tag;
     AVFifoBuffer *audio_fifo;
     AVCodecContext *audio_enc, *video_enc;
-#if CONFIG_ZLIB
-    AVIOContext *zpb;
-#define ZBUF_SIZE 4096
-    uint8_t *zbuf_in;
-    uint8_t *zbuf_out;
-    z_stream zstream;
-#endif
 } SWFContext;
 
 static const AVCodecTag swf_codec_tags[] = {

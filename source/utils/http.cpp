@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * http.cpp
  *
@@ -90,7 +90,6 @@ static int _httoi(const char *value)
 		s++;
 		firsttime = false;
 	}
-
 	return result;
 }
 
@@ -157,10 +156,9 @@ static s32 tcp_connect(char *host, const u16 port)
 	do 
 	{
 		res = net_connect(s,(struct sockaddr*) &sa, sizeof (sa));
-		if(ticks_to_secs(gettime())-t1 > TCP_CONNECT_TIMEOUT) break; 
+		if(ticks_to_secs(gettime())-t1 > TCP_CONNECT_TIMEOUT*1000) break; 
 		usleep(500);
 	} while(res != -EISCONN);
-
 	if(res != -EISCONN)
 	{		
 		net_close(s);
@@ -374,12 +372,6 @@ static u32 http_request(char *url, FILE *hfile, char *buffer, u32 maxsize, bool 
 	free(http_path);
 	free(http_host);
 
-	if(res == 0) // can't send request to server
-	{
-		net_close(s);
-		return 0;
-	}
-
 	char *line = NULL;
 	char *redirect = NULL;
 	char encoding[128] = { 0 };
@@ -454,8 +446,11 @@ static u32 http_request(char *url, FILE *hfile, char *buffer, u32 maxsize, bool 
 				if(content_length > 0)
 				{
 					if(sizeread+content_length > maxsize) 
+					{
+						content_length=maxsize-sizeread-1;
+						sizeread += tcp_read(s, (u8 *)buffer+sizeread, content_length);
 						break;
-
+					}
 					ret = tcp_read(s, (u8 *)buffer+sizeread, content_length);
 					if(ret<=0) break;
 					sizeread += ret;
@@ -466,8 +461,8 @@ static u32 http_request(char *url, FILE *hfile, char *buffer, u32 maxsize, bool 
 					free(line);
 					net_close(s);
 					return sizeread;
-				}
-			} while(content_length > 0);
+				}				
+			} while(content_length > 0);			
 			content_length = sizeread;
 		}
 		else 

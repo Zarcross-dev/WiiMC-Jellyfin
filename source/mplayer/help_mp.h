@@ -4,7 +4,7 @@
 #ifndef MPLAYER_HELP_MP_H
 #define MPLAYER_HELP_MP_H
 
-// $Revision: 34569 $
+// $Revision: 33962 $
 // MASTER FILE. Use this file as base for translations.
 // Translated files should be sent to the mplayer-DOCS mailing list or
 // to the help messages maintainer, see DOCS/tech/MAINTAINERS.
@@ -183,17 +183,6 @@ static const char help_text[]=
 #define MSGTR_MenuCall "Menu call\n"
 #define MSGTR_MasterQuit "Option -udp-slave: exiting because master exited\n"
 #define MSGTR_InvalidIP "Option -udp-ip: invalid IP address\n"
-#define MSGTR_Forking "Forking...\n"
-#define MSGTR_Forked "Forked...\n"
-#define MSGTR_CouldntStartGdb "Couldn't start gdb\n"
-#define MSGTR_CouldntFork "Couldn't fork\n"
-#define MSGTR_FilenameTooLong "Filename is too long, can not load file or directory specific config files\n"
-#define MSGTR_AudioDeviceStuck "Audio device got stuck!\n"
-#define MSGTR_AudioOutputTruncated "Audio output truncated at end.\n"
-#define MSGTR_ASSCannotAddVideoFilter "ASS: cannot add video filter\n"
-#define MSGTR_PtsAfterFiltersMissing "pts after filters MISSING\n"
-#define MSGTR_CommandLine "CommandLine:"
-#define MSGTR_MenuInitFailed "Menu init failed.\n"
 
 // --- edit decision lists
 #define MSGTR_EdlOutOfMem "Can't allocate enough memory to hold EDL data.\n"
@@ -563,36 +552,6 @@ static const char help_text[]=
 #define MSGTR_NoChapter "No chapter"
 #define MSGTR_Chapter "Chapter %d"
 #define MSGTR_NoFileLoaded "No file loaded."
-#define MSGTR_Filter_UTF8Subtitles "UTF-8 encoded subtitles (*.utf, *.utf-8, *.utf8)"
-#define MSGTR_Filter_AllSubtitles "All subtitles"
-#define MSGTR_Filter_AllFiles "All files"
-#define MSGTR_Filter_TTF "True Type fonts (*.ttf)"
-#define MSGTR_Filter_Type1 "Type1 fonts (*.pfb)"
-#define MSGTR_Filter_AllFonts "All fonts"
-#define MSGTR_Filter_FontFiles "Font files (*.desc)"
-#define MSGTR_Filter_DDRawAudio "Dolby Digital / PCM (*.ac3, *.pcm)"
-#define MSGTR_Filter_MPEGAudio "MPEG audio (*.mp2, *.mp3, *.mpga, *.m4a, *.aac, *.f4a)"
-#define MSGTR_Filter_MatroskaAudio "Matroska audio (*.mka)"
-#define MSGTR_Filter_OGGAudio "Ogg audio (*.oga, *.ogg, *.spx)"
-#define MSGTR_Filter_WAVAudio "WAV audio (*.wav)"
-#define MSGTR_Filter_WMAAudio "Windows Media audio (*.wma)"
-#define MSGTR_Filter_AllAudioFiles "All audio files"
-#define MSGTR_Filter_AllVideoFiles "All video files"
-#define MSGTR_Filter_AVIFiles "AVI files"
-#define MSGTR_Filter_DivXFiles "DivX files"
-#define MSGTR_Filter_FlashVideo "Flash Video"
-#define MSGTR_Filter_MP3Files "MP3 files"
-#define MSGTR_Filter_MP4Files "MP4 files"
-#define MSGTR_Filter_MPEGFiles "MPEG files"
-#define MSGTR_Filter_MP2TS "MPEG-2 transport streams"
-#define MSGTR_Filter_MatroskaMedia "Matroska media"
-#define MSGTR_Filter_OGGMedia "Ogg media"
-#define MSGTR_Filter_QTMedia "QuickTime media"
-#define MSGTR_Filter_RNMedia "RealNetworks media"
-#define MSGTR_Filter_VideoCDImages "VCD/SVCD images"
-#define MSGTR_Filter_WAVFiles "WAV files"
-#define MSGTR_Filter_WindowsMedia "Windows media"
-#define MSGTR_Filter_Playlists "Playlists"
 
 // --- buttons ---
 #define MSGTR_Ok "OK"
@@ -609,7 +568,7 @@ static const char help_text[]=
 #define MSGTR_NEMFMR "Sorry, not enough memory for menu rendering."
 #define MSGTR_IDFGCVD "Sorry, no GUI-compatible video output driver found.\n"
 #define MSGTR_NEEDLAVC "Sorry, you cannot play non-MPEG files with your DXR3/H+ device without reencoding.\nPlease enable lavc in the DXR3/H+ configuration box."
-#define MSGTR_ICONERROR "Icon '%s' (size %d) not found or unsupported format.\n"
+#define MSGTR_ICONERROR "Icon '%s' not found or unsupported format.\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "Error in skin config file on line %d: %s"
@@ -641,7 +600,6 @@ static const char help_text[]=
 #define MSGTR_MENU_AboutMPlayer "About MPlayer"
 #define MSGTR_MENU_Open "Open..."
 #define MSGTR_MENU_PlayFile "Play file..."
-#define MSGTR_MENU_PlayCD "Play CD..."
 #define MSGTR_MENU_PlayVCD "Play VCD..."
 #define MSGTR_MENU_PlayDVD "Play DVD..."
 #define MSGTR_MENU_PlayURL "Play URL..."
@@ -659,7 +617,6 @@ static const char help_text[]=
 #define MSGTR_MENU_NormalSize "Normal size"
 #define MSGTR_MENU_DoubleSize "Double size"
 #define MSGTR_MENU_FullScreen "Fullscreen"
-#define MSGTR_MENU_CD "CD"
 #define MSGTR_MENU_DVD "DVD"
 #define MSGTR_MENU_VCD "VCD"
 #define MSGTR_MENU_PlayDisc "Open disc..."
@@ -674,7 +631,7 @@ static const char help_text[]=
 #define MSGTR_MENU_PlayList MSGTR_PlayList
 #define MSGTR_MENU_SkinBrowser "Skin browser"
 #define MSGTR_MENU_Preferences MSGTR_Preferences
-#define MSGTR_MENU_Exit "Exit"
+#define MSGTR_MENU_Exit "Exit..."
 #define MSGTR_MENU_Mute "Mute"
 #define MSGTR_MENU_Original "Original"
 #define MSGTR_MENU_AspectRatio "Aspect ratio"
@@ -859,35 +816,6 @@ static const char help_text[]=
 #define MSGTR_WS_NotAFile "This does not seem to be a file...\n"
 #define MSGTR_WS_DDNothing "D&D: Nothing returned!\n"
 
-// Win32 GUI
-#define MSGTR_Close "Close"
-#define MSGTR_Default "Defaults"
-#define MSGTR_Down "Down"
-#define MSGTR_Load "Load"
-#define MSGTR_Save "Save"
-#define MSGTR_Up "Up"
-#define MSGTR_DirectorySelect "Select directory..."
-#define MSGTR_PlaylistSave "Save playlist..."
-#define MSGTR_PlaylistSelect "Select playlist..."
-#define MSGTR_SelectTitleChapter "Select title/chapter..."
-#define MSGTR_MENU_DebugConsole "Debug Console"
-#define MSGTR_MENU_OnlineHelp "Online Help"
-#define MSGTR_MENU_PlayDirectory "Play directory..."
-#define MSGTR_MENU_SeekBack "Seek Backwards"
-#define MSGTR_MENU_SeekForw "Seek Forwards"
-#define MSGTR_MENU_ShowHide "Show/Hide"
-#define MSGTR_MENU_SubtitlesOnOff "Subtitle Visibility On/Off"
-#define MSGTR_PLAYLIST_AddFile "Add File..."
-#define MSGTR_PLAYLIST_AddURL "Add URL..."
-#define MSGTR_PREFERENCES_Priority "Priority:"
-#define MSGTR_PREFERENCES_PriorityHigh "high"
-#define MSGTR_PREFERENCES_PriorityLow "low"
-#define MSGTR_PREFERENCES_PriorityNormal "normal"
-#define MSGTR_PREFERENCES_PriorityNormalAbove "above normal"
-#define MSGTR_PREFERENCES_PriorityNormalBelow "below normal"
-#define MSGTR_PREFERENCES_ShowInVideoWin "Display in the video window (DirectX only)"
-
-
 // ======================= video output drivers ========================
 
 #define MSGTR_VOincompCodec "The selected video_out device is incompatible with this codec.\n"\
@@ -1041,6 +969,7 @@ static const char help_text[]=
 // vo_sdl.c
 #define MSGTR_LIBVO_SDL_CouldntGetAnyAcceptableSDLModeForOutput "[VO_SDL] Couldn't get any acceptable SDL Mode for output.\n"
 #define MSGTR_LIBVO_SDL_SetVideoModeFailed "[VO_SDL] set_video_mode: SDL_SetVideoMode failed: %s.\n"
+#define MSGTR_LIBVO_SDL_SetVideoModeFailedFull "[VO_SDL] Set_fullmode: SDL_SetVideoMode failed: %s.\n"
 #define MSGTR_LIBVO_SDL_MappingI420ToIYUV "[VO_SDL] Mapping I420 to IYUV.\n"
 #define MSGTR_LIBVO_SDL_UnsupportedImageFormat "[VO_SDL] Unsupported image format (0x%X).\n"
 #define MSGTR_LIBVO_SDL_InfoPleaseUseVmOrZoom "[VO_SDL] Info - please use -vm or -zoom to switch to the best resolution.\n"
@@ -1277,11 +1206,35 @@ static const char help_text[]=
 
 // ao_sun.c
 #define MSGTR_AO_SUN_RtscSetinfoFailed "[AO SUN] rtsc: SETINFO failed.\n"
-#define MSGTR_AO_SUN_RtscWriteFailed "[AO SUN] rtsc: write failed.\n"
 #define MSGTR_AO_SUN_CantOpenAudioDev "[AO SUN] Can't open audio device %s, %s  -> nosound.\n"
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] audio_setup: your card doesn't support %d channel, %s, %d Hz samplerate.\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n   ***  Your audio driver DOES NOT support select()  ***\nRecompile MPlayer with #undef HAVE_AUDIO_SELECT in config.h !\n\n"
 #define MSGTR_AO_SUN_CantReopenReset "[AO SUN]\nFatal error: *** CANNOT REOPEN / RESET AUDIO DEVICE (%s) ***\n"
+
+// ao_alsa5.c
+#define MSGTR_AO_ALSA5_InitInfo "[AO ALSA5] alsa-init: requested format: %d Hz, %d channels, %s\n"
+#define MSGTR_AO_ALSA5_SoundCardNotFound "[AO ALSA5] alsa-init: no soundcards found.\n"
+#define MSGTR_AO_ALSA5_InvalidFormatReq "[AO ALSA5] alsa-init: invalid format (%s) requested - output disabled.\n"
+#define MSGTR_AO_ALSA5_PlayBackError "[AO ALSA5] alsa-init: playback open error: %s\n"
+#define MSGTR_AO_ALSA5_PcmInfoError "[AO ALSA5] alsa-init: PCM info error: %s\n"
+#define MSGTR_AO_ALSA5_SoundcardsFound "[AO ALSA5] alsa-init: %d soundcard(s) found, using: %s\n"
+#define MSGTR_AO_ALSA5_PcmChanInfoError "[AO ALSA5] alsa-init: PCM channel info error: %s\n"
+#define MSGTR_AO_ALSA5_CantSetParms "[AO ALSA5] alsa-init: error setting parameters: %s\n"
+#define MSGTR_AO_ALSA5_CantSetChan "[AO ALSA5] alsa-init: error setting up channel: %s\n"
+#define MSGTR_AO_ALSA5_ChanPrepareError "[AO ALSA5] alsa-init: channel prepare error: %s\n"
+#define MSGTR_AO_ALSA5_DrainError "[AO ALSA5] alsa-uninit: playback drain error: %s\n"
+#define MSGTR_AO_ALSA5_FlushError "[AO ALSA5] alsa-uninit: playback flush error: %s\n"
+#define MSGTR_AO_ALSA5_PcmCloseError "[AO ALSA5] alsa-uninit: PCM close error: %s\n"
+#define MSGTR_AO_ALSA5_ResetDrainError "[AO ALSA5] alsa-reset: playback drain error: %s\n"
+#define MSGTR_AO_ALSA5_ResetFlushError "[AO ALSA5] alsa-reset: playback flush error: %s\n"
+#define MSGTR_AO_ALSA5_ResetChanPrepareError "[AO ALSA5] alsa-reset: channel prepare error: %s\n"
+#define MSGTR_AO_ALSA5_PauseDrainError "[AO ALSA5] alsa-pause: playback drain error: %s\n"
+#define MSGTR_AO_ALSA5_PauseFlushError "[AO ALSA5] alsa-pause: playback flush error: %s\n"
+#define MSGTR_AO_ALSA5_ResumePrepareError "[AO ALSA5] alsa-resume: channel prepare error: %s\n"
+#define MSGTR_AO_ALSA5_Underrun "[AO ALSA5] alsa-play: alsa underrun, resetting stream.\n"
+#define MSGTR_AO_ALSA5_PlaybackPrepareError "[AO ALSA5] alsa-play: playback prepare error: %s\n"
+#define MSGTR_AO_ALSA5_WriteErrorAfterReset "[AO ALSA5] alsa-play: write error after reset: %s - giving up.\n"
+#define MSGTR_AO_ALSA5_OutPutError "[AO ALSA5] alsa-play: output error: %s\n"
 
 // ao_alsa.c
 #define MSGTR_AO_ALSA_InvalidMixerIndexDefaultingToZero "[AO_ALSA] Invalid mixer index. Defaulting to 0.\n"
@@ -1506,8 +1459,6 @@ static const char help_text[]=
 #define MSGTR_MPDEMUX_AVIHDR_IdxFileSaved "Saved index file: %s\n"
 
 // demux_audio.c
-#define MSGTR_MPDEMUX_AUDIO_BadID3v2TagSize "Audio demuxer: bad ID3v2 tag size: larger than stream (%u).\n"
-#define MSGTR_MPDEMUX_AUDIO_DamagedAppendedID3v2Tag "Audio demuxer: damaged appended ID3v2 tag detected.\n"
 #define MSGTR_MPDEMUX_AUDIO_UnknownFormat "Audio demuxer: unknown format %d.\n"
 
 // demux_demuxers.c
@@ -1777,12 +1728,12 @@ static const char help_text[]=
 
 // ================================== stream ====================================
 
-// ai_alsa.c
-#define MSGTR_MPDEMUX_AIALSA_CannotSetSamplerate "Cannot set samplerate.\n"
-#define MSGTR_MPDEMUX_AIALSA_CannotSetBufferTime "Cannot set buffer time.\n"
-#define MSGTR_MPDEMUX_AIALSA_CannotSetPeriodTime "Cannot set period time.\n"
+// ai_alsa1x.c
+#define MSGTR_MPDEMUX_AIALSA1X_CannotSetSamplerate "Cannot set samplerate.\n"
+#define MSGTR_MPDEMUX_AIALSA1X_CannotSetBufferTime "Cannot set buffer time.\n"
+#define MSGTR_MPDEMUX_AIALSA1X_CannotSetPeriodTime "Cannot set period time.\n"
 
-// ai_alsa.c
+// ai_alsa1x.c / ai_alsa.c
 #define MSGTR_MPDEMUX_AIALSA_PcmBrokenConfig "Broken configuration for this PCM: no configurations available.\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableAccessType "Access type not available.\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableSampleFmt "Sample format not available.\n"

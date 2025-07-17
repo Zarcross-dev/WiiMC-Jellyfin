@@ -85,9 +85,6 @@ typedef struct {
   int back_size;   // we should keep back_size amount of old bytes for backward seek
   int fill_limit;  // we should fill buffer only if space>=fill_limit
   int seek_limit;  // keep filling cache if distance is less that seek limit
-#if FORKED_CACHE
-  pid_t ppid; // parent PID to detect killed parent
-#endif
   // filler's pointers:
   int eof;
   off_t min_filepos; // buffer contain only a part of the file, from min-max pos
@@ -103,24 +100,15 @@ typedef struct {
   volatile int control;
   volatile unsigned control_uint_arg;
   volatile double control_double_arg;
-  volatile struct stream_lang_req control_lang_arg;
   volatile int control_res;
+  volatile off_t control_new_pos;
   volatile double stream_time_length;
   volatile double stream_time_pos;
 } cache_vars_t;
 
+static int min_fill=0;
+
 float cache_fill_status=0;
-
-static void cache_flush(cache_vars_t *s)
-{
-  s->offset= // FIXME!?
-  s->min_filepos=s->max_filepos=s->read_filepos; // drop cache content :(
-}
-
-extern int getMESS;
-extern int getWeird;
-extern int waitReload;
-extern int cntReconnect;
 
 static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
 {
@@ -129,16 +117,6 @@ static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
   while(size>0 ){
     int pos,newb,len;
 
-	if(getMESS != 0) { //this loop is significant but not all there is to the bug
-		//getWeird = size; //2048
-		return 0;
-	}
-	if(getWeird > 80) { //assume no longer playing audio
-		getWeird = 0;
-		getMESS = 1; //forces 3 loops to exit, allowing mplayer to still work
-	}
-	++getWeird;
-	
   //printf("CACHE2_READ: 0x%X <= 0x%X <= 0x%X  \n",s->min_filepos,s->read_filepos,s->max_filepos);
 
     if(s->read_filepos>=s->max_filepos || s->read_filepos<s->min_filepos){
@@ -150,6 +128,7 @@ static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
 	continue; // try again...
     }	
     newb=s->max_filepos-s->read_filepos; // new bytes in the buffer
+    if(newb<min_fill) min_fill=newb; // statistics...
 
 //    printf("*** newb: %d bytes ***\n",newb);
 
@@ -161,7 +140,7 @@ static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
     if(newb>size) newb=size;
 
     // check:
-    //if(s->read_filepos<s->min_filepos) mp_msg(MSGT_CACHE,MSGL_ERR,"Ehh. s->read_filepos<s->min_filepos !!! Report bug...\n");
+    if(s->read_filepos<s->min_filepos) mp_msg(MSGT_CACHE,MSGL_ERR,"Ehh. s->read_filepos<s->min_filepos !!! Report bug...\n");
 
     // len=write(mem,newb)
     //printf("Buffer read: %d bytes\n",newb);
@@ -182,10 +161,6 @@ static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
     total+=len;
 
   }
-  
-  //reset
-  getWeird = 0;
-  
 #ifndef GEKKO
   cache_fill_status=(s->max_filepos-s->read_filepos)/(s->buffer_size / 100);
 #endif
@@ -214,7 +189,8 @@ static int cache_fill(cache_vars_t *s)
       if(s->stream->type!=STREAMTYPE_STREAM ||
           read<s->min_filepos || read>=s->max_filepos+s->seek_limit)
       {
-    	cache_flush(s);
+        s->offset= // FIXME!?
+        s->min_filepos=s->max_filepos=read; // drop cache content :(
         if(s->stream->eof) stream_reset(s->stream);
         stream_seek_internal(s->stream,read);
         //mp_msg(MSGT_CACHE,MSGL_DBG2,"Seek done. new pos: 0x%"PRIX64"  \n",(int64_t)stream_tell(s->stream));
@@ -309,7 +285,7 @@ static int cache_fill(cache_vars_t *s)
 				printf("retry read (%f): %i -> %s \n",cache_fill_status,s->stream->error,fileplaying);
 				
 				if(s->stream->error>3 && strncmp(fileplaying,"smb",3)==0)//only reset network in samba, maybe we can check internet streams later, samba can reconnect
-					CheckMplayerNetwork();
+					CheckMplayerNetwork();	
 		  }
   	    }
 	}
@@ -340,7 +316,6 @@ static int cache_fill(cache_vars_t *s)
 static int cache_execute_control(cache_vars_t *s) {
   double double_res;
   unsigned uint_res;
-  int needs_flush = 0;
   static u64 last;
   u64 now;
 #ifdef GEKKO
@@ -351,35 +326,29 @@ static int cache_execute_control(cache_vars_t *s) {
   if (quit || !s->stream->control) {
     s->stream_time_length = 0;
     s->stream_time_pos = MP_NOPTS_VALUE;
+    s->control_new_pos = 0;
     s->control_res = STREAM_UNSUPPORTED;
     s->control = -1;
     return !quit;
   }
-  
+
   now = GetTimerMS();
   if (now - last > 99) {
-    double len, pos;
-    if (s->stream->control(s->stream, STREAM_CTRL_GET_TIME_LENGTH, &len) == STREAM_OK)
-      s->stream_time_length = len;
-    else
-      s->stream_time_length = 0;
-    if (s->stream->control(s->stream, STREAM_CTRL_GET_CURRENT_TIME, &pos) == STREAM_OK)
+	double len, pos;
+	if (s->stream->control(s->stream, STREAM_CTRL_GET_TIME_LENGTH, &len) == STREAM_OK)
+	  s->stream_time_length = len;
+	else
+	  s->stream_time_length = 0;
+	if (s->stream->control(s->stream, STREAM_CTRL_GET_CURRENT_TIME, &pos) == STREAM_OK)
       s->stream_time_pos = pos;
     else
       s->stream_time_pos = MP_NOPTS_VALUE;
-#if FORKED_CACHE
-    // if parent PID changed, main process was killed -> exit
-    if (s->ppid != getppid()) {
-      mp_msg(MSGT_CACHE, MSGL_WARN, "Parent process disappeared, exiting cache process.\n");
-      return 0;
-    }
-#endif
-    last = now;
+	last = now;
   }
+
   if (s->control == -1) return 1;
   switch (s->control) {
     case STREAM_CTRL_SEEK_TO_TIME:
-      needs_flush = 1;
       double_res = s->control_double_arg;
     case STREAM_CTRL_GET_CURRENT_TIME:
     case STREAM_CTRL_GET_ASPECT_RATIO:
@@ -388,7 +357,6 @@ static int cache_execute_control(cache_vars_t *s) {
       break;
     case STREAM_CTRL_SEEK_TO_CHAPTER:
     case STREAM_CTRL_SET_ANGLE:
-      needs_flush = 1;
       uint_res = s->control_uint_arg;
     case STREAM_CTRL_GET_NUM_CHAPTERS:
     case STREAM_CTRL_GET_CURRENT_CHAPTER:
@@ -397,18 +365,11 @@ static int cache_execute_control(cache_vars_t *s) {
       s->control_res = s->stream->control(s->stream, s->control, &uint_res);
       s->control_uint_arg = uint_res;
       break;
-    case STREAM_CTRL_GET_LANG:
-      s->control_res = s->stream->control(s->stream, s->control, (void *)&s->control_lang_arg);
-      break;
     default:
       s->control_res = STREAM_UNSUPPORTED;
       break;
   }
-  if (s->control_res == STREAM_OK && needs_flush) {
-    s->read_filepos = s->stream->pos;
-    s->eof = s->stream->eof;
-    cache_flush(s);
-  }
+  s->control_new_pos = s->stream->pos;
   s->control = -1;
   return 1;
 }
@@ -451,9 +412,6 @@ static cache_vars_t* cache_init(int size,int sector){
 #else
   s->back_size=s->buffer_size/2;
 #endif
-#if FORKED_CACHE
-  s->ppid = getpid();
-#endif
   return s;
 }
 
@@ -466,19 +424,8 @@ void cache_uninit(stream_t *s) {
   {
     cache_do_control(s, -2, NULL);
     stop_cache_thread = 1;
-    while(!CacheThreadSuspended()) {
+    while(!CacheThreadSuspended())
   	  usleep(50);
-	  if(getMESS != 0) { //significant loop
-		//if(getWeird == 8)
-			//getWeird = 9;
-		getMESS = 0;
-		waitReload = 1; //this flag allows a reload after some time has passed to reconnect stream
-		++cntReconnect;
-		//s->eof = 1; //does not make a diff
-		return;
-		//break; //frequent dsi crash
-	  }
-	}
   }
   s->cache_pid = 0;
   cachearg = NULL;
@@ -573,13 +520,8 @@ int stream_enable_cache(stream_t *stream,int size,int min,int seek_limit){
     stream->cache_pid = _beginthread( ThreadProc, NULL, 256 * 1024, s );
 #elif defined(GEKKO)
 	stop_cache_thread = 1;
-	while(!CacheThreadSuspended()) {
+	while(!CacheThreadSuspended())
 		usleep(50);
-
-		//if(getMESS != 0) { //this doesn't hit, but let's assume it's useful for edgecases
-		//	return -1;
-		//}
-	}
 	cachearg = s;
 	stop_cache_thread = 0;
 	ResumeCacheThread();
@@ -607,13 +549,8 @@ int stream_enable_cache(stream_t *stream,int size,int min,int seek_limit){
 	    (int64_t)s->max_filepos-s->read_filepos
 	);
 
-	//if(getMESS != 0) {
-		//getWeird = 8;
-		//return -1; //it's unlikely but let's assume in case of edgecases
-	//}
-	
 #ifdef GEKKO
-	if(s->stream->type == STREAMTYPE_STREAM && cntReconnect == 0)
+	if(s->stream->type == STREAMTYPE_STREAM)
 		ShowProgress("Buffering...", (int)(100.0*(float)(s->max_filepos)/(float)(min)), 100);
 #endif
 	if(s->eof) break; // file is smaller than prefill size
@@ -654,8 +591,7 @@ static void ThreadProc( void *s ){
 #ifndef GEKKO
   } while (cache_execute_control(s));
 #else
-  //} while (cache_execute_control(s) && !stop_cache_thread && getMESS == 0); //not this, but let's assume due to edgecases
-  } while (cache_execute_control(s) && !stop_cache_thread); //not this
+  } while (cache_execute_control(s) && !stop_cache_thread);
 #endif  
 #if defined(__MINGW32__) || defined(__OS2__)
   _endthread();
@@ -735,24 +671,21 @@ int cache_stream_seek_long(stream_t *stream,off_t pos){
 //  stream->buf_pos=stream->buf_len=0;
 //  return 1;
 
-//  mp_msg(MSGT_CACHE,MSGL_V,"cache_stream_seek: WARNING! Can't seek to 0x%"PRIX64" !\n",pos+newpos);
+//  mp_msg(MSGT_CACHE,MSGL_V,"cache_stream_seek: WARNING! Can't seek to 0x%"PRIX64" !\n",(int64_t)(pos+newpos));
   return 0;
 }
 
 int cache_do_control(stream_t *stream, int cmd, void *arg) {
-  int pos_change = 0;
   cache_vars_t* s = stream->cache_data;
   switch (cmd) {
     case STREAM_CTRL_SEEK_TO_TIME:
       s->control_double_arg = *(double *)arg;
       s->control = cmd;
-      pos_change = 1;
       break;
     case STREAM_CTRL_SEEK_TO_CHAPTER:
     case STREAM_CTRL_SET_ANGLE:
       s->control_uint_arg = *(unsigned *)arg;
       s->control = cmd;
-      pos_change = 1;
       break;
     // the core might call these every frame, so cache them...
     case STREAM_CTRL_GET_TIME_LENGTH:
@@ -761,8 +694,6 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
     case STREAM_CTRL_GET_CURRENT_TIME:
       *(double *)arg = s->stream_time_pos;
       return s->stream_time_pos != MP_NOPTS_VALUE ? STREAM_OK : STREAM_UNSUPPORTED;
-    case STREAM_CTRL_GET_LANG:
-      s->control_lang_arg = *(struct stream_lang_req *)arg;
     case STREAM_CTRL_GET_NUM_CHAPTERS:
     case STREAM_CTRL_GET_CURRENT_CHAPTER:
     case STREAM_CTRL_GET_ASPECT_RATIO:
@@ -774,25 +705,8 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
     default:
       return STREAM_UNSUPPORTED;
   }
-  while (s->control != -1) {
+  while (s->control != -1)
 	usec_sleep(CONTROL_SLEEP_TIME);
-	if(getMESS != 0) //significant loop
-		return 0;
-  }
-
-  if (s->control_res != STREAM_OK)
-    return s->control_res;
-  // We cannot do this on failure, since this would cause the
-  // stream position to jump when e.g. STREAM_CTRL_SEEK_TO_TIME
-  // is unsupported - but in that case we need the old value
-  // to do the fallback seek.
-  // This unfortunately can lead to slightly different behaviour
-  // with and without cache if the protocol changes pos even
-  // when an error happened.
-  if (pos_change) {
-    stream->pos = s->read_filepos;
-    stream->eof = s->eof;
-  }
   switch (cmd) {
     case STREAM_CTRL_GET_TIME_LENGTH:
     case STREAM_CTRL_GET_CURRENT_TIME:
@@ -805,14 +719,15 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
     case STREAM_CTRL_GET_ANGLE:
       *(unsigned *)arg = s->control_uint_arg;
       break;
-    case STREAM_CTRL_GET_LANG:
-      *(struct stream_lang_req *)arg = s->control_lang_arg;
+    case STREAM_CTRL_SEEK_TO_CHAPTER:
+    case STREAM_CTRL_SEEK_TO_TIME:
+    case STREAM_CTRL_SET_ANGLE:
+	  if (s->control_res != STREAM_UNSUPPORTED)
+      stream->pos = s->read_filepos = s->control_new_pos;
       break;
   }
   return s->control_res;
 }
-
-//extern int getINFO;
 
 int stream_read(stream_t *s,char* mem,int total)
 {
@@ -821,14 +736,6 @@ int stream_read(stream_t *s,char* mem,int total)
   while(len>0)
   {
     int x;
-	
-	//One bread ahead of the bread
-/*	if(getINFO == 2) {
-		getINFO = 0;
-		return 0;
-	}*/
-	//if(getMESS != 0) //don't care, let's assume there's an edgecase that still fails rarely...
-		//return 0;
 
     if(s->buf_len-s->buf_pos==0)
     {

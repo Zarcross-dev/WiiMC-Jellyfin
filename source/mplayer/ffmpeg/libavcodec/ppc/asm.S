@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2009 Loren Merritt
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -44,11 +44,8 @@ X(\name):
 L(\name):
 .endm
 
-.macro movrel rd, sym, gp
+.macro movrel rd, sym
     ld      \rd, \sym@got(r2)
-.endm
-
-.macro get_got rd
 .endm
 
 #else /* ARCH_PPC64 */
@@ -68,22 +65,12 @@ X(\name):
 \name:
 .endm
 
-.macro movrel rd, sym, gp
+.macro movrel rd, sym
 #if CONFIG_PIC
-    lwz     \rd, \sym@got(\gp)
+    lwz     \rd, \sym@got(r2)
 #else
     lis     \rd, \sym@ha
     la      \rd, \sym@l(\rd)
-#endif
-.endm
-
-.macro get_got rd
-#if CONFIG_PIC
-    bcl     20, 31, .Lgot\@
-.Lgot\@:
-    mflr    \rd
-    addis   \rd, \rd, _GLOBAL_OFFSET_TABLE_ - .Lgot\@@ha
-    addi    \rd, \rd, _GLOBAL_OFFSET_TABLE_ - .Lgot\@@l
 #endif
 .endm
 

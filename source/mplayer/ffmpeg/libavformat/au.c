@@ -2,20 +2,20 @@
  * AU muxer and demuxer
  * Copyright (c) 2001 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -28,7 +28,6 @@
  */
 
 #include "avformat.h"
-#include "internal.h"
 #include "avio_internal.h"
 #include "pcm.h"
 #include "riff.h"
@@ -36,7 +35,7 @@
 /* if we don't know the size in advance */
 #define AU_UNKNOWN_SIZE ((uint32_t)(~0))
 
-/* The libavcodec codecs we support, and the IDs they have in the file */
+/* The ffmpeg codecs we support, and the IDs they have in the file */
 static const AVCodecTag codec_au_tags[] = {
     { CODEC_ID_PCM_MULAW, 1 },
     { CODEC_ID_PCM_S8, 2 },
@@ -118,9 +117,10 @@ static int au_probe(AVProbeData *p)
 }
 
 /* au input */
-static int au_read_header(AVFormatContext *s)
+static int au_read_header(AVFormatContext *s,
+                          AVFormatParameters *ap)
 {
-    int size, bps, data_size = 0;
+    int size;
     unsigned int tag;
     AVIOContext *pb = s->pb;
     unsigned int id, channels, rate;
@@ -132,12 +132,7 @@ static int au_read_header(AVFormatContext *s)
     if (tag != MKTAG('.', 's', 'n', 'd'))
         return -1;
     size = avio_rb32(pb); /* header size */
-    data_size = avio_rb32(pb); /* data size in bytes */
-
-    if (data_size < 0 && data_size != AU_UNKNOWN_SIZE) {
-        av_log(s, AV_LOG_ERROR, "Invalid negative data size '%d' found\n", data_size);
-        return AVERROR_INVALIDDATA;
-    }
+    avio_rb32(pb); /* data size */
 
     id = avio_rb32(pb);
     rate = avio_rb32(pb);
@@ -145,13 +140,8 @@ static int au_read_header(AVFormatContext *s)
 
     codec = ff_codec_get_id(codec_au_tags, id);
 
-    if (!(bps = av_get_bits_per_sample(codec))) {
+    if (!av_get_bits_per_sample(codec)) {
         av_log_ask_for_sample(s, "could not determine bits per sample\n");
-        return AVERROR_INVALIDDATA;
-    }
-
-    if (channels == 0 || channels > 64) {
-        av_log(s, AV_LOG_ERROR, "Invalid number of channels %d\n", channels);
         return AVERROR_INVALIDDATA;
     }
 
@@ -161,7 +151,7 @@ static int au_read_header(AVFormatContext *s)
     }
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return -1;
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -169,9 +159,7 @@ static int au_read_header(AVFormatContext *s)
     st->codec->codec_id = codec;
     st->codec->channels = channels;
     st->codec->sample_rate = rate;
-    if (data_size != AU_UNKNOWN_SIZE)
-    st->duration = (((int64_t)data_size)<<3) / (st->codec->channels * (int64_t)bps);
-    avpriv_set_pts_info(st, 64, 1, rate);
+    av_set_pts_info(st, 64, 1, rate);
     return 0;
 }
 
@@ -187,8 +175,11 @@ static int au_read_packet(AVFormatContext *s,
                        av_get_bits_per_sample(s->streams[0]->codec->codec_id) >> 3);
     if (ret < 0)
         return ret;
-    pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;
+
+    /* note: we need to modify the packet size here to handle the last
+       packet */
+    pkt->size = ret;
     return 0;
 }
 
@@ -199,8 +190,8 @@ AVInputFormat ff_au_demuxer = {
     .read_probe     = au_probe,
     .read_header    = au_read_header,
     .read_packet    = au_read_packet,
-    .read_seek      = ff_pcm_read_seek,
-    .codec_tag      = (const AVCodecTag* const []){ codec_au_tags, 0 },
+    .read_seek      = pcm_read_seek,
+    .codec_tag= (const AVCodecTag* const []){codec_au_tags, 0},
 };
 #endif
 
@@ -215,6 +206,6 @@ AVOutputFormat ff_au_muxer = {
     .write_header      = au_write_header,
     .write_packet      = au_write_packet,
     .write_trailer     = au_write_trailer,
-    .codec_tag         = (const AVCodecTag* const []){ codec_au_tags, 0 },
+    .codec_tag= (const AVCodecTag* const []){codec_au_tags, 0},
 };
 #endif //CONFIG_AU_MUXER

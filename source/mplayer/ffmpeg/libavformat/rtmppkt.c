@@ -2,26 +2,26 @@
  * RTMP input format
  * Copyright (c) 2009 Kostya Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavcodec/bytestream.h"
 #include "libavutil/avstring.h"
-#include "libavutil/intfloat.h"
+#include "libavutil/intfloat_readwrite.h"
 #include "avformat.h"
 
 #include "rtmppkt.h"
@@ -37,7 +37,7 @@ void ff_amf_write_bool(uint8_t **dst, int val)
 void ff_amf_write_number(uint8_t **dst, double val)
 {
     bytestream_put_byte(dst, AMF_DATA_TYPE_NUMBER);
-    bytestream_put_be64(dst, av_double2int(val));
+    bytestream_put_be64(dst, av_dbl2int(val));
 }
 
 void ff_amf_write_string(uint8_t **dst, const char *str)
@@ -79,7 +79,6 @@ int ff_rtmp_packet_read(URLContext *h, RTMPPacket *p,
     uint32_t extra = 0;
     enum RTMPPacketType type;
     int size = 0;
-    int ret;
 
     if (ffurl_read(h, &hdr, 1) != 1)
         return AVERROR(EIO);
@@ -130,9 +129,8 @@ int ff_rtmp_packet_read(URLContext *h, RTMPPacket *p,
     if (hdr != RTMP_PS_TWELVEBYTES)
         timestamp += prev_pkt[channel_id].timestamp;
 
-    if ((ret = ff_rtmp_packet_create(p, channel_id, type, timestamp,
-                                     data_size)) < 0)
-        return ret;
+    if (ff_rtmp_packet_create(p, channel_id, type, timestamp, data_size))
+        return -1;
     p->extra = extra;
     // save history
     prev_pkt[channel_id].channel_id = channel_id;
@@ -151,10 +149,7 @@ int ff_rtmp_packet_read(URLContext *h, RTMPPacket *p,
         offset    += chunk_size;
         size      += chunk_size;
         if (data_size > 0) {
-            if ((ret = ffurl_read_complete(h, &t, 1)) < 0) { // marker
-                ff_rtmp_packet_destroy(p);
-                return ret;
-            }
+            ffurl_read_complete(h, &t, 1); //marker
             size++;
             if (t != (0xC0 + channel_id))
                 return -1;
@@ -170,7 +165,6 @@ int ff_rtmp_packet_write(URLContext *h, RTMPPacket *pkt,
     int mode = RTMP_PS_TWELVEBYTES;
     int off = 0;
     int size = 0;
-    int ret;
 
     pkt->ts_delta = pkt->timestamp - prev_pkt[pkt->channel_id].timestamp;
 
@@ -222,18 +216,15 @@ int ff_rtmp_packet_write(URLContext *h, RTMPPacket *pkt,
     }
     prev_pkt[pkt->channel_id].extra      = pkt->extra;
 
-    if ((ret = ffurl_write(h, pkt_hdr, p - pkt_hdr)) < 0)
-        return ret;
+    ffurl_write(h, pkt_hdr, p-pkt_hdr);
     size = p - pkt_hdr + pkt->data_size;
     while (off < pkt->data_size) {
         int towrite = FFMIN(chunk_size, pkt->data_size - off);
-        if ((ret = ffurl_write(h, pkt->data + off, towrite)) < 0)
-            return ret;
+        ffurl_write(h, pkt->data + off, towrite);
         off += towrite;
         if (off < pkt->data_size) {
             uint8_t marker = 0xC0 | pkt->channel_id;
-            if ((ret = ffurl_write(h, &marker, 1)) < 0)
-                return ret;
+            ffurl_write(h, &marker, 1);
             size++;
         }
     }
@@ -327,7 +318,7 @@ int ff_amf_get_field_value(const uint8_t *data, const uint8_t *data_end,
         if (size == namelen && !memcmp(data-size, name, namelen)) {
             switch (*data++) {
             case AMF_DATA_TYPE_NUMBER:
-                snprintf(dst, dst_size, "%g", av_int2double(AV_RB64(data)));
+                snprintf(dst, dst_size, "%g", av_int2dbl(AV_RB64(data)));
                 break;
             case AMF_DATA_TYPE_BOOL:
                 snprintf(dst, dst_size, "%s", *data ? "true" : "false");
@@ -379,7 +370,7 @@ static void ff_amf_tag_contents(void *ctx, const uint8_t *data, const uint8_t *d
         return;
     switch (*data++) {
     case AMF_DATA_TYPE_NUMBER:
-        av_log(ctx, AV_LOG_DEBUG, " number %g\n", av_int2double(AV_RB64(data)));
+        av_log(ctx, AV_LOG_DEBUG, " number %g\n", av_int2dbl(AV_RB64(data)));
         return;
     case AMF_DATA_TYPE_BOOL:
         av_log(ctx, AV_LOG_DEBUG, " bool %d\n", *data);

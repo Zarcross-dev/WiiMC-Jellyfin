@@ -35,13 +35,13 @@ checkout(){
 update()(
     cd ${src} || return
     case "$repo" in
-        git:*) git pull --quiet ;;
+        git:*) git pull ;;
     esac
 )
 
 configure()(
     cd ${build} || return
-    ${shell} ${src}/configure                                           \
+    ${src}/configure                                                    \
         --prefix="${inst}"                                              \
         --samples="${samples}"                                          \
         --enable-gpl                                                    \
@@ -70,7 +70,7 @@ fate()(
 )
 
 clean(){
-    rm -rf ${build} ${inst}
+    rm -r ${build} ${inst}
 }
 
 report(){

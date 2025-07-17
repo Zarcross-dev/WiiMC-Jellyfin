@@ -2,20 +2,20 @@
  * filter layer
  * Copyright (c) 2007 Bobby Bingham
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -24,36 +24,60 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/rational.h"
 #include "libavutil/audioconvert.h"
-#include "libavutil/avassert.h"
-#include "libavutil/avstring.h"
-
+#include "libavutil/imgutils.h"
 #include "avfilter.h"
-#include "formats.h"
 #include "internal.h"
 
 unsigned avfilter_version(void) {
-    av_assert0(LIBAVFILTER_VERSION_MICRO >= 100);
     return LIBAVFILTER_VERSION_INT;
 }
 
 const char *avfilter_configuration(void)
 {
-    return FFMPEG_CONFIGURATION;
+    return LIBAV_CONFIGURATION;
 }
 
 const char *avfilter_license(void)
 {
 #define LICENSE_PREFIX "libavfilter license: "
-    return LICENSE_PREFIX FFMPEG_LICENSE + sizeof(LICENSE_PREFIX) - 1;
+    return LICENSE_PREFIX LIBAV_LICENSE + sizeof(LICENSE_PREFIX) - 1;
 }
 
-void ff_command_queue_pop(AVFilterContext *filter)
+AVFilterBufferRef *avfilter_ref_buffer(AVFilterBufferRef *ref, int pmask)
 {
-    AVFilterCommand *c= filter->command_queue;
-    av_freep(&c->arg);
-    av_freep(&c->command);
-    filter->command_queue= c->next;
-    av_free(c);
+    AVFilterBufferRef *ret = av_malloc(sizeof(AVFilterBufferRef));
+    if (!ret)
+        return NULL;
+    *ret = *ref;
+    if (ref->type == AVMEDIA_TYPE_VIDEO) {
+        ret->video = av_malloc(sizeof(AVFilterBufferRefVideoProps));
+        if (!ret->video) {
+            av_free(ret);
+            return NULL;
+        }
+        *ret->video = *ref->video;
+    } else if (ref->type == AVMEDIA_TYPE_AUDIO) {
+        ret->audio = av_malloc(sizeof(AVFilterBufferRefAudioProps));
+        if (!ret->audio) {
+            av_free(ret);
+            return NULL;
+        }
+        *ret->audio = *ref->audio;
+    }
+    ret->perms &= pmask;
+    ret->buf->refcount ++;
+    return ret;
+}
+
+void avfilter_unref_buffer(AVFilterBufferRef *ref)
+{
+    if (!ref)
+        return;
+    if (!(--ref->buf->refcount))
+        ref->buf->free(ref->buf);
+    av_free(ref->video);
+    av_free(ref->audio);
+    av_free(ref);
 }
 
 void avfilter_insert_pad(unsigned idx, unsigned *count, size_t padidx_off,
@@ -107,17 +131,6 @@ int avfilter_link(AVFilterContext *src, unsigned srcpad,
     return 0;
 }
 
-void avfilter_link_free(AVFilterLink **link)
-{
-    if (!*link)
-        return;
-
-    if ((*link)->pool)
-        ff_free_pool((*link)->pool);
-
-    av_freep(link);
-}
-
 int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
                            unsigned filt_srcpad_idx, unsigned filt_dstpad_idx)
 {
@@ -145,12 +158,6 @@ int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
     if (link->out_formats)
         avfilter_formats_changeref(&link->out_formats,
                                    &filt->outputs[filt_dstpad_idx]->out_formats);
-    if (link->out_channel_layouts)
-        ff_channel_layouts_changeref(&link->out_channel_layouts,
-                                     &filt->outputs[filt_dstpad_idx]->out_channel_layouts);
-    if (link->out_samplerates)
-        avfilter_formats_changeref(&link->out_samplerates,
-                                   &filt->outputs[filt_dstpad_idx]->out_samplerates);
 
     return 0;
 }
@@ -163,12 +170,8 @@ int avfilter_config_links(AVFilterContext *filter)
 
     for (i = 0; i < filter->input_count; i ++) {
         AVFilterLink *link = filter->inputs[i];
-        AVFilterLink *inlink = link->src->input_count ?
-            link->src->inputs[0] : NULL;
 
         if (!link) continue;
-
-        link->current_pts = AV_NOPTS_VALUE;
 
         switch (link->init_state) {
         case AVLINK_INIT:
@@ -182,55 +185,24 @@ int avfilter_config_links(AVFilterContext *filter)
             if ((ret = avfilter_config_links(link->src)) < 0)
                 return ret;
 
-            if (!(config_link = link->srcpad->config_props)) {
-                if (link->src->input_count != 1) {
-                    av_log(link->src, AV_LOG_ERROR, "Source filters and filters "
-                                                    "with more than one input "
-                                                    "must set config_props() "
-                                                    "callbacks on all outputs\n");
-                    return AVERROR(EINVAL);
-                }
-            } else if ((ret = config_link(link)) < 0)
+            if (!(config_link = link->srcpad->config_props))
+                config_link  = avfilter_default_config_output_link;
+            if ((ret = config_link(link)) < 0)
                 return ret;
 
-            switch (link->type) {
-            case AVMEDIA_TYPE_VIDEO:
-                if (!link->time_base.num && !link->time_base.den)
-                    link->time_base = inlink ? inlink->time_base : AV_TIME_BASE_Q;
+            if (link->time_base.num == 0 && link->time_base.den == 0)
+                link->time_base = link->src && link->src->input_count ?
+                    link->src->inputs[0]->time_base : AV_TIME_BASE_Q;
 
-                if (!link->sample_aspect_ratio.num && !link->sample_aspect_ratio.den)
-                    link->sample_aspect_ratio = inlink ?
-                        inlink->sample_aspect_ratio : (AVRational){1,1};
+            if (link->sample_aspect_ratio.num == 0 && link->sample_aspect_ratio.den == 0)
+                link->sample_aspect_ratio = link->src->input_count ?
+                    link->src->inputs[0]->sample_aspect_ratio : (AVRational){1,1};
 
-                if (inlink) {
-                    if (!link->w)
-                        link->w = inlink->w;
-                    if (!link->h)
-                        link->h = inlink->h;
-                } else if (!link->w || !link->h) {
-                    av_log(link->src, AV_LOG_ERROR,
-                           "Video source filters must set their output link's "
-                           "width and height\n");
-                    return AVERROR(EINVAL);
-                }
-                break;
+            if (link->sample_rate == 0 && link->src && link->src->input_count)
+                link->sample_rate = link->src->inputs[0]->sample_rate;
 
-            case AVMEDIA_TYPE_AUDIO:
-                if (inlink) {
-                    if (!link->sample_rate)
-                        link->sample_rate = inlink->sample_rate;
-                    if (!link->time_base.num && !link->time_base.den)
-                        link->time_base = inlink->time_base;
-                } else if (!link->sample_rate) {
-                    av_log(link->src, AV_LOG_ERROR,
-                           "Audio source filters must set their output link's "
-                           "sample_rate\n");
-                    return AVERROR(EINVAL);
-                }
-
-                if (!link->time_base.num && !link->time_base.den)
-                    link->time_base = (AVRational) {1, link->sample_rate};
-            }
+            if (link->channel_layout == 0 && link->src && link->src->input_count)
+                link->channel_layout = link->src->inputs[0]->channel_layout;
 
             if ((config_link = link->dstpad->config_props))
                 if ((ret = config_link(link)) < 0)
@@ -243,11 +215,55 @@ int avfilter_config_links(AVFilterContext *filter)
     return 0;
 }
 
-void ff_dlog_link(void *ctx, AVFilterLink *link, int end)
+#ifdef DEBUG
+static char *ff_get_ref_perms_string(char *buf, size_t buf_size, int perms)
+{
+    snprintf(buf, buf_size, "%s%s%s%s%s%s",
+             perms & AV_PERM_READ      ? "r" : "",
+             perms & AV_PERM_WRITE     ? "w" : "",
+             perms & AV_PERM_PRESERVE  ? "p" : "",
+             perms & AV_PERM_REUSE     ? "u" : "",
+             perms & AV_PERM_REUSE2    ? "U" : "",
+             perms & AV_PERM_NEG_LINESIZES ? "n" : "");
+    return buf;
+}
+#endif
+
+static void ff_dlog_ref(void *ctx, AVFilterBufferRef *ref, int end)
+{
+    av_unused char buf[16];
+    av_dlog(ctx,
+            "ref[%p buf:%p refcount:%d perms:%s data:%p linesize[%d, %d, %d, %d] pts:%"PRId64" pos:%"PRId64,
+            ref, ref->buf, ref->buf->refcount, ff_get_ref_perms_string(buf, sizeof(buf), ref->perms), ref->data[0],
+            ref->linesize[0], ref->linesize[1], ref->linesize[2], ref->linesize[3],
+            ref->pts, ref->pos);
+
+    if (ref->video) {
+        av_dlog(ctx, " a:%d/%d s:%dx%d i:%c iskey:%d type:%c",
+                ref->video->pixel_aspect.num, ref->video->pixel_aspect.den,
+                ref->video->w, ref->video->h,
+                !ref->video->interlaced     ? 'P' :         /* Progressive  */
+                ref->video->top_field_first ? 'T' : 'B',    /* Top / Bottom */
+                ref->video->key_frame,
+                av_get_picture_type_char(ref->video->pict_type));
+    }
+    if (ref->audio) {
+        av_dlog(ctx, " cl:%"PRId64"d sn:%d s:%d sr:%d p:%d",
+                ref->audio->channel_layout,
+                ref->audio->nb_samples,
+                ref->audio->size,
+                ref->audio->sample_rate,
+                ref->audio->planar);
+    }
+
+    av_dlog(ctx, "]%s", end ? "\n" : "");
+}
+
+static void ff_dlog_link(void *ctx, AVFilterLink *link, int end)
 {
     if (link->type == AVMEDIA_TYPE_VIDEO) {
         av_dlog(ctx,
-                "link[%p s:%dx%d fmt:%s %s->%s]%s",
+                "link[%p s:%dx%d fmt:%-16s %-16s->%-16s]%s",
                 link, link->w, link->h,
                 av_pix_fmt_descriptors[link->format].name,
                 link->src ? link->src->filter->name : "",
@@ -258,13 +274,95 @@ void ff_dlog_link(void *ctx, AVFilterLink *link, int end)
         av_get_channel_layout_string(buf, sizeof(buf), -1, link->channel_layout);
 
         av_dlog(ctx,
-                "link[%p r:%d cl:%s fmt:%s %s->%s]%s",
-                link, (int)link->sample_rate, buf,
+                "link[%p r:%"PRId64" cl:%s fmt:%-16s %-16s->%-16s]%s",
+                link, link->sample_rate, buf,
                 av_get_sample_fmt_name(link->format),
                 link->src ? link->src->filter->name : "",
                 link->dst ? link->dst->filter->name : "",
                 end ? "\n" : "");
     }
+}
+
+#define FF_DPRINTF_START(ctx, func) av_dlog(NULL, "%-16s: ", #func)
+
+AVFilterBufferRef *avfilter_get_video_buffer(AVFilterLink *link, int perms, int w, int h)
+{
+    AVFilterBufferRef *ret = NULL;
+
+    av_unused char buf[16];
+    FF_DPRINTF_START(NULL, get_video_buffer); ff_dlog_link(NULL, link, 0);
+    av_dlog(NULL, " perms:%s w:%d h:%d\n", ff_get_ref_perms_string(buf, sizeof(buf), perms), w, h);
+
+    if (link->dstpad->get_video_buffer)
+        ret = link->dstpad->get_video_buffer(link, perms, w, h);
+
+    if (!ret)
+        ret = avfilter_default_get_video_buffer(link, perms, w, h);
+
+    if (ret)
+        ret->type = AVMEDIA_TYPE_VIDEO;
+
+    FF_DPRINTF_START(NULL, get_video_buffer); ff_dlog_link(NULL, link, 0); av_dlog(NULL, " returning "); ff_dlog_ref(NULL, ret, 1);
+
+    return ret;
+}
+
+AVFilterBufferRef *
+avfilter_get_video_buffer_ref_from_arrays(uint8_t *data[4], int linesize[4], int perms,
+                                          int w, int h, enum PixelFormat format)
+{
+    AVFilterBuffer *pic = av_mallocz(sizeof(AVFilterBuffer));
+    AVFilterBufferRef *picref = av_mallocz(sizeof(AVFilterBufferRef));
+
+    if (!pic || !picref)
+        goto fail;
+
+    picref->buf = pic;
+    picref->buf->free = ff_avfilter_default_free_buffer;
+    if (!(picref->video = av_mallocz(sizeof(AVFilterBufferRefVideoProps))))
+        goto fail;
+
+    pic->w = picref->video->w = w;
+    pic->h = picref->video->h = h;
+
+    /* make sure the buffer gets read permission or it's useless for output */
+    picref->perms = perms | AV_PERM_READ;
+
+    pic->refcount = 1;
+    picref->type = AVMEDIA_TYPE_VIDEO;
+    pic->format = picref->format = format;
+
+    memcpy(pic->data,        data,          sizeof(pic->data));
+    memcpy(pic->linesize,    linesize,      sizeof(pic->linesize));
+    memcpy(picref->data,     pic->data,     sizeof(picref->data));
+    memcpy(picref->linesize, pic->linesize, sizeof(picref->linesize));
+
+    return picref;
+
+fail:
+    if (picref && picref->video)
+        av_free(picref->video);
+    av_free(picref);
+    av_free(pic);
+    return NULL;
+}
+
+AVFilterBufferRef *avfilter_get_audio_buffer(AVFilterLink *link, int perms,
+                                             enum AVSampleFormat sample_fmt, int size,
+                                             int64_t channel_layout, int planar)
+{
+    AVFilterBufferRef *ret = NULL;
+
+    if (link->dstpad->get_audio_buffer)
+        ret = link->dstpad->get_audio_buffer(link, perms, sample_fmt, size, channel_layout, planar);
+
+    if (!ret)
+        ret = avfilter_default_get_audio_buffer(link, perms, sample_fmt, size, channel_layout, planar);
+
+    if (ret)
+        ret->type = AVMEDIA_TYPE_AUDIO;
+
+    return ret;
 }
 
 int avfilter_request_frame(AVFilterLink *link)
@@ -296,27 +394,133 @@ int avfilter_poll_frame(AVFilterLink *link)
     return min;
 }
 
-void ff_update_link_current_pts(AVFilterLink *link, int64_t pts)
+/* XXX: should we do the duplicating of the picture ref here, instead of
+ * forcing the source filter to do it? */
+void avfilter_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
 {
-    if (pts == AV_NOPTS_VALUE)
-        return;
-    link->current_pts =  pts; /* TODO use duration */
-    if (link->graph && link->age_index >= 0)
-        ff_avfilter_graph_update_heap(link->graph, link);
-}
+    void (*start_frame)(AVFilterLink *, AVFilterBufferRef *);
+    AVFilterPad *dst = link->dstpad;
+    int perms = picref->perms;
 
-int avfilter_process_command(AVFilterContext *filter, const char *cmd, const char *arg, char *res, int res_len, int flags)
-{
-    if(!strcmp(cmd, "ping")){
-        av_strlcatf(res, res_len, "pong from:%s %s\n", filter->filter->name, filter->name);
-        return 0;
-    }else if(filter->filter->process_command) {
-        return filter->filter->process_command(filter, cmd, arg, res, res_len, flags);
+    FF_DPRINTF_START(NULL, start_frame); ff_dlog_link(NULL, link, 0); av_dlog(NULL, " "); ff_dlog_ref(NULL, picref, 1);
+
+    if (!(start_frame = dst->start_frame))
+        start_frame = avfilter_default_start_frame;
+
+    if (picref->linesize[0] < 0)
+        perms |= AV_PERM_NEG_LINESIZES;
+    /* prepare to copy the picture if it has insufficient permissions */
+    if ((dst->min_perms & perms) != dst->min_perms || dst->rej_perms & perms) {
+        av_log(link->dst, AV_LOG_DEBUG,
+                "frame copy needed (have perms %x, need %x, reject %x)\n",
+                picref->perms,
+                link->dstpad->min_perms, link->dstpad->rej_perms);
+
+        link->cur_buf = avfilter_get_video_buffer(link, dst->min_perms, link->w, link->h);
+        link->src_buf = picref;
+        avfilter_copy_buffer_ref_props(link->cur_buf, link->src_buf);
     }
-    return AVERROR(ENOSYS);
+    else
+        link->cur_buf = picref;
+
+    start_frame(link, link->cur_buf);
 }
 
-#define MAX_REGISTERED_AVFILTERS_NB 128
+void avfilter_end_frame(AVFilterLink *link)
+{
+    void (*end_frame)(AVFilterLink *);
+
+    if (!(end_frame = link->dstpad->end_frame))
+        end_frame = avfilter_default_end_frame;
+
+    end_frame(link);
+
+    /* unreference the source picture if we're feeding the destination filter
+     * a copied version dues to permission issues */
+    if (link->src_buf) {
+        avfilter_unref_buffer(link->src_buf);
+        link->src_buf = NULL;
+    }
+}
+
+void avfilter_draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
+{
+    uint8_t *src[4], *dst[4];
+    int i, j, vsub;
+    void (*draw_slice)(AVFilterLink *, int, int, int);
+
+    FF_DPRINTF_START(NULL, draw_slice); ff_dlog_link(NULL, link, 0); av_dlog(NULL, " y:%d h:%d dir:%d\n", y, h, slice_dir);
+
+    /* copy the slice if needed for permission reasons */
+    if (link->src_buf) {
+        vsub = av_pix_fmt_descriptors[link->format].log2_chroma_h;
+
+        for (i = 0; i < 4; i++) {
+            if (link->src_buf->data[i]) {
+                src[i] = link->src_buf-> data[i] +
+                    (y >> (i==1 || i==2 ? vsub : 0)) * link->src_buf-> linesize[i];
+                dst[i] = link->cur_buf->data[i] +
+                    (y >> (i==1 || i==2 ? vsub : 0)) * link->cur_buf->linesize[i];
+            } else
+                src[i] = dst[i] = NULL;
+        }
+
+        for (i = 0; i < 4; i++) {
+            int planew =
+                av_image_get_linesize(link->format, link->cur_buf->video->w, i);
+
+            if (!src[i]) continue;
+
+            for (j = 0; j < h >> (i==1 || i==2 ? vsub : 0); j++) {
+                memcpy(dst[i], src[i], planew);
+                src[i] += link->src_buf->linesize[i];
+                dst[i] += link->cur_buf->linesize[i];
+            }
+        }
+    }
+
+    if (!(draw_slice = link->dstpad->draw_slice))
+        draw_slice = avfilter_default_draw_slice;
+    draw_slice(link, y, h, slice_dir);
+}
+
+void avfilter_filter_samples(AVFilterLink *link, AVFilterBufferRef *samplesref)
+{
+    void (*filter_samples)(AVFilterLink *, AVFilterBufferRef *);
+    AVFilterPad *dst = link->dstpad;
+
+    FF_DPRINTF_START(NULL, filter_samples); ff_dlog_link(NULL, link, 1);
+
+    if (!(filter_samples = dst->filter_samples))
+        filter_samples = avfilter_default_filter_samples;
+
+    /* prepare to copy the samples if the buffer has insufficient permissions */
+    if ((dst->min_perms & samplesref->perms) != dst->min_perms ||
+        dst->rej_perms & samplesref->perms) {
+
+        av_log(link->dst, AV_LOG_DEBUG,
+               "Copying audio data in avfilter (have perms %x, need %x, reject %x)\n",
+               samplesref->perms, link->dstpad->min_perms, link->dstpad->rej_perms);
+
+        link->cur_buf = avfilter_default_get_audio_buffer(link, dst->min_perms,
+                                                          samplesref->format,
+                                                          samplesref->audio->size,
+                                                          samplesref->audio->channel_layout,
+                                                          samplesref->audio->planar);
+        link->cur_buf->pts                = samplesref->pts;
+        link->cur_buf->audio->sample_rate = samplesref->audio->sample_rate;
+
+        /* Copy actual data into new samples buffer */
+        memcpy(link->cur_buf->data[0], samplesref->data[0], samplesref->audio->size);
+
+        avfilter_unref_buffer(samplesref);
+    } else
+        link->cur_buf = samplesref;
+
+    filter_samples(link, link->cur_buf);
+}
+
+#define MAX_REGISTERED_AVFILTERS_NB 64
 
 static AVFilter *registered_avfilters[MAX_REGISTERED_AVFILTERS_NB + 1];
 
@@ -335,13 +539,8 @@ AVFilter *avfilter_get_by_name(const char *name)
 
 int avfilter_register(AVFilter *filter)
 {
-    if (next_registered_avfilter_idx == MAX_REGISTERED_AVFILTERS_NB) {
-        av_log(NULL, AV_LOG_ERROR,
-               "Maximum number of registered filters %d reached, "
-               "impossible to register filter with name '%s'\n",
-               MAX_REGISTERED_AVFILTERS_NB, filter->name);
-        return AVERROR(ENOMEM);
-    }
+    if (next_registered_avfilter_idx == MAX_REGISTERED_AVFILTERS_NB)
+        return -1;
 
     registered_avfilters[next_registered_avfilter_idx++] = filter;
     return 0;
@@ -373,9 +572,10 @@ static const char *filter_name(void *p)
 }
 
 static const AVClass avfilter_class = {
-    .class_name = "AVFilter",
-    .item_name  = filter_name,
-    .version    = LIBAVUTIL_VERSION_INT,
+    "AVFilter",
+    filter_name,
+    NULL,
+    LIBAVUTIL_VERSION_INT,
 };
 
 int avfilter_open(AVFilterContext **filter_ctx, AVFilter *filter, const char *inst_name)
@@ -441,9 +641,6 @@ void avfilter_free(AVFilterContext *filter)
     int i;
     AVFilterLink *link;
 
-    if (!filter)
-        return;
-
     if (filter->filter->uninit)
         filter->filter->uninit(filter);
 
@@ -453,12 +650,8 @@ void avfilter_free(AVFilterContext *filter)
                 link->src->outputs[link->srcpad - link->src->output_pads] = NULL;
             avfilter_formats_unref(&link->in_formats);
             avfilter_formats_unref(&link->out_formats);
-            avfilter_formats_unref(&link->in_samplerates);
-            avfilter_formats_unref(&link->out_samplerates);
-            ff_channel_layouts_unref(&link->in_channel_layouts);
-            ff_channel_layouts_unref(&link->out_channel_layouts);
         }
-        avfilter_link_free(&link);
+        av_freep(&link);
     }
     for (i = 0; i < filter->output_count; i++) {
         if ((link = filter->outputs[i])) {
@@ -466,12 +659,8 @@ void avfilter_free(AVFilterContext *filter)
                 link->dst->inputs[link->dstpad - link->dst->input_pads] = NULL;
             avfilter_formats_unref(&link->in_formats);
             avfilter_formats_unref(&link->out_formats);
-            avfilter_formats_unref(&link->in_samplerates);
-            avfilter_formats_unref(&link->out_samplerates);
-            ff_channel_layouts_unref(&link->in_channel_layouts);
-            ff_channel_layouts_unref(&link->out_channel_layouts);
         }
-        avfilter_link_free(&link);
+        av_freep(&link);
     }
 
     av_freep(&filter->name);
@@ -480,9 +669,6 @@ void avfilter_free(AVFilterContext *filter)
     av_freep(&filter->inputs);
     av_freep(&filter->outputs);
     av_freep(&filter->priv);
-    while(filter->command_queue){
-        ff_command_queue_pop(filter);
-    }
     av_free(filter);
 }
 
@@ -494,3 +680,4 @@ int avfilter_init_filter(AVFilterContext *filter, const char *args, void *opaque
         ret = filter->filter->init(filter, args, opaque);
     return ret;
 }
+

@@ -2,20 +2,20 @@
  * RTP/Quicktime support.
  * Copyright (c) 2009 Ronald S. Bultje
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,7 +26,6 @@
  */
 
 #include "avformat.h"
-#include "internal.h"
 #include "avio_internal.h"
 #include "rtp.h"
 #include "rtpdec.h"
@@ -111,7 +110,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
             (st->codec->codec_type == AVMEDIA_TYPE_AUDIO &&
                  tag != MKTAG('s','o','u','n')))
             return AVERROR_INVALIDDATA;
-        avpriv_set_pts_info(st, 32, 1, avio_rb32(&pb));
+        av_set_pts_info(st, 32, 1, avio_rb32(&pb));
 
         if (pos + data_len > len)
             return AVERROR_INVALIDDATA;

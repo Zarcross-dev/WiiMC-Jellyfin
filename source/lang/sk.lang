@@ -1,1 +1,674 @@
-�
+msgid "********"
+msgstr "••••••••"
+
+msgid "Videos"
+msgstr "Videá"
+
+msgid "Music"
+msgstr "Hudba"
+
+msgid "Pictures"
+msgstr "Obrázky"
+
+msgid "Online Media"
+msgstr "Online Multimédia"
+
+msgid "Please Wait"
+msgstr "Prosím počkajte"
+
+msgid "Error"
+msgstr "Chyba"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Retry"
+msgstr "Znova"
+
+msgid "Cancel"
+msgstr "Zruš"
+
+msgid "Information"
+msgstr "Informácie"
+
+msgid "Credits"
+msgstr "Kredity"
+
+msgid "Play"
+msgstr "Hrať"
+
+msgid "Pause"
+msgstr "Pauza"
+
+msgid "Single Play"
+msgstr "Hrať jednotlivo"
+
+msgid "Continuous Play"
+msgstr "Hrať nepretržite"
+
+msgid "Shuffle"
+msgstr "Náhodny"
+
+msgid "Loop"
+msgstr "Slučka"
+
+msgid "Continuous"
+msgstr "Nepretržitý"
+
+msgid "Playlist"
+msgstr "Zoznam"
+
+msgid "Restart"
+msgstr "Reštart"
+
+msgid "Loading..."
+msgstr "Načitavam..."
+
+msgid "Global"
+msgstr "Globálne"
+
+msgid "Network"
+msgstr "Sieť"
+
+msgid "Subtitles"
+msgstr "Titulky"
+
+msgid "Subtitle Delay"
+msgstr "Oneskorenie tituliek"
+
+msgid "Settings"
+msgstr "Nastavenia"
+
+msgid "On"
+msgstr "Zap."
+
+msgid "Off"
+msgstr "Vyp."
+
+msgid "Always"
+msgstr "Stále"
+
+msgid "Disabled"
+msgstr "Zablokovaný"
+
+msgid "Skip Backward"
+msgstr "Preskočiť späť"
+
+msgid "Pause"
+msgstr "Pauza"
+
+msgid "Skip Forward"
+msgstr "Preskočiť vpred"
+
+msgid "Single"
+msgstr "Jediný"
+
+msgid "now playing"
+msgstr "Práve sa prehráva"
+
+msgid "Previous"
+msgstr "Predchádzajúci"
+
+msgid "Next"
+msgstr "Nasledujúci"
+
+msgid "Close"
+msgstr "Zatvor"
+
+msgid "DVD"
+msgstr "DVD"
+
+msgid "Go back"
+msgstr "Vrátiť sa"
+
+msgid "Update Available"
+msgstr "Aktualizácia je dostupná"
+
+msgid "An update is available!"
+msgstr "Aktualizácia je k dispozícii!"
+
+msgid "Update now"
+msgstr "Aktualizovať teraz"
+
+msgid "Update later"
+msgstr "Aktualizovať neskôr"
+
+msgid "Online media file not found."
+msgstr "Online multimedialny súbor nenájdený."
+
+msgid "Unrecognized DVD format!"
+msgstr "Nerozpoznaný DVD formát!"
+
+msgid "Port cannot be blank!"
+msgstr "Port nemôže byť prázdny!"
+
+msgid "Port is not a number!"
+msgstr "Port musí byť číslo!"
+
+msgid "Port is outside the allowed range (4-49151)!"
+msgstr "Port je mimo povolený rozsah (4 až 49151)!"
+
+msgid "Settings - Global"
+msgstr "Nastavenia - Globálne"
+
+msgid "Settings - Videos"
+msgstr "Nastavenia - Videá"
+
+msgid "Settings - Music"
+msgstr "Nastavenia - Hudba"
+
+msgid "Settings - Pictures"
+msgstr "Nastavenia - Obrázky"
+
+msgid "Settings - Online Media"
+msgstr "Nastavenia - Online Multimédia"
+
+msgid "Settings - Network"
+msgstr "Nastavenia - Sieť"
+
+msgid "Settings - DVD"
+msgstr "Nastavenia - DVD"
+
+msgid "File Extensions"
+msgstr "Prípony súborov"
+
+msgid "Language"
+msgstr "Jazyk"
+
+msgid "Volume"
+msgstr "Hlasitosť"
+
+msgid "Exit Action"
+msgstr "Ukončiť akciu"
+
+msgid "Wiimote Rumble"
+msgstr "Vibrovanie Wiimote"
+
+msgid "Hide"
+msgstr "Skryť"
+
+msgid "Show"
+msgstr "Zobraziť"
+
+msgid "Auto"
+msgstr "Automaticky"
+
+msgid "Return to Wii Menu"
+msgstr "Napäť do Wii Menu"
+
+msgid "Power Off Wii"
+msgstr "Vypnuť Wii"
+
+msgid "Return to Loader"
+msgstr "Návrat do Loadera/HBC"
+
+msgid "Screen Zoom"
+msgstr "Zväčšenie obrazovky"
+
+msgid "Screen Position"
+msgstr "Pozícia obrazovky"
+
+msgid "Frame Dropping"
+msgstr "Prispôsbenie FPS"
+
+msgid "Aspect Ratio"
+msgstr "Pomer strán"
+
+msgid "Cache Fill"
+msgstr "Naplnenie vyrovnávacej pamäte"
+
+msgid "Audio Delay"
+msgstr "Oneskorenie zvuku"
+
+msgid "Auto-Resume"
+msgstr "Automatické obnovenie"
+
+msgid "Videos Files Folder"
+msgstr "Adresár s videami"
+
+msgid "Play Order"
+msgstr "Režim prehrávania"
+
+msgid "Music Files Folder"
+msgstr "Adresár s hudbou"
+
+msgid "Pictures Files Folder"
+msgstr "Adresár s obrázkami"
+
+msgid "Display Name"
+msgstr "Zobrazované meno"
+
+msgid "Share IP"
+msgstr "Zdieľaná IP"
+
+msgid "Share Name"
+msgstr "Zdieľané meno"
+
+msgid "Username"
+msgstr "Užívateľské meno"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "New Share"
+msgstr "Nove zdieľanie"
+
+msgid "Delete"
+msgstr "Zmazať"
+
+msgid "Delete Share"
+msgstr "Zmazať zdieľanie"
+
+msgid "Are you sure that you want to delete this share?"
+msgstr "Ste si istí, že chcete zmazať toto zdieľanie?"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "Folder"
+msgstr "Zložka"
+
+msgid "Mode"
+msgstr "Režim"
+
+msgid "New Site"
+msgstr "Nova stránka"
+
+msgid "Passive"
+msgstr "Pasívny"
+
+msgid "Active"
+msgstr "Aktívny"
+
+msgid "Delete Site"
+msgstr "Zmaž stránku"
+
+msgid "Are you sure that you want to delete this site?"
+msgstr "Ste si istí, že chcete zmazať túto stránku?"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Error loading file!"
+msgstr "Chyba načítania súboru!"
+
+msgid "Resume"
+msgstr "Znova"
+
+msgid "Stop Slideshow"
+msgstr "Zastaviť prezentáciu"
+
+msgid "Start Slideshow"
+msgstr "Spustiť prezentáciu"
+
+msgid "Slideshow Delay"
+msgstr "Ďalší obrázok za"
+
+msgid "Online Media Folder"
+msgstr "Adresár online multimédií"
+
+msgid "Add SMB Share"
+msgstr "Pridaj SMB"
+
+msgid "Add FTP Site"
+msgstr "Pridaj FTP"
+
+msgid "DVD Menu"
+msgstr "Menu DVD"
+
+msgid "Skip to Main Title"
+msgstr "Preskoč do hlavnej ponuky"
+
+msgid "Unable to Initialize MPlayer"
+msgstr "Nemožno inicializovať MPlayer"
+
+msgid "Unable to find a valid working path"
+msgstr "Nemožno nájsť platnú pracovnú cestu"
+
+msgid "Unable to change path to"
+msgstr "Nemožno zmeniť cestu k"
+
+msgid "Out of memory: too many files!"
+msgstr "Preplnená pamäť: príliš veľa súborov!"
+
+msgid "Directory name is too long!"
+msgstr "Názov adresára, je príliš dlhý!"
+
+msgid "SD Card"
+msgstr "SD karta"
+
+msgid "USB Mass Storage"
+msgstr "Veľkokapacitná pamäť USB"
+
+msgid "Data DVD"
+msgstr "Dátove DVD"
+
+msgid "USB drive not found!"
+msgstr "USB disk nebol nájdený!"
+
+msgid "SD card not found!"
+msgstr "SD karta nebola nájdená!"
+
+msgid "Loading DVD..."
+msgstr "Načítavanie DVD..."
+
+msgid "No disc inserted!"
+msgstr "Žiadny vložený disk!"
+
+msgid "Unsupported DVD."
+msgstr "Neplatné DVD."
+
+msgid "Up One Level"
+msgstr "O úroveň vyššie"
+
+msgid "Error opening"
+msgstr "Chyba pri otváraní"
+
+msgid "Warning"
+msgstr "Varovanie"
+
+msgid "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable."
+msgstr "Jeden alebo viac obrázkov v tomto adreári presiahli maximálnu veľkosť (6 MB) a nebude možné ich zobraziť"
+
+msgid "Error loading playlist!"
+msgstr "Chyba pri načítaní zoznamu!"
+
+msgid "Playlist does not contain any supported entries!"
+msgstr "Zoznam neobsahuje žiadne podporované formáty!"
+
+msgid "No Results Found"
+msgstr "Nie su žiadne výsledky"
+
+msgid "Your search did not match any media files."
+msgstr "Vaše vyhľadávanie nenašlo žiadne multimediálne súbory."
+
+msgid "Error opening file!"
+msgstr "Chyba pri otváraní súboru!"
+
+msgid "Saving..."
+msgstr "Ukladanie..."
+
+msgid "Error creating file!"
+msgstr "Chyba pri vytváraní súboru!"
+
+msgid "Error saving file!"
+msgstr "Chyba pri ukladaní súboru!"
+
+msgid "Playlist is Empty"
+msgstr "Zoznam je prázdny"
+
+msgid "Hover over items and push the + button to add them to your playlist."
+msgstr "Poukázanim kurzoru a stlačením + pridaš položku do zoznamu."
+
+msgid "Exit Playlist"
+msgstr "Zavrieť zoznam"
+
+msgid "Update successful!"
+msgstr "Aktualizacia úspešná!"
+
+msgid "Update failed!"
+msgstr "Aktualizacia zlihala!"
+
+msgid "Initializing network..."
+msgstr "Inicializujem sieť..."
+
+msgid "Check settings file."
+msgstr "Skontrolujte nastavenia súboru."
+
+msgid "Share name is blank."
+msgstr "Zdieľane meno je prázdne"
+
+msgid "Share IP is blank."
+msgstr "Zdieľana IP je prázdna."
+
+msgid "Invalid network share settings"
+msgstr "Neplatné nastavenia sieťoveho zdieľania"
+
+msgid "Connecting to network share..."
+msgstr "Pripojenie k sieti zdieľania..."
+
+msgid "Failed to connect to network share."
+msgstr "Nepodarilo sa pripojiť k zdieľaniu."
+
+msgid "IP is blank."
+msgstr "IP je prázdna."
+
+msgid "Username is blank."
+msgstr "Užívateľské meno je prázdne."
+
+msgid "Password is blank."
+msgstr "Heslo je prázdne."
+
+msgid "Invalid FTP site settings"
+msgstr "Neplatné FTP nastavenie"
+
+msgid "Connecting to FTP site..."
+msgstr "Pripojenie k serveru FTP..."
+
+msgid "Failed to connect to FTP site."
+msgstr "Nepodarilo sa pripojiť k serveru FTP."
+
+msgid "Could not find a valid SD or USB device - one is required for normal operation."
+msgstr "Nepodarilo sa nájsť platné SD alebo USB zariadenie - jedno je potrebné pre normálnu prevádzku."
+
+msgid "Could not create folder"
+msgstr "Nemožno vytvoriť priečinok"
+
+msgid "Saving settings..."
+msgstr "Ukladanie nastavenia..."
+
+msgid "Could not save settings to"
+msgstr "Nemožno uložiť nastavenia do"
+
+msgid "Thanks to"
+msgstr "Poďakovanie"
+
+msgid "This software is open source and may be copied, distributed, or modified under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "Tento softvér je open source a môže byť kopírovaný, rozširovaný, alebo zmenený za podmienok licencie GNU General Public License (GPL) verzia 2."
+
+msgid "Menu artwork"
+msgstr "Vizualizácia Menu"
+
+msgid "Coding"
+msgstr "Programovanie"
+
+msgid "Coding & menu design"
+msgstr "Kódovanie & design menu"
+
+msgid "Logo"
+msgstr "Logo"
+
+msgid "Version"
+msgstr "Verzia"
+
+msgid "Buffering..."
+msgstr "Buffering..."
+
+msgid "Buffering"
+msgstr "Buffering"
+
+msgid "Unable to initialize network (Error #:"
+msgstr "Nemožno inicializovať sieť (Chyba #:"
+
+msgid "Settings - Subtitles"
+msgstr "Nastavenia - Titulky"
+
+msgid "Visibility"
+msgstr "Viditeľnosť"
+
+msgid "Delay"
+msgstr "Oneskorenie"
+
+msgid "Codepage"
+msgstr "Kódová stránka"
+
+msgid "Subtitle Language"
+msgstr "Jazyk titulkov"
+
+msgid "Default"
+msgstr "Predvolené"
+
+msgid "Could not change language. Not enough memory!"
+msgstr "Nemôžem zmeniť jazyk. Nie je dostatok pamäte!"
+
+msgid "Font Required"
+msgstr "Požadované písmo"
+
+msgid "A new font is required to display this language."
+msgstr "Je potrebné nové písmo na zobrazenie tohto jazyka."
+
+msgid "Download font"
+msgstr "Stiahnite si písmo"
+
+msgid "Unable to save font file!"
+msgstr "Nemožno uložiť súbor s písmom!"
+
+msgid "Out of Memory"
+msgstr "Nedostatok pamäte"
+
+msgid "WiiMC does not have enough free memory to load the picture viewer."
+msgstr "WiiMC nemá dostatok voľnej pamäte pre načítanie prehliadača obrázkov."
+
+msgid "Close MPlayer"
+msgstr "Zatvor MPlayer"
+
+msgid "Subtitle Codepage"
+msgstr "Kódovanie titulkov"
+
+msgid "This directory contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "Tento adresár obsahuje viac položiek ako je maximálna povolené. Nie všetky pložky budú zobrazené."
+
+msgid "This playlist contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "Tento zoznam obsahuje viac položiek ako je maximálna povolené. Nie všetky pložky budú zobrazené."
+
+msgid "Downloading..."
+msgstr "Sťahovanie..."
+
+msgid "Unzipping..."
+msgstr "Rozbaľovanie..."
+
+msgid "Color"
+msgstr "Farba"
+
+msgid "Size"
+msgstr "Veľkosť"
+
+msgid "White"
+msgstr "Biela"
+
+msgid "Black"
+msgstr "Čierna"
+
+msgid "Yellow"
+msgstr "Žltá"
+
+msgid "Red"
+msgstr "Červená"
+
+msgid "Sleep Timer"
+msgstr "Časovač vypnuťia"
+
+msgid "sec"
+msgstr "sek"
+
+msgid "min"
+msgstr "min"
+
+msgid "Blue"
+msgstr "Modrá"
+
+msgid "Green"
+msgstr "Zelená"
+
+msgid "Grey"
+msgstr "Sivá"
+
+msgid "Orange"
+msgstr "Oranžová"
+
+msgid "Theme"
+msgstr "Téma"
+
+msgid "Purple (Default)"
+msgstr "Fialová (Predvolená)"
+
+msgid "Auto-Play Next Video"
+msgstr "Automaticky prehraj ďalšie video"
+
+msgid "Adding files to playlist..."
+msgstr "Pridávanie súborov do zoznamu..."
+
+msgid "Browser Folders"
+msgstr "Prehľadať priečinky"
+
+msgid "Static"
+msgstr "Staticky"
+
+msgid "Use Last Browsed"
+msgstr "Použiť posledné nájdené"
+
+msgid "Audio Language"
+msgstr "Jazyk zvuku"
+
+msgid "DVD Support"
+msgstr "DVD podpora"
+
+msgid "Enabled"
+msgstr "Povolené"
+
+msgid "Error loading YouTube file!"
+msgstr "Chyba načítania YouTube!"
+
+msgid "Rotate"
+msgstr "Otoč"
+
+msgid "Resolution exceeds maximum allowed (1280x720)!"
+msgstr "Prekročený limit rozlíšenia (1280x720)!"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "Aktuálny IOS bol zmenený (falošný-podpísaný). Môže to nepriaznivo ovplyvniť stabilitu a funkčnosť."
+
+msgid "Online media file is invalid."
+msgstr "Online multimediálny súbor je neplatný."
+
+msgid "Subtitle font file not found. Subtitles will not be visible."
+msgstr "Font titulkov nebol nájdený. Titulky nebudú viditeľné."
+
+msgid "WiiMC does not have DVD access - AHBPROT is not enabled."
+msgstr "WiiMC nemá prístup k DVD - AHBPROT nie je povolený"
+
+msgid "Starting Area"
+msgstr "Spúštacia oblasť"
+
+msgid "Error downloading font file!"
+msgstr "Chyba pri sťahovaní súboru s fontom!"
+
+msgid "Error opening font file!"
+msgstr "Chyba pri otváraní súboru s fontom!"
+
+msgid "Could not change language. The font file is corrupted!"
+msgstr "Nemôžem zmeniť jazyk. Subor s fontom je poškodený!"
+
+msgid "YouTube Quality"
+msgstr "Kvalita YouTube"
+
+msgid "Low (400x240)"
+msgstr "Nízka (400x240)"
+
+msgid "Medium (480x360)"
+msgstr "Stredná (480x360)"
+
+msgid "High (640x360)"
+msgstr "Vysoká (640x360)"
+
+msgid "The current IOS is unsupported. Functionality and/or stability may be adversely affected."
+msgstr "Aktuálny IOS nie je podporovaný. Funkčnosť alebo stabilita môže byť nepriaznivo ovplyvnená."
+
+msgid "Screensaver Delay"
+msgstr "Čas šetriča"
+
+msgid "Inactivity Shutdown"
+msgstr "Vypnutie pri nečinnosti"
+
+msgid "Invalid subtitle delay."
+msgstr "Neplatné oneskorenia titulkov."

@@ -11,20 +11,20 @@
  * 50 Mbps (DVCPRO50) support
  * Copyright (c) 2006 Daniel Maas <dmaas@maasdigital.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include <time.h>
@@ -32,17 +32,12 @@
 
 #include "avformat.h"
 #include "internal.h"
-#include "libavcodec/dv_profile.h"
 #include "libavcodec/dvdata.h"
 #include "dv.h"
 #include "libavutil/fifo.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/intreadwrite.h"
-#include "libavutil/opt.h"
-#include "libavutil/timecode.h"
 
 struct DVMuxContext {
-    AVClass          *av_class;
     const DVprofile*  sys;           /* current DV profile, e.g.: 525/60, 625/50 */
     int               n_ast;         /* number of stereo audio streams (up to 2) */
     AVStream         *ast[2];        /* stereo audio streams */
@@ -52,8 +47,6 @@ struct DVMuxContext {
     int               has_audio;     /* frame under contruction has audio */
     int               has_video;     /* frame under contruction has video */
     uint8_t           frame_buf[DV_MAX_FRAME_SIZE]; /* frame under contruction */
-    char             *tc_opt_str;    /* timecode option string */
-    AVTimecode        tc;            /* timecode context */
 };
 
 static const int dv_aaux_packs_dist[12][9] = {
@@ -81,15 +74,34 @@ static int dv_write_pack(enum dv_pack_type pack_id, DVMuxContext *c, uint8_t* bu
 {
     struct tm tc;
     time_t ct;
-    uint32_t timecode;
+    int ltc_frame;
     va_list ap;
 
     buf[0] = (uint8_t)pack_id;
     switch (pack_id) {
     case dv_timecode:
-        timecode  = av_timecode_get_smpte_from_framenum(&c->tc, c->frames);
-        timecode |= 1<<23 | 1<<15 | 1<<7 | 1<<6; // biphase and binary group flags
-        AV_WB32(buf + 1, timecode);
+        ct = (time_t)av_rescale_rnd(c->frames, c->sys->time_base.num,
+                                    c->sys->time_base.den, AV_ROUND_DOWN);
+        brktimegm(ct, &tc);
+        /*
+         * LTC drop-frame frame counter drops two frames (0 and 1) every
+         * minute, unless it is exactly divisible by 10
+         */
+        ltc_frame = (c->frames + 2 * ct / 60 - 2 * ct / 600) % c->sys->ltc_divisor;
+        buf[1] = (0                 << 7) | /* color frame: 0 - unsync; 1 - sync mode */
+                 (1                 << 6) | /* drop frame timecode: 0 - nondrop; 1 - drop */
+                 ((ltc_frame / 10)  << 4) | /* tens of frames */
+                 (ltc_frame % 10);          /* units of frames */
+        buf[2] = (1                 << 7) | /* biphase mark polarity correction: 0 - even; 1 - odd */
+                 ((tc.tm_sec / 10)  << 4) | /* tens of seconds */
+                 (tc.tm_sec % 10);          /* units of seconds */
+        buf[3] = (1                 << 7) | /* binary group flag BGF0 */
+                 ((tc.tm_min / 10)  << 4) | /* tens of minutes */
+                 (tc.tm_min % 10);          /* units of minutes */
+        buf[4] = (1                 << 7) | /* binary group flag BGF2 */
+                 (1                 << 6) | /* binary group flag BGF1 */
+                 ((tc.tm_hour / 10) << 4) | /* tens of hours */
+                 (tc.tm_hour % 10);         /* units of hours */
         break;
     case dv_audio_source:  /* AAUX source pack */
         va_start(ap, buf);
@@ -131,7 +143,7 @@ static int dv_write_pack(enum dv_pack_type pack_id, DVMuxContext *c, uint8_t* bu
     case dv_video_recdate:  /* VAUX recording date */
         ct = c->start_time + av_rescale_rnd(c->frames, c->sys->time_base.num,
                                             c->sys->time_base.den, AV_ROUND_DOWN);
-        ff_brktimegm(ct, &tc);
+        brktimegm(ct, &tc);
         buf[1] = 0xff; /* ds, tm, tens of time zone, units of time zone */
                        /* 0xff is very likely to be "unknown" */
         buf[2] = (3 << 6) | /* reserved -- always 1 */
@@ -147,7 +159,7 @@ static int dv_write_pack(enum dv_pack_type pack_id, DVMuxContext *c, uint8_t* bu
     case dv_video_rectime:  /* VAUX recording time */
         ct = c->start_time + av_rescale_rnd(c->frames, c->sys->time_base.num,
                                                        c->sys->time_base.den, AV_ROUND_DOWN);
-        ff_brktimegm(ct, &tc);
+        brktimegm(ct, &tc);
         buf[1] = (3 << 6) | /* reserved -- always 1 */
                  0x3f; /* tens of frame, units of frame: 0x3f - "unknown" ? */
         buf[2] = (1 << 7) | /* reserved -- always 1 */
@@ -180,8 +192,8 @@ static void dv_inject_audio(DVMuxContext *c, int channel, uint8_t* frame_ptr)
                 if (of*2 >= size)
                     continue;
 
-                frame_ptr[d]   = *av_fifo_peek2(c->audio_data[channel], of*2+1); // FIXME: maybe we have to admit
-                frame_ptr[d+1] = *av_fifo_peek2(c->audio_data[channel], of*2);   //        that DV is a big-endian PCM
+                frame_ptr[d]   = av_fifo_peek(c->audio_data[channel], of*2+1); // FIXME: maybe we have to admit
+                frame_ptr[d+1] = av_fifo_peek(c->audio_data[channel], of*2);   //        that DV is a big-endian PCM
             }
             frame_ptr += 16 * 80; /* 15 Video DIFs + 1 Audio DIF */
         }
@@ -313,7 +325,7 @@ static DVMuxContext* dv_init_mux(AVFormatContext* s)
                           c->ast[i]->codec->channels    != 2))
             goto bail_out;
     }
-    c->sys = avpriv_dv_codec_profile(vst->codec);
+    c->sys = ff_dv_codec_profile(vst->codec);
     if (!c->sys)
         goto bail_out;
 
@@ -326,6 +338,11 @@ static DVMuxContext* dv_init_mux(AVFormatContext* s)
     c->frames     = 0;
     c->has_audio  = 0;
     c->has_video  = 0;
+#if FF_API_TIMESTAMP
+    if (s->timestamp)
+        c->start_time = s->timestamp;
+    else
+#endif
     if (t = av_dict_get(s->metadata, "creation_time", NULL, 0))
         c->start_time = ff_iso8601_to_unix_time(t->value);
 
@@ -354,9 +371,6 @@ static void dv_delete_mux(DVMuxContext *c)
 
 static int dv_write_header(AVFormatContext *s)
 {
-    AVRational rate;
-    DVMuxContext *dvc = s->priv_data;
-
     if (!dv_init_mux(s)) {
         av_log(s, AV_LOG_ERROR, "Can't initialize DV format!\n"
                     "Make sure that you supply exactly two streams:\n"
@@ -364,12 +378,7 @@ static int dv_write_header(AVFormatContext *s)
                     "     (50Mbps allows an optional second audio stream)\n");
         return -1;
     }
-    rate.num = dvc->sys->ltc_divisor;
-    rate.den = 1;
-    if (dvc->tc_opt_str)
-        return av_timecode_init_from_string(&dvc->tc, rate,
-                                            dvc->tc_opt_str, s);
-    return av_timecode_init(&dvc->tc, rate, 0, 0, s);
+    return 0;
 }
 
 static int dv_write_packet(struct AVFormatContext *s, AVPacket *pkt)
@@ -398,16 +407,6 @@ static int dv_write_trailer(struct AVFormatContext *s)
     return 0;
 }
 
-static const AVClass class = {
-    .class_name = "dv",
-    .item_name  = av_default_item_name,
-    .version    = LIBAVUTIL_VERSION_INT,
-    .option     = (const AVOption[]){
-        {AV_TIMECODE_OPTION(DVMuxContext, tc_opt_str, AV_OPT_FLAG_ENCODING_PARAM)},
-        {NULL},
-    },
-};
-
 AVOutputFormat ff_dv_muxer = {
     .name              = "dv",
     .long_name         = NULL_IF_CONFIG_SMALL("DV video format"),
@@ -418,5 +417,4 @@ AVOutputFormat ff_dv_muxer = {
     .write_header      = dv_write_header,
     .write_packet      = dv_write_packet,
     .write_trailer     = dv_write_trailer,
-    .priv_class        = &class,
 };

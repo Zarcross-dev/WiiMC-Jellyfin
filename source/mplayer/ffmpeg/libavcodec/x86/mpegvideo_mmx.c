@@ -5,20 +5,20 @@
  * Optimized for ia32 CPUs by Nick Kurshev <nickols_k@mail.ru>
  * h263, mpeg1, mpeg2 dequantizer & draw_edges by Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -29,7 +29,7 @@
 #include "libavcodec/mpegvideo.h"
 #include "dsputil_mmx.h"
 
-extern uint16_t ff_inv_zigzag_direct16[64];
+extern uint16_t inv_zigzag_direct16[64];
 
 
 static void dct_unquantize_h263_intra_mmx(MpegEncContext *s,
@@ -626,7 +626,7 @@ static void  denoise_dct_sse2(MpegEncContext *s, DCTELEM *block){
 #include "mpegvideo_mmx_template.c"
 #endif
 
-void ff_MPV_common_init_mmx(MpegEncContext *s)
+void MPV_common_init_mmx(MpegEncContext *s)
 {
     int mm_flags = av_get_cpu_flags();
 

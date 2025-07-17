@@ -37,38 +37,68 @@
 #include "libmpcodecs/vd.h"
 #include "libvo/video_out.h"
 #include "mp_core.h"
+#include "stream/stream.h"
 
 int uiGotoTheNext = 1;
 
 void uiFullScreen(void)
 {
-    if (!guiInfo.VideoWindow)
+    if (!guiInfo.VideoWindow && guiInfo.Playing)
         return;
 
-    wsFullScreen(&guiApp.videoWindow);
+    if (guiInfo.Playing && guiApp.subWindow.isFullScreen) {
+        guiApp.subWindow.OldWidth  = guiInfo.VideoWidth;
+        guiApp.subWindow.OldHeight = guiInfo.VideoHeight;
 
-    vo_fs = guiApp.videoWindow.isFullScreen;
+        switch (guiApp.sub.x) {
+        case -1:
+            guiApp.subWindow.OldX = wsMaxX / 2 - guiApp.subWindow.OldWidth / 2 + wsOrgX;
+            break;
 
-    wsSetLayer(wsDisplay, guiApp.mainWindow.WindowID, guiApp.videoWindow.isFullScreen);
+        case -2:
+            guiApp.subWindow.OldX = wsMaxX - guiApp.subWindow.OldWidth + wsOrgX;
+            break;
+
+        default:
+            guiApp.subWindow.OldX = guiApp.sub.x;
+            break;
+        }
+
+        switch (guiApp.sub.y) {
+        case -1:
+            guiApp.subWindow.OldY = wsMaxY / 2 - guiApp.subWindow.OldHeight / 2 + wsOrgY;
+            break;
+
+        case -2:
+            guiApp.subWindow.OldY = wsMaxY - guiApp.subWindow.OldHeight + wsOrgY;
+            break;
+
+        default:
+            guiApp.subWindow.OldY = guiApp.sub.y;
+            break;
+        }
+    }
+
+    if (guiInfo.Playing || gtkShowVideoWindow)
+        wsFullScreen(&guiApp.subWindow);
+
+    fullscreen = vo_fs = guiApp.subWindow.isFullScreen;
+    wsSetLayer(wsDisplay, guiApp.mainWindow.WindowID, guiApp.subWindow.isFullScreen);
 
     if (guiApp.menuIsPresent)
-        wsSetLayer(wsDisplay, guiApp.menuWindow.WindowID, guiApp.videoWindow.isFullScreen);
+        wsSetLayer(wsDisplay, guiApp.menuWindow.WindowID, guiApp.subWindow.isFullScreen);
 
     if (guiInfo.Playing)
-        wsSetBackgroundRGB(&guiApp.videoWindow, 0, 0, 0);
+        wsSetBackgroundRGB(&guiApp.subWindow, 0, 0, 0);
     else
-        wsSetBackgroundRGB(&guiApp.videoWindow, guiApp.video.R, guiApp.video.G, guiApp.video.B);
+        wsSetBackgroundRGB(&guiApp.subWindow, guiApp.sub.R, guiApp.sub.G, guiApp.sub.B);
 }
 
 void uiPlay(void)
 {
-    if (guiInfo.Playing == GUI_PLAY)
-        return;
-
-    if (guiInfo.StreamType != STREAMTYPE_CDDA &&
-        guiInfo.StreamType != STREAMTYPE_VCD &&
-        guiInfo.StreamType != STREAMTYPE_DVD &&
-        (!guiInfo.Filename || (guiInfo.Filename[0] == 0)))
+    if (!guiInfo.Filename ||
+        (guiInfo.Filename[0] == 0) ||
+        (guiInfo.Playing == GUI_PLAY))
         return;
 
     if (guiInfo.Playing == GUI_PAUSE) {
@@ -77,9 +107,9 @@ void uiPlay(void)
     }
 
     gui(GUI_SET_STATE, (void *)GUI_PLAY);
-    uiVideoRender = 0;
-    wsSetBackgroundRGB(&guiApp.videoWindow, 0, 0, 0);
-    wsClearWindow(guiApp.videoWindow);
+    uiSubRender = 0;
+    wsSetBackgroundRGB(&guiApp.subWindow, 0, 0, 0);
+    wsClearWindow(guiApp.subWindow);
 }
 
 void uiPause(void)
@@ -99,11 +129,11 @@ void uiPause(void)
 void uiState(void)
 {
     if (guiInfo.Playing == GUI_STOP || guiInfo.Playing == GUI_PAUSE) {
-        btnSet(evPlaySwitchToPause, btnReleased);
-        btnSet(evPauseSwitchToPlay, btnDisabled);
+        btnModify(evPlaySwitchToPause, btnReleased);
+        btnModify(evPauseSwitchToPlay, btnDisabled);
     } else {
-        btnSet(evPlaySwitchToPause, btnDisabled);
-        btnSet(evPauseSwitchToPlay, btnReleased);
+        btnModify(evPlaySwitchToPause, btnDisabled);
+        btnModify(evPauseSwitchToPlay, btnReleased);
     }
 }
 
@@ -115,6 +145,9 @@ void uiRelSeek(float sec)
 
 void uiAbsSeek(float percent)
 {
+    if (guiInfo.StreamType == STREAMTYPE_STREAM)
+        return;
+
     rel_seek_secs = percent / 100.0;
     abs_seek_pos  = 3;
 }
@@ -135,7 +168,7 @@ void uiChangeSkin(char *name)
         }
     }
 
-    /* reload menu window */
+    // reload menu window
 
     if (prev && guiApp.menuIsPresent) {
         free(menuDrawBuffer);
@@ -153,34 +186,34 @@ void uiChangeSkin(char *name)
     } else
         uiMenuInit();
 
-    /* reload video window */
+    // reload sub window
 
-    if (guiApp.video.Bitmap.Image)
-        wsResizeImage(&guiApp.videoWindow, guiApp.video.Bitmap.Width, guiApp.video.Bitmap.Height);
+    if (guiApp.sub.Bitmap.Image)
+        wsResizeImage(&guiApp.subWindow, guiApp.sub.Bitmap.Width, guiApp.sub.Bitmap.Height);
 
-    if (!guiApp.videoWindow.isFullScreen && !guiInfo.Playing) {
-        wsResizeWindow(&guiApp.videoWindow, guiApp.video.width, guiApp.video.height);
-        wsMoveWindow(&guiApp.videoWindow, False, guiApp.video.x, guiApp.video.y);
+    if (!guiApp.subWindow.isFullScreen && !guiInfo.Playing) {
+        wsResizeWindow(&guiApp.subWindow, guiApp.sub.width, guiApp.sub.height);
+        wsMoveWindow(&guiApp.subWindow, True, guiApp.sub.x, guiApp.sub.y);
     }
 
-    if (guiApp.video.Bitmap.Image)
-        wsConvert(&guiApp.videoWindow, guiApp.video.Bitmap.Image);
+    if (guiApp.sub.Bitmap.Image)
+        wsConvert(&guiApp.subWindow, guiApp.sub.Bitmap.Image);
 
     if (!guiInfo.Playing) {
-        uiVideoRender = 1;
-        wsSetBackgroundRGB(&guiApp.videoWindow, guiApp.video.R, guiApp.video.G, guiApp.video.B);
-        wsClearWindow(guiApp.videoWindow);
-        wsPostRedisplay(&guiApp.videoWindow);
+        uiSubRender = 1;
+        wsSetBackgroundRGB(&guiApp.subWindow, guiApp.sub.R, guiApp.sub.G, guiApp.sub.B);
+        wsClearWindow(guiApp.subWindow);
+        wsPostRedisplay(&guiApp.subWindow);
     }
 
-    /* reload playbar */
+    // reload playbar
 
     if (bprev)
         wsDestroyWindow(&guiApp.playbarWindow);
 
     uiPlaybarInit();
 
-    /* reload main window */
+    // reload main window
 
     free(mainDrawBuffer);
     mainDrawBuffer = calloc(1, guiApp.main.Bitmap.ImageSize);
@@ -213,10 +246,10 @@ void uiChangeSkin(char *name)
     btnModify(evSetVolume, guiInfo.Volume);
     btnModify(evSetBalance, guiInfo.Balance);
     btnModify(evSetMoviePosition, guiInfo.Position);
-    btnSet(evFullScreen, (guiApp.videoWindow.isFullScreen ? btnPressed : btnReleased));
+    btnModify(evFullScreen, !guiApp.subWindow.isFullScreen);
 
-    wsSetLayer(wsDisplay, guiApp.mainWindow.WindowID, guiApp.videoWindow.isFullScreen);
-    wsSetLayer(wsDisplay, guiApp.menuWindow.WindowID, guiApp.videoWindow.isFullScreen);
+    wsSetLayer(wsDisplay, guiApp.mainWindow.WindowID, guiApp.subWindow.isFullScreen);
+    wsSetLayer(wsDisplay, guiApp.menuWindow.WindowID, guiApp.subWindow.isFullScreen);
 }
 
 void uiSetFileName(char *dir, char *name, int type)
@@ -229,11 +262,7 @@ void uiSetFileName(char *dir, char *name, int type)
     else
         setddup(&guiInfo.Filename, dir, name);
 
-    filename = guiInfo.Filename;
-
-    if (type != SAME_STREAMTYPE)
-        guiInfo.StreamType = type;
-
+    guiInfo.StreamType = type;
     nfree(guiInfo.AudioFilename);
     nfree(guiInfo.SubtitleFilename);
 }
@@ -247,18 +276,23 @@ void uiCurr(void)
         return;
 
     switch (guiInfo.StreamType) {
-    case STREAMTYPE_CDDA:
-    case STREAMTYPE_VCD:
+#ifdef CONFIG_DVDREAD
     case STREAMTYPE_DVD:
         break;
+#endif
+
+#ifdef CONFIG_VCD
+    case STREAMTYPE_VCD:
+        break;
+#endif
 
     default:
 
-        curr = listMgr(PLAYLIST_ITEM_GET_CURR, 0);
+        curr = listSet(gtkGetCurrPlItem, NULL);
 
         if (curr) {
             uiSetFileName(curr->path, curr->name, STREAMTYPE_FILE);
-            uiGotoTheNext = (guiInfo.Playing ? 0 : 1);
+            uiGotoTheNext = 0;
             break;
         }
 
@@ -281,20 +315,7 @@ void uiPrev(void)
         return;
 
     switch (guiInfo.StreamType) {
-    case STREAMTYPE_CDDA:
-        if (--guiInfo.Track == 0) {
-            guiInfo.Track = 1;
-            stop = 1;
-        }
-        break;
-
-    case STREAMTYPE_VCD:
-        if (--guiInfo.Track == 1) {
-            guiInfo.Track = 2;
-            stop = 1;
-        }
-        break;
-
+#ifdef CONFIG_DVDREAD
     case STREAMTYPE_DVD:
 
         if (--guiInfo.Chapter == 0) {
@@ -307,14 +328,24 @@ void uiPrev(void)
         }
 
         break;
+#endif
+
+#ifdef CONFIG_VCD
+    case STREAMTYPE_VCD:
+        if (--guiInfo.Track == 1) {
+            guiInfo.Track = 2;
+            stop = 1;
+        }
+        break;
+#endif
 
     default:
 
-        prev = listMgr(PLAYLIST_ITEM_GET_PREV, 0);
+        prev = listSet(gtkGetPrevPlItem, NULL);
 
         if (prev) {
             uiSetFileName(prev->path, prev->name, STREAMTYPE_FILE);
-            uiGotoTheNext = (guiInfo.Playing ? 0 : 1);
+            uiGotoTheNext = 0;
             guiInfo.Track--;
             break;
         }
@@ -338,24 +369,7 @@ void uiNext(void)
         return;
 
     switch (guiInfo.StreamType) {
-    case STREAMTYPE_CDDA:
-
-        if (++guiInfo.Track > guiInfo.Tracks) {
-            guiInfo.Track = guiInfo.Tracks;
-            stop = 1;
-        }
-
-        break;
-
-    case STREAMTYPE_VCD:
-
-        if (++guiInfo.Track >= guiInfo.Tracks) {
-            stop = (guiInfo.Track > guiInfo.Tracks);
-            guiInfo.Track = FFMAX(2, guiInfo.Tracks);
-        }
-
-        break;
-
+#ifdef CONFIG_DVDREAD
     case STREAMTYPE_DVD:
 
         if (guiInfo.Chapter++ == guiInfo.Chapters) {
@@ -368,14 +382,26 @@ void uiNext(void)
         }
 
         break;
+#endif
+
+#ifdef CONFIG_VCD
+    case STREAMTYPE_VCD:
+
+        if (++guiInfo.Track >= guiInfo.Tracks) {
+            stop = (guiInfo.Track > guiInfo.Tracks);
+            guiInfo.Track = FFMAX(2, guiInfo.Tracks);
+        }
+
+        break;
+#endif
 
     default:
 
-        next = listMgr(PLAYLIST_ITEM_GET_NEXT, 0);
+        next = listSet(gtkGetNextPlItem, NULL);
 
         if (next) {
             uiSetFileName(next->path, next->name, STREAMTYPE_FILE);
-            uiGotoTheNext = (guiInfo.Playing ? 0 : 1);
+            uiGotoTheNext = 0;
             guiInfo.Track++;
             break;
         }

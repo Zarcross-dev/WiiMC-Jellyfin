@@ -3,20 +3,20 @@
  * Copyright (c) 2003 Fabrice Bellard
  * Copyright (c) 2006 Baptiste Coudurier
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -96,11 +96,11 @@ static int gif_read_image(GifState *s)
     n = (1 << bits_per_pixel);
     spal = palette;
     for(i = 0; i < n; i++) {
-        s->image_palette[i] = (0xffu << 24) | AV_RB24(spal);
+        s->image_palette[i] = (0xff << 24) | AV_RB24(spal);
         spal += 3;
     }
     for(; i < 256; i++)
-        s->image_palette[i] = (0xffu << 24);
+        s->image_palette[i] = (0xff << 24);
     /* handle transparency */
     if (s->transparent_color_index >= 0)
         s->image_palette[s->transparent_color_index] = 0;
@@ -334,5 +334,5 @@ AVCodec ff_gif_decoder = {
     .close          = gif_decode_close,
     .decode         = gif_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("GIF (Graphics Interchange Format)"),
+    .long_name = NULL_IF_CONFIG_SMALL("GIF (Graphics Interchange Format)"),
 };

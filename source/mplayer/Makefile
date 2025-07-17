@@ -23,17 +23,8 @@ include config.mak
 
 ###### variable declarations #######
 
-# local fallbacks for missing operating system features
-OS_FEATURE-$(GETTIMEOFDAY)           += osdep/gettimeofday.c
-OS_FEATURE-$(GLOB_WIN)               += osdep/glob-win.c
-OS_FEATURE-$(MMAP)                   += osdep/mmap-os2.c
-OS_FEATURE-$(SETENV)                 += osdep/setenv.c
-OS_FEATURE-$(SHMEM)                  += osdep/shmem.c
-OS_FEATURE-$(STRSEP)                 += osdep/strsep.c
-OS_FEATURE-$(VSSCANF)                += osdep/vsscanf.c
-
-# conditional source declarations
-SRCS_AUDIO_INPUT-$(ALSA)             += stream/ai_alsa.c
+SRCS_AUDIO_INPUT-$(ALSA1X)           += stream/ai_alsa1x.c
+SRCS_AUDIO_INPUT-$(ALSA9)            += stream/ai_alsa.c
 SRCS_AUDIO_INPUT-$(OSS)              += stream/ai_oss.c
 SRCS_COMMON-$(AUDIO_INPUT)           += $(SRCS_AUDIO_INPUT-yes)
 SRCS_COMMON-$(BITMAP_FONT)           += sub/font_load.c
@@ -70,23 +61,21 @@ SRCS_COMMON-$(FAAD)                  += libmpcodecs/ad_faad.c
 SRCS_COMMON-$(FASTMEMCPY)            += libvo/aclib.c
 SRCS_COMMON-$(FFMPEG)                += av_helpers.c                \
                                         av_opts.c                   \
-                                        libaf/af_lavcac3enc.c       \
                                         libaf/af_lavcresample.c     \
                                         libmpcodecs/ad_ffmpeg.c     \
-                                        libmpcodecs/ad_spdif.c      \
                                         libmpcodecs/vd_ffmpeg.c     \
                                         libmpcodecs/vf_geq.c        \
                                         libmpcodecs/vf_lavc.c       \
                                         libmpcodecs/vf_lavcdeint.c  \
+                                        libmpcodecs/vf_pp.c         \
                                         libmpcodecs/vf_screenshot.c \
                                         libmpdemux/demux_lavf.c     \
                                         stream/stream_ffmpeg.c      \
                                         sub/av_sub.c                \
 
-SRCS_COMMON-$(CONFIG_VF_LAVFI)      +=  libmpcodecs/vf_lavfi.c
-
 # These filters use private headers and do not work with shared FFmpeg.
-SRCS_COMMON-$(FFMPEG_A)              += libmpcodecs/vf_fspp.c    \
+SRCS_COMMON-$(FFMPEG_A)              += libaf/af_lavcac3enc.c    \
+                                        libmpcodecs/vf_fspp.c    \
                                         libmpcodecs/vf_mcdeint.c \
                                         libmpcodecs/vf_qp.c      \
                                         libmpcodecs/vf_spp.c     \
@@ -114,7 +103,6 @@ SRCS_COMMON-$(LIBASS_INTERNAL)       += libass/ass.c \
                                         libass/ass_parse.c \
                                         libass/ass_render.c \
                                         libass/ass_render_api.c \
-                                        libass/ass_shaper.c \
                                         libass/ass_strtod.c \
                                         libass/ass_utils.c \
 
@@ -189,6 +177,13 @@ SRCS_COMMON-$(NATIVE_RTSP)           += stream/stream_rtsp.c \
                                         stream/librtsp/rtsp_rtp.c \
                                         stream/librtsp/rtsp_session.c \
 
+SRCS_COMMON-$(NEED_GETTIMEOFDAY)     += osdep/gettimeofday.c
+SRCS_COMMON-$(NEED_GLOB)             += osdep/glob-win.c
+SRCS_COMMON-$(NEED_MMAP)             += osdep/mmap-os2.c
+SRCS_COMMON-$(NEED_SETENV)           += osdep/setenv.c
+SRCS_COMMON-$(NEED_SHMEM)            += osdep/shmem.c
+SRCS_COMMON-$(NEED_STRSEP)           += osdep/strsep.c
+SRCS_COMMON-$(NEED_VSSCANF)          += osdep/vsscanf.c
 SRCS_COMMON-$(NETWORKING)            += stream/stream_netstream.c \
                                         stream/asf_mmst_streaming.c \
                                         stream/asf_streaming.c \
@@ -209,7 +204,6 @@ SRCS_COMMON-$(NETWORKING)            += stream/stream_netstream.c \
                                         stream/realrtsp/xbuffer.c \
 
 SRCS_COMMON-$(PNG)                   += libmpcodecs/vd_mpng.c
-SRCS_COMMON-$(POSTPROC)              += libmpcodecs/vf_pp.c
 SRCS_COMMON-$(PRIORITY)              += osdep/priority.c
 SRCS_COMMON-$(PVR)                   += stream/stream_pvr.c
 SRCS_COMMON-$(QTX_CODECS)            += libmpcodecs/ad_qtaudio.c \
@@ -490,13 +484,14 @@ SRCS_COMMON = asxparser.c \
               sub/sub_cc.c \
               sub/subreader.c \
               sub/vobsub.c \
-              $(SRCS_COMMON-yes) \
-              $(OS_FEATURE-no)
+              $(SRCS_COMMON-yes)
 
 
 SRCS_MPLAYER-$(3DFX)         += libvo/vo_3dfx.c
 SRCS_MPLAYER-$(AA)           += libvo/vo_aa.c
-SRCS_MPLAYER-$(ALSA)         += libao2/ao_alsa.c
+SRCS_MPLAYER-$(ALSA1X)       += libao2/ao_alsa.c
+SRCS_MPLAYER-$(ALSA5)        += libao2/ao_alsa5.c
+SRCS_MPLAYER-$(ALSA9)        += libao2/ao_alsa.c
 SRCS_MPLAYER-$(APPLE_IR)     += input/appleir.c
 SRCS_MPLAYER-$(APPLE_REMOTE) += input/ar.c
 SRCS_MPLAYER-$(ARTS)         += libao2/ao_arts.c
@@ -517,10 +512,10 @@ SRCS_MPLAYER-$(FFMPEG)       += libvo/vo_png.c
 SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
 SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
 SRCS_MPLAYER-$(GL)           += libvo/gl_common.c libvo/vo_gl.c \
-                                libvo/csputils.c
+                                libvo/vo_gl2.c libvo/csputils.c
 SRCS_MPLAYER-$(GL_SDL)       += libvo/sdl_common.c
-SRCS_MPLAYER-$(GL_WIN32)     += libvo/w32_common.c libvo/vo_gl2.c
-SRCS_MPLAYER-$(GL_X11)       += libvo/x11_common.c libvo/vo_gl2.c
+SRCS_MPLAYER-$(GL_WIN32)     += libvo/w32_common.c
+SRCS_MPLAYER-$(GL_X11)       += libvo/x11_common.c
 SRCS_MPLAYER-$(MATRIXVIEW)   += libvo/vo_matrixview.c libvo/matrixview.c
 SRCS_MPLAYER-$(GUI)          += gui/util/bitmap.c \
                                 gui/util/list.c \
@@ -545,7 +540,7 @@ SRCS_MPLAYER-$(GUI_GTK)      += gui/app.c \
                                 gui/ui/menu.c \
                                 gui/ui/playbar.c \
                                 gui/ui/render.c \
-                                gui/ui/video.c \
+                                gui/ui/sub.c \
                                 gui/ui/widgets.c \
                                 gui/util/cut.c \
                                 gui/wm/ws.c \
@@ -696,9 +691,7 @@ SRCS_MENCODER = mencoder.c \
                 $(SRCS_MENCODER-yes)
 
 # (linking) order matters for these libraries
-# FFMPEGPARTS_ALL = libpostproc libavfilter libavformat libavcodec libswscale libswresample libavutil
-FFMPEGPARTS_ALL = libavformat libavcodec libswscale libavutil
-FFMPEGPARTS = $(foreach part, $(FFMPEGPARTS_ALL), $(if $(wildcard ffmpeg/$(part)), $(part)))
+FFMPEGPARTS = libpostproc libswscale libavformat libavcodec libavutil
 FFMPEGLIBS  = $(foreach part, $(FFMPEGPARTS), ffmpeg/$(part)/$(part).a)
 FFMPEGFILES = $(foreach part, $(FFMPEGPARTS), $(wildcard $(addprefix ffmpeg/$(part)/,*.[chS] /*/*.[chS] /*/*.asm)))
 
@@ -768,9 +761,6 @@ ADDSUFFIXES     = $(foreach suf,$(1),$(addsuffix $(suf),$(2)))
 ADD_ALL_DIRS    = $(call ADDSUFFIXES,$(1),$(ALL_DIRS))
 ADD_ALL_EXESUFS = $(1) $(call ADDSUFFIXES,$(EXESUFS_ALL),$(1))
 
-GUI_ICONSIZES = 16x16 22x22 24x24 32x32 48x48 256x256
-
-
 
 ###### generic rules #######
 
@@ -795,7 +785,7 @@ all: $(MPLAYERWIILIB) $(COMMON_LIBS)
 	$(CC) $(CC_DEPFLAGS) $(CFLAGS) -c -o $@ $<
 
 #%-rc.o: %.rc
-#	$(WINDRES) -I. $< -o $@
+#	$(WINDRES) -I. $< $@
 
 $(FFMPEGLIBS): $(FFMPEGFILES) config.h
 	$(MAKE) -C ffmpeg $(@:ffmpeg/%=%)
@@ -825,9 +815,6 @@ mencoder$(EXESUF) mplayer$(EXESUF):
 #	@echo "####### Please run ./configure again - it's changed! #######"
 #	@echo "############################################################"
 
-checkhelp: help/help_mp*.h
-	help/help_check.sh $(CC) $^
-
 help_mp.h: help/help_mp-en.h $(HELP_FILE)
 	help/help_create.sh $(HELP_FILE) $(CHARSET)
 
@@ -845,44 +832,12 @@ checkheaders: $(ALLHEADERS:.h=.ho)
 
 
 
-###### XML documentation ######
-
-doc: html-chunked html-single
-
-html-chunked: $(addprefix html-chunked-,$(DOC_LANGS))
-html-single:  $(addprefix html-single-,$(DOC_LANGS))
-
-xmllint: $(addprefix xmllint-,$(DOC_LANGS))
-
-define lang-def
-html-chunked-$(lang): DOCS/HTML/$(lang)/dummy.html
-html-single-$(lang):  DOCS/HTML/$(lang)/MPlayer.html
-DOCS/HTML/$(lang)/dummy.html DOCS/HTML/$(lang)/MPlayer.html: DOCS/xml/$(lang)/main.xml $(wildcard DOCS/xml/$(lang)/*.xml) DOCS/xml/html-common.xsl DOCS/HTML/$(lang)/default.css
-
-DOCS/HTML/$(lang)/default.css:
-	mkdir -p $$(@D)
-	cp -f DOCS/xml/default.css $$(@D)
-
-DOCS/HTML/$(lang)/dummy.html:
-	SGML_CATALOG_FILES=$(CATALOG) $(XSLT_COMMAND) $$@ DOCS/xml/html-chunk.xsl $$<
-
-DOCS/HTML/$(lang)/MPlayer.html:
-	SGML_CATALOG_FILES=$(CATALOG) $(XSLT_COMMAND) $$@ DOCS/xml/html-single.xsl $$<
-
-xmllint-$(lang):
-	SGML_CATALOG_FILES=$(CATALOG) $(XMLLINT_COMMAND) DOCS/xml/$(lang)/main.xml
-endef
-
-$(foreach lang, $(DOC_LANG_ALL),$(eval $(lang-def)))
-
-
-
 ###### dependency declarations / specific CFLAGS ######
 
 # Make sure all generated header files are created.
 codec-cfg.o: codecs.conf.h
 $(DEP_FILES) $(MENCODER_DEPS) $(MPLAYER_DEPS): help_mp.h
-mpcommon.o osdep/mplayer-rc.o gui/ui/gtk/about.o gui/win32/gui.o: version.h
+mpcommon.o osdep/mplayer-rc.o: version.h
 
 #osdep/mplayer-rc.o: osdep/mplayer.exe.manifest
 
@@ -926,12 +881,12 @@ install-dirs:
 install-%: %$(EXESUF) install-dirs
 	$(INSTALL) -m 755 $(INSTALLSTRIP) $< $(BINDIR)
 
-install-gui: install-mplayer install-gui-icons
+install-gui: install-mplayer
 	-ln -sf mplayer$(EXESUF) $(BINDIR)/gmplayer$(EXESUF)
-	$(INSTALL) -d $(DATADIR)/skins $(prefix)/share/applications
+	$(INSTALL) -d $(DATADIR)/skins $(prefix)/share/pixmaps $(prefix)/share/applications
+	$(INSTALL) -m 644 etc/mplayer.png $(prefix)/share/pixmaps/
 	$(INSTALL) -m 644 etc/mplayer.desktop $(prefix)/share/applications/
 
-install-gui-icons:    $(foreach size,$(GUI_ICONSIZES),install-gui-icon-$(size))
 install-gui-man:      $(foreach lang,$(MAN_LANGS),install-gui-man-$(lang))
 install-mencoder-man: $(foreach lang,$(MAN_LANGS),install-mencoder-man-$(lang))
 install-mplayer-man:  $(foreach lang,$(MAN_LANGS),install-mplayer-man-$(lang))
@@ -945,12 +900,6 @@ install-mencoder-man-en: install-mplayer-man-en
 install-mplayer-man-en:
 	$(INSTALL) -d $(MANDIR)/man1
 	$(INSTALL) -m 644 DOCS/man/en/mplayer.1 $(MANDIR)/man1/
-
-define GUI_ICON_RULE
-install-gui-icon-$(size):
-	$(INSTALL) -d $(prefix)/share/icons/hicolor/$(size)/apps
-	$(INSTALL) -m 644 etc/mplayer$(size).png $(prefix)/share/icons/hicolor/$(size)/apps/mplayer.png
-endef
 
 define GUI_MAN_RULE
 install-gui-man-$(lang): install-mplayer-man-$(lang)
@@ -968,7 +917,6 @@ install-mplayer-man-$(lang):
 	$(INSTALL) -m 644 DOCS/man/$(lang)/mplayer.1 $(MANDIR)/$(lang)/man1/
 endef
 
-$(foreach size,$(GUI_ICONSIZES),$(eval $(GUI_ICON_RULE)))
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(GUI_MAN_RULE)))
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(MENCODER_MAN_RULE)))
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(MPLAYER_MAN_RULE)))
@@ -977,21 +925,19 @@ uninstall:
 	rm -f $(BINDIR)/mplayer$(EXESUF) $(BINDIR)/gmplayer$(EXESUF)
 	rm -f $(BINDIR)/mencoder$(EXESUF)
 	rm -f $(MANDIR)/man1/mencoder.1 $(MANDIR)/man1/mplayer.1
-	rm -f $(foreach size,$(GUI_ICONSIZES),$(prefix)/share/icons/hicolor/$(size)/apps/mplayer.png)
+	rm -f $(prefix)/share/pixmaps/mplayer.png
 	rm -f $(prefix)/share/applications/mplayer.desktop
 	rm -f $(MANDIR)/man1/mplayer.1 $(MANDIR)/man1/mencoder.1
 	rm -f $(foreach lang,$(MAN_LANGS),$(foreach man,mplayer.1 mencoder.1,$(MANDIR)/$(lang)/man1/$(man)))
 
 clean:
-	-$(MAKE) -C ffmpeg $@
-	-rm -rf tests/res
+	$(MAKE) -C ffmpeg $@
 	-rm -f $(call ADD_ALL_DIRS,/*.o /*.a /*.ho /*~)
 	-rm -f $(call ADD_ALL_EXESUFS,mplayer mencoder)
-	-rm -rf DOCS/tech/doxygen DOCS/HTML
 
 distclean: clean testsclean toolsclean driversclean dhahelperclean
-	-$(MAKE) -C ffmpeg $@
-	-rm -f DOCS/xml/html-chunk.xsl DOCS/xml/html-single.xsl
+	$(MAKE) -C ffmpeg $@
+	-rm -rf DOCS/tech/doxygen
 	-rm -f $(call ADD_ALL_DIRS,/*.d)
 	-rm -f config.* codecs.conf.h help_mp.h version.h TAGS tags
 	-rm -f $(VIDIX_PCI_FILES)
@@ -1005,43 +951,6 @@ TAGS:
 
 tags:
 	rm -f $@; find . -name '*.[chS]' -o -name '*.asm' | xargs ctags -a
-
-
-
-###### regression tests #######
-
-BROKEN_SAMPLES =                         \
-    h264-conformance/FM1_BT_B.h264       \
-    h264-conformance/FM1_FT_E.264        \
-    h264-conformance/FM2_SVA_B.264       \
-    pva/PVA_test-partial.pva             \
-    wmv8/wmv_drm.wmv                     \
-    wtv/law-and-order-partial.wtv        \
-
-AUDIO_ONLY_SAMPLES =                                               \
-    aac/% ac3/% amrnb/% amrwb/% atrac1/% atrac3/% bink/binkaudio%  \
-    creative/% dts/% duck/%-audio-only.avi eac3/% gsm/% imc/%      \
-    lossless-audio/% mp3-conformance/% musepack/% nellymoser/%     \
-    qcp/%                                                          \
-    qt-surge-suite/% real/ra% sipr/% truespeech/% vorbis/%         \
-    vqf/% w64/% wmapro/% wmavoice/%                                \
-
-# running wildcard with empty FATE_SAMPLES seems to cause a lot of issues
-ifdef FATE_SAMPLES
-ALLSAMPLES_FULLPATH = $(wildcard $(FATE_SAMPLES)/*/*.*)
-ALLSAMPLES          = $(patsubst $(FATE_SAMPLES)/%,%,$(ALLSAMPLES_FULLPATH))
-SAMPLES := $(filter-out $(BROKEN_SAMPLES),$(ALLSAMPLES))
-SAMPLES := $(filter-out $(AUDIO_ONLY_SAMPLES),$(SAMPLES))
-RESULTS  = $(patsubst %,tests/res/%.md5,$(SAMPLES))
-
-fatetest: $(RESULTS)
-
-tests/res/%.md5: mplayer$(EXESUF) $(FATE_SAMPLES)/%
-	@tests/faterun.sh $*
-else
-fatetest:
-	@echo "You need to set FATE_SAMPLES for fatetest to work"
-endif
 
 
 
@@ -1185,11 +1094,11 @@ dhahelperclean:
 	-rm -f $(addprefix vidix/dhahelperwin/,*.o *~ dhahelper.sys dhasetup.exe base.tmp temp.exp)
 
 
+
 -include $(DEP_FILES) $(DRIVER_DEP_FILES) $(TESTS_DEP_FILES) $(TOOLS_DEP_FILES) $(DHAHELPER_DEP_FILES)
 
 .PHONY: all doxygen *install* *tools drivers dhahelper*
-.PHONY: checkheaders *clean tests check_checksums fatetest checkhelp
-.PHONY: doc html-chunked* html-single* xmllint*
+.PHONY: checkheaders *clean tests check_checksums
 
 # Disable suffix rules.  Most of the builtin rules are suffix rules,
 # so this saves some time on slow systems.

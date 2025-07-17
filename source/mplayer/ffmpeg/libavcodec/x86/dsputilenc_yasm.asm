@@ -4,25 +4,25 @@
 ;* Copyright (c) 2000, 2001 Fabrice Bellard
 ;* Copyright (c) 2002-2004 Michael Niedermayer <michaelni@gmx.at>
 ;*
-;* This file is part of FFmpeg.
+;* This file is part of Libav.
 ;*
-;* FFmpeg is free software; you can redistribute it and/or
+;* Libav is free software; you can redistribute it and/or
 ;* modify it under the terms of the GNU Lesser General Public
 ;* License as published by the Free Software Foundation; either
 ;* version 2.1 of the License, or (at your option) any later version.
 ;*
-;* FFmpeg is distributed in the hope that it will be useful,
+;* Libav is distributed in the hope that it will be useful,
 ;* but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;* Lesser General Public License for more details.
 ;*
 ;* You should have received a copy of the GNU Lesser General Public
-;* License along with FFmpeg; if not, write to the Free Software
+;* License along with Libav; if not, write to the Free Software
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;*****************************************************************************
 
-%include "libavutil/x86/x86inc.asm"
-%include "libavutil/x86/x86util.asm"
+%include "x86inc.asm"
+%include "x86util.asm"
 
 SECTION .text
 
@@ -245,7 +245,7 @@ hadamard8x8_diff_%1:
     lea                          r0, [r3*3]
     DIFF_PIXELS_8                r1, r2,  0, r3, r0, rsp+gprsize
     HADAMARD8
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     TRANSPOSE8x8W                 0,  1,  2,  3,  4,  5,  6,  7,  8
 %else
     TRANSPOSE8x8W                 0,  1,  2,  3,  4,  5,  6,  7, [rsp+gprsize], [rsp+mmsize+gprsize]
@@ -270,7 +270,7 @@ HADAMARD8_DIFF_MMX mmx2
 
 INIT_XMM
 %define ABS2 ABS2_MMX2
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
 %define ABS_SUM_8x8 ABS_SUM_8x8_64
 %else
 %define ABS_SUM_8x8 ABS_SUM_8x8_32

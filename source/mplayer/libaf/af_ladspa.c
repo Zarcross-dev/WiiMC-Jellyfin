@@ -40,9 +40,8 @@
 
 /* Local Includes */
 
-#include "help_mp.h"
-#include "mp_msg.h"
 #include "af.h"
+#include "help_mp.h"
 
 /* ------------------------------------------------------------------------- */
 

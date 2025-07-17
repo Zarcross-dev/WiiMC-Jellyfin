@@ -2,20 +2,20 @@
  * Maxis XA (.xa) File Demuxer
  * Copyright (c) 2008 Robert Marston
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -29,7 +29,6 @@
 
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
-#include "internal.h"
 
 #define XA00_TAG MKTAG('X', 'A', 0, 0)
 #define XAI0_TAG MKTAG('X', 'A', 'I', 0)
@@ -38,6 +37,7 @@
 typedef struct MaxisXADemuxContext {
     uint32_t out_size;
     uint32_t sent_bytes;
+    uint32_t audio_frame_counter;
 } MaxisXADemuxContext;
 
 static int xa_probe(AVProbeData *p)
@@ -62,14 +62,15 @@ static int xa_probe(AVProbeData *p)
     return AVPROBE_SCORE_MAX/2;
 }
 
-static int xa_read_header(AVFormatContext *s)
+static int xa_read_header(AVFormatContext *s,
+               AVFormatParameters *ap)
 {
     MaxisXADemuxContext *xa = s->priv_data;
     AVIOContext *pb = s->pb;
     AVStream *st;
 
     /*Set up the XA Audio Decoder*/
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -80,15 +81,12 @@ static int xa_read_header(AVFormatContext *s)
     avio_skip(pb, 2);       /* Skip the tag */
     st->codec->channels     = avio_rl16(pb);
     st->codec->sample_rate  = avio_rl32(pb);
-    avio_skip(pb, 4);       /* Skip average byte rate */
-    avio_skip(pb, 2);       /* Skip block align */
-    avio_skip(pb, 2);       /* Skip bits-per-sample */
+    /* Value in file is average byte rate*/
+    st->codec->bit_rate     = avio_rl32(pb) * 8;
+    st->codec->block_align  = avio_rl16(pb);
+    st->codec->bits_per_coded_sample = avio_rl16(pb);
 
-    st->codec->bit_rate = av_clip(15LL * st->codec->channels * 8 *
-                                  st->codec->sample_rate / 28, 0, INT_MAX);
-
-    avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
-    st->start_time = 0;
+    av_set_pts_info(st, 64, 1, st->codec->sample_rate);
 
     return 0;
 }
@@ -102,8 +100,8 @@ static int xa_read_packet(AVFormatContext *s,
     unsigned int packet_size;
     int ret;
 
-    if (xa->sent_bytes >= xa->out_size)
-        return AVERROR_EOF;
+    if(xa->sent_bytes > xa->out_size)
+        return AVERROR(EIO);
     /* 1 byte header and 14 bytes worth of samples * number channels per block */
     packet_size = 15*st->codec->channels;
 
@@ -113,7 +111,9 @@ static int xa_read_packet(AVFormatContext *s,
 
     pkt->stream_index = st->index;
     xa->sent_bytes += packet_size;
-    pkt->duration = 28;
+    pkt->pts = xa->audio_frame_counter;
+    /* 14 bytes Samples per channel with 2 samples per byte */
+    xa->audio_frame_counter += 28 * st->codec->channels;
 
     return ret;
 }

@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2008 Mans Rullgard <mans@mansr.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -32,22 +32,6 @@
 #else
 #   define A
 #   define T @
-#endif
-
-#if   HAVE_NEON
-        .arch           armv7-a
-#elif HAVE_ARMV6T2
-        .arch           armv6t2
-#elif HAVE_ARMV6
-        .arch           armv6
-#elif HAVE_ARMV5TE
-        .arch           armv5te
-#endif
-
-#if   HAVE_NEON
-        .fpu            neon
-#elif HAVE_ARMVFP
-        .fpu            vfp
 #endif
 
         .syntax unified
@@ -68,7 +52,6 @@ ELF     .size   \name, . - \name
         .purgem endfunc
     .endm
         .text
-        .align          2
     .if \export
         .global EXTERN_ASM\name
 EXTERN_ASM\name:
@@ -87,13 +70,6 @@ ELF     .size   \name, . - \name
         .align          \align
 \name:
 .endm
-
-#if !HAVE_ARMV6T2
-.macro  movw    rd, val
-        mov     \rd, \val &  255
-        orr     \rd, \val & ~255
-.endm
-#endif
 
 .macro  mov32   rd, val
 #if HAVE_ARMV6T2
@@ -119,18 +95,6 @@ ELF     .size   \name, . - \name
 A       ldr             \rt, [\rn, \rm]!
 T       add             \rn, \rn, \rm
 T       ldr             \rt, [\rn]
-.endm
-
-.macro  ldr_dpre        rt,  rn,  rm:vararg
-A       ldr             \rt, [\rn, -\rm]!
-T       sub             \rn, \rn, \rm
-T       ldr             \rt, [\rn]
-.endm
-
-.macro  ldr_nreg        rt,  rn,  rm:vararg
-A       ldr             \rt, [\rn, -\rm]
-T       sub             \rt, \rn, \rm
-T       ldr             \rt, [\rt]
 .endm
 
 .macro  ldr_post        rt,  rn,  rm:vararg
@@ -166,12 +130,6 @@ T       ldrh            \rt, [\rn]
 .macro  ldrh_post       rt,  rn,  rm
 A       ldrh            \rt, [\rn], \rm
 T       ldrh            \rt, [\rn]
-T       add             \rn, \rn, \rm
-.endm
-
-.macro  ldrb_post       rt,  rn,  rm
-A       ldrb            \rt, [\rn], \rm
-T       ldrb            \rt, [\rn]
 T       add             \rn, \rn, \rm
 .endm
 

@@ -1,26 +1,25 @@
 /*
  * Copyright (C) 2010 David Conrad
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavcodec/bytestream.h"
 #include "avformat.h"
-#include "internal.h"
 #include "oggdec.h"
 
 static int skeleton_header(AVFormatContext *s, int idx)
@@ -46,7 +45,7 @@ static int skeleton_header(AVFormatContext *s, int idx)
         version_major = AV_RL16(buf+8);
         version_minor = AV_RL16(buf+10);
 
-        if (version_major != 3 && version_major != 4) {
+        if (version_major != 3) {
             av_log(s, AV_LOG_WARNING, "Unknown skeleton version %d.%d\n",
                    version_major, version_minor);
             return -1;
@@ -63,7 +62,7 @@ static int skeleton_header(AVFormatContext *s, int idx)
         if (start_den) {
             int base_den;
             av_reduce(&start_time, &base_den, start_num, start_den, INT_MAX);
-            avpriv_set_pts_info(st, 64, 1, base_den);
+            av_set_pts_info(st, 64, 1, base_den);
             os->lastpts =
             st->start_time = start_time;
         }
@@ -74,11 +73,8 @@ static int skeleton_header(AVFormatContext *s, int idx)
         target_idx = ogg_find_stream(ogg, AV_RL32(buf+12));
         start_granule = AV_RL64(buf+36);
         if (target_idx >= 0 && start_granule != -1) {
-            int64_t pts = ogg_gptopts(s, target_idx, start_granule, NULL);
-            if (pts == AV_NOPTS_VALUE)
-                return -1;
             ogg->streams[target_idx].lastpts =
-            s->streams[target_idx]->start_time = pts;
+            s->streams[target_idx]->start_time = ogg_gptopts(s, target_idx, start_granule, NULL);
         }
     }
 

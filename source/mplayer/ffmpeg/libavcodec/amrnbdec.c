@@ -3,20 +3,20 @@
  * Copyright (c) 2006-2007 Robert Swain
  * Copyright (c) 2009 Colin McQuillan
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -44,6 +44,7 @@
 #include <math.h>
 
 #include "avcodec.h"
+#include "get_bits.h"
 #include "libavutil/common.h"
 #include "celp_math.h"
 #include "celp_filters.h"
@@ -82,7 +83,7 @@
 /** Maximum sharpening factor
  *
  * The specification says 0.8, which should be 13107, but the reference C code
- * uses 13017 instead. (Amusingly the same applies to SHARP_MAX in g729dec.c.)
+ * uses 13017 instead. (Amusingly the same applies to SHARP_MAX in bitexact G.729.)
  */
 #define SHARP_MAX 0.79449462890625
 
@@ -94,7 +95,6 @@
 #define AMR_AGC_ALPHA      0.9
 
 typedef struct AMRContext {
-    AVFrame                         avframe; ///< AVFrame for decoded samples
     AMRNBFrame                        frame; ///< decoded AMR parameters (lsf coefficients, codebook indexes, etc)
     uint8_t             bad_frame_indicator; ///< bad frame ? 1 : 0
     enum Mode                cur_frame_mode;
@@ -167,9 +167,6 @@ static av_cold int amrnb_decode_init(AVCodecContext *avctx)
     for (i = 0; i < 4; i++)
         p->prediction_error[i] = MIN_ENERGY;
 
-    avcodec_get_frame_defaults(&p->avframe);
-    avctx->coded_frame = &p->avframe;
-
     return 0;
 }
 
@@ -188,15 +185,16 @@ static av_cold int amrnb_decode_init(AVCodecContext *avctx)
 static enum Mode unpack_bitstream(AMRContext *p, const uint8_t *buf,
                                   int buf_size)
 {
+    GetBitContext gb;
     enum Mode mode;
 
-    // Decode the first octet.
-    mode = buf[0] >> 3 & 0x0F;                      // frame type
-    p->bad_frame_indicator = (buf[0] & 0x4) != 0x4; // quality bit
+    init_get_bits(&gb, buf, buf_size * 8);
 
-    if (mode >= N_MODES || buf_size < frame_sizes_nb[mode] + 1) {
-        return NO_DATA;
-    }
+    // Decode the first octet.
+    skip_bits(&gb, 1);                        // padding bit
+    mode = get_bits(&gb, 4);                  // frame type
+    p->bad_frame_indicator = !get_bits1(&gb); // quality bit
+    skip_bits(&gb, 2);                        // two padding bits
 
     if (mode < MODE_DTX)
         ff_amr_bit_reorder((uint16_t *) &p->frame, sizeof(AMRNBFrame), buf + 1,
@@ -651,7 +649,7 @@ static void decode_gains(AMRContext *p, const AMRNBSubframe *amr_subframe,
 static void apply_ir_filter(float *out, const AMRFixed *in,
                             const float *filter)
 {
-    float filter1[AMR_SUBFRAME_SIZE],     ///< filters at pitch lag*1 and *2
+    float filter1[AMR_SUBFRAME_SIZE],     //!< filters at pitch lag*1 and *2
           filter2[AMR_SUBFRAME_SIZE];
     int   lag = in->pitch_lag;
     float fac = in->pitch_fac;
@@ -921,37 +919,24 @@ static void postfilter(AMRContext *p, float *lpc, float *buf_out)
 
 /// @}
 
-static int amrnb_decode_frame(AVCodecContext *avctx, void *data,
-                              int *got_frame_ptr, AVPacket *avpkt)
+static int amrnb_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
+                              AVPacket *avpkt)
 {
 
     AMRContext *p = avctx->priv_data;        // pointer to private data
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
-    float *buf_out;                          // pointer to the output data buffer
-    int i, subframe, ret;
+    float *buf_out = data;                   // pointer to the output data buffer
+    int i, subframe;
     float fixed_gain_factor;
     AMRFixed fixed_sparse = {0};             // fixed vector up to anti-sparseness processing
     float spare_vector[AMR_SUBFRAME_SIZE];   // extra stack space to hold result from anti-sparseness processing
     float synth_fixed_gain;                  // the fixed gain that synthesis should use
     const float *synth_fixed_vector;         // pointer to the fixed vector that synthesis should use
 
-    /* get output buffer */
-    p->avframe.nb_samples = AMR_BLOCK_SIZE;
-    if ((ret = avctx->get_buffer(avctx, &p->avframe)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return ret;
-    }
-    buf_out = (float *)p->avframe.data[0];
-
     p->cur_frame_mode = unpack_bitstream(p, buf, buf_size);
-    if (p->cur_frame_mode == NO_DATA) {
-        av_log(avctx, AV_LOG_ERROR, "Corrupt bitstream\n");
-        return AVERROR_INVALIDDATA;
-    }
     if (p->cur_frame_mode == MODE_DTX) {
-        av_log_missing_feature(avctx, "dtx mode", 0);
-        av_log(avctx, AV_LOG_INFO, "Note: libopencore_amrnb supports dtx\n");
+        av_log_missing_feature(avctx, "dtx mode", 1);
         return -1;
     }
 
@@ -980,10 +965,6 @@ static int amrnb_decode_frame(AVCodecContext *avctx, void *data,
 
         pitch_sharpening(p, subframe, p->cur_frame_mode, &fixed_sparse);
 
-        if (fixed_sparse.pitch_lag == 0) {
-            av_log(avctx, AV_LOG_ERROR, "The file is corrupted, pitch_lag = 0 is not allowed\n");
-            return AVERROR_INVALIDDATA;
-        }
         ff_set_fixed_vector(p->fixed_vector, &fixed_sparse, 1.0,
                             AMR_SUBFRAME_SIZE);
 
@@ -1047,8 +1028,8 @@ static int amrnb_decode_frame(AVCodecContext *avctx, void *data,
     ff_weighted_vector_sumf(p->lsf_avg, p->lsf_avg, p->lsf_q[3],
                             0.84, 0.16, LP_FILTER_ORDER);
 
-    *got_frame_ptr   = 1;
-    *(AVFrame *)data = p->avframe;
+    /* report how many samples we got */
+    *data_size = AMR_BLOCK_SIZE * sizeof(float);
 
     /* return the amount of bytes consumed if everything was OK */
     return frame_sizes_nb[p->cur_frame_mode] + 1; // +7 for rounding and +8 for TOC
@@ -1062,8 +1043,6 @@ AVCodec ff_amrnb_decoder = {
     .priv_data_size = sizeof(AMRContext),
     .init           = amrnb_decode_init,
     .decode         = amrnb_decode_frame,
-    .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("Adaptive Multi-Rate NarrowBand"),
-    .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLT,
-                                                     AV_SAMPLE_FMT_NONE },
+    .sample_fmts    = (const enum AVSampleFormat[]){AV_SAMPLE_FMT_FLT,AV_SAMPLE_FMT_NONE},
 };

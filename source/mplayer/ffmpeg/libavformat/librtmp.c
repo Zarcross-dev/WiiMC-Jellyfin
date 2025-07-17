@@ -2,20 +2,20 @@
  * RTMP network protocol
  * Copyright (c) 2010 Howard Chu
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -52,6 +52,7 @@ static int rtmp_close(URLContext *s)
     RTMP *r = s->priv_data;
 
     RTMP_Close(r);
+    av_free(r);
     return 0;
 }
 
@@ -69,8 +70,12 @@ static int rtmp_close(URLContext *s)
  */
 static int rtmp_open(URLContext *s, const char *uri, int flags)
 {
-    RTMP *r = s->priv_data;
+    RTMP *r;
     int rc;
+
+    r = av_mallocz(sizeof(RTMP));
+    if (!r)
+        return AVERROR(ENOMEM);
 
     switch (av_log_get_level()) {
     default:
@@ -98,9 +103,11 @@ static int rtmp_open(URLContext *s, const char *uri, int flags)
         goto fail;
     }
 
+    s->priv_data   = r;
     s->is_streamed = 1;
     return 0;
 fail:
+    av_free(r);
     return rc;
 }
 
@@ -152,7 +159,7 @@ static int rtmp_get_file_handle(URLContext *s)
     return RTMP_Socket(r);
 }
 
-URLProtocol ff_librtmp_protocol = {
+URLProtocol ff_rtmp_protocol = {
     .name                = "rtmp",
     .url_open            = rtmp_open,
     .url_read            = rtmp_read,
@@ -160,12 +167,10 @@ URLProtocol ff_librtmp_protocol = {
     .url_close           = rtmp_close,
     .url_read_pause      = rtmp_read_pause,
     .url_read_seek       = rtmp_read_seek,
-    .url_get_file_handle = rtmp_get_file_handle,
-    .priv_data_size      = sizeof(RTMP),
-    .flags               = URL_PROTOCOL_FLAG_NETWORK,
+    .url_get_file_handle = rtmp_get_file_handle
 };
 
-URLProtocol ff_librtmpt_protocol = {
+URLProtocol ff_rtmpt_protocol = {
     .name                = "rtmpt",
     .url_open            = rtmp_open,
     .url_read            = rtmp_read,
@@ -173,12 +178,10 @@ URLProtocol ff_librtmpt_protocol = {
     .url_close           = rtmp_close,
     .url_read_pause      = rtmp_read_pause,
     .url_read_seek       = rtmp_read_seek,
-    .url_get_file_handle = rtmp_get_file_handle,
-    .priv_data_size      = sizeof(RTMP),
-    .flags               = URL_PROTOCOL_FLAG_NETWORK,
+    .url_get_file_handle = rtmp_get_file_handle
 };
 
-URLProtocol ff_librtmpe_protocol = {
+URLProtocol ff_rtmpe_protocol = {
     .name                = "rtmpe",
     .url_open            = rtmp_open,
     .url_read            = rtmp_read,
@@ -186,12 +189,10 @@ URLProtocol ff_librtmpe_protocol = {
     .url_close           = rtmp_close,
     .url_read_pause      = rtmp_read_pause,
     .url_read_seek       = rtmp_read_seek,
-    .url_get_file_handle = rtmp_get_file_handle,
-    .priv_data_size      = sizeof(RTMP),
-    .flags               = URL_PROTOCOL_FLAG_NETWORK,
+    .url_get_file_handle = rtmp_get_file_handle
 };
 
-URLProtocol ff_librtmpte_protocol = {
+URLProtocol ff_rtmpte_protocol = {
     .name                = "rtmpte",
     .url_open            = rtmp_open,
     .url_read            = rtmp_read,
@@ -199,12 +200,10 @@ URLProtocol ff_librtmpte_protocol = {
     .url_close           = rtmp_close,
     .url_read_pause      = rtmp_read_pause,
     .url_read_seek       = rtmp_read_seek,
-    .url_get_file_handle = rtmp_get_file_handle,
-    .priv_data_size      = sizeof(RTMP),
-    .flags               = URL_PROTOCOL_FLAG_NETWORK,
+    .url_get_file_handle = rtmp_get_file_handle
 };
 
-URLProtocol ff_librtmps_protocol = {
+URLProtocol ff_rtmps_protocol = {
     .name                = "rtmps",
     .url_open            = rtmp_open,
     .url_read            = rtmp_read,
@@ -212,7 +211,5 @@ URLProtocol ff_librtmps_protocol = {
     .url_close           = rtmp_close,
     .url_read_pause      = rtmp_read_pause,
     .url_read_seek       = rtmp_read_seek,
-    .url_get_file_handle = rtmp_get_file_handle,
-    .priv_data_size      = sizeof(RTMP),
-    .flags               = URL_PROTOCOL_FLAG_NETWORK,
+    .url_get_file_handle = rtmp_get_file_handle
 };

@@ -2,20 +2,20 @@
  * FLI/FLC Animation File Demuxer
  * Copyright (c) 2003 The ffmpeg Project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -34,7 +34,6 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/audioconvert.h"
 #include "avformat.h"
-#include "internal.h"
 
 #define FLIC_FILE_MAGIC_1 0xAF11
 #define FLIC_FILE_MAGIC_2 0xAF12
@@ -83,7 +82,8 @@ static int flic_probe(AVProbeData *p)
     return AVPROBE_SCORE_MAX;
 }
 
-static int flic_read_header(AVFormatContext *s)
+static int flic_read_header(AVFormatContext *s,
+                            AVFormatParameters *ap)
 {
     FlicDemuxContext *flic = s->priv_data;
     AVIOContext *pb = s->pb;
@@ -105,7 +105,7 @@ static int flic_read_header(AVFormatContext *s)
         speed = FLIC_DEFAULT_SPEED;
 
     /* initialize the decoder streams */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
     flic->video_stream_index = st->index;
@@ -117,7 +117,7 @@ static int flic_read_header(AVFormatContext *s)
 
     if (!st->codec->width || !st->codec->height) {
         /* Ugly hack needed for the following sample: */
-        /* http://samples.mplayerhq.hu/fli-flc/fli-bugs/specular.flc */
+        /* http://samples.libav.org/fli-flc/fli-bugs/specular.flc */
         av_log(s, AV_LOG_WARNING,
                "File with no specified width/height. Trying 640x480.\n");
         st->codec->width  = 640;
@@ -145,7 +145,7 @@ static int flic_read_header(AVFormatContext *s)
      */
     if (AV_RL16(&preamble[4]) == FLIC_TFTD_CHUNK_AUDIO) {
         /* TFTD videos have an extra 22050 Hz 8-bit mono audio stream */
-        ast = avformat_new_stream(s, NULL);
+        ast = av_new_stream(s, 1);
         if (!ast)
             return AVERROR(ENOMEM);
 
@@ -167,10 +167,10 @@ static int flic_read_header(AVFormatContext *s)
         /* Since the header information is incorrect we have to figure out the
          * framerate using block_align and the fact that the audio is 22050 Hz.
          * We usually have two cases: 2205 -> 10 fps and 1470 -> 15 fps */
-        avpriv_set_pts_info(st, 64, ast->codec->block_align, FLIC_TFTD_SAMPLE_RATE);
-        avpriv_set_pts_info(ast, 64, 1, FLIC_TFTD_SAMPLE_RATE);
+        av_set_pts_info(st, 64, ast->codec->block_align, FLIC_TFTD_SAMPLE_RATE);
+        av_set_pts_info(ast, 64, 1, FLIC_TFTD_SAMPLE_RATE);
     } else if (AV_RL16(&header[0x10]) == FLIC_CHUNK_MAGIC_1) {
-        avpriv_set_pts_info(st, 64, FLIC_MC_SPEED, 70);
+        av_set_pts_info(st, 64, FLIC_MC_SPEED, 70);
 
         /* rewind the stream since the first chunk is at offset 12 */
         avio_seek(pb, 12, SEEK_SET);
@@ -182,10 +182,10 @@ static int flic_read_header(AVFormatContext *s)
         memcpy(st->codec->extradata, header, 12);
 
     } else if (magic_number == FLIC_FILE_MAGIC_1) {
-        avpriv_set_pts_info(st, 64, speed, 70);
+        av_set_pts_info(st, 64, speed, 70);
     } else if ((magic_number == FLIC_FILE_MAGIC_2) ||
                (magic_number == FLIC_FILE_MAGIC_3)) {
-        avpriv_set_pts_info(st, 64, speed, 1000);
+        av_set_pts_info(st, 64, speed, 1000);
     } else {
         av_log(s, AV_LOG_INFO, "Invalid or unsupported magic chunk in file\n");
         return AVERROR_INVALIDDATA;

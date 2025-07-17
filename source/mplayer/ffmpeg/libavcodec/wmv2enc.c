@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2002 The FFmpeg Project
+ * Copyright (c) 2002 The Libav Project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -55,7 +55,7 @@ static int encode_ext_header(Wmv2Context *w){
 static av_cold int wmv2_encode_init(AVCodecContext *avctx){
     Wmv2Context * const w= avctx->priv_data;
 
-    if(ff_MPV_encode_init(avctx) < 0)
+    if(MPV_encode_init(avctx) < 0)
         return -1;
 
     ff_wmv2_common_init(w);
@@ -167,11 +167,11 @@ void ff_wmv2_encode_mb(MpegEncContext * s,
         }
 
         put_bits(&s->pb,
-                 ff_wmv2_inter_table[w->cbp_table_index][cbp + 64][1],
-                 ff_wmv2_inter_table[w->cbp_table_index][cbp + 64][0]);
+                 wmv2_inter_table[w->cbp_table_index][cbp + 64][1],
+                 wmv2_inter_table[w->cbp_table_index][cbp + 64][0]);
 
         /* motion vector */
-        ff_h263_pred_motion(s, 0, 0, &pred_x, &pred_y);
+        h263_pred_motion(s, 0, 0, &pred_x, &pred_y);
         ff_msmpeg4_encode_motion(s, motion_x - pred_x,
                               motion_y - pred_y);
     } else {
@@ -196,13 +196,13 @@ void ff_wmv2_encode_mb(MpegEncContext * s,
                      ff_msmp4_mb_i_table[coded_cbp][1], ff_msmp4_mb_i_table[coded_cbp][0]);
         } else {
             put_bits(&s->pb,
-                     ff_wmv2_inter_table[w->cbp_table_index][cbp][1],
-                     ff_wmv2_inter_table[w->cbp_table_index][cbp][0]);
+                     wmv2_inter_table[w->cbp_table_index][cbp][1],
+                     wmv2_inter_table[w->cbp_table_index][cbp][0]);
         }
         put_bits(&s->pb, 1, 0);         /* no AC prediction yet */
         if(s->inter_intra_pred){
             s->h263_aic_dir=0;
-            put_bits(&s->pb, ff_table_inter_intra[s->h263_aic_dir][1], ff_table_inter_intra[s->h263_aic_dir][0]);
+            put_bits(&s->pb, table_inter_intra[s->h263_aic_dir][1], table_inter_intra[s->h263_aic_dir][0]);
         }
     }
 
@@ -217,8 +217,8 @@ AVCodec ff_wmv2_encoder = {
     .id             = CODEC_ID_WMV2,
     .priv_data_size = sizeof(Wmv2Context),
     .init           = wmv2_encode_init,
-    .encode2        = ff_MPV_encode_picture,
-    .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
-    .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Video 8"),
+    .encode         = MPV_encode_picture,
+    .close          = MPV_encode_end,
+    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, PIX_FMT_NONE},
+    .long_name= NULL_IF_CONFIG_SMALL("Windows Media Video 8"),
 };

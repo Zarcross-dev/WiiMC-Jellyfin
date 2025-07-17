@@ -1,0 +1,11 @@
+prefix=/opt/devkitpro-r24/portlibs/ppc
+exec_prefix=${prefix}
+libdir=/opt/devkitpro-r24/portlibs/ppc/lib
+includedir=${prefix}/include
+
+Name: libexif
+Description: Library for easy access to EXIF data
+Requires:
+Version: 0.6.19
+Libs: -L${libdir} -lexif -lm
+Cflags: -I${includedir}

@@ -2,20 +2,20 @@
  * Linux DV1394 interface
  * Copyright (c) 2003 Max Krasnyansky <maxk@qualcomm.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -28,10 +28,11 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <time.h>
+#include <strings.h>
 
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
-#include "avdevice.h"
+#include "libavformat/avformat.h"
 #include "libavformat/dv.h"
 #include "dv1394.h"
 
@@ -81,11 +82,11 @@ static int dv1394_start(struct dv1394_data *dv)
     return 0;
 }
 
-static int dv1394_read_header(AVFormatContext * context)
+static int dv1394_read_header(AVFormatContext * context, AVFormatParameters * ap)
 {
     struct dv1394_data *dv = context->priv_data;
 
-    dv->dv_demux = avpriv_dv_init_demux(context);
+    dv->dv_demux = dv_init_demux(context);
     if (!dv->dv_demux)
         goto failed;
 
@@ -123,7 +124,7 @@ static int dv1394_read_packet(AVFormatContext *context, AVPacket *pkt)
     struct dv1394_data *dv = context->priv_data;
     int size;
 
-    size = avpriv_dv_get_packet(dv->dv_demux, pkt);
+    size = dv_get_packet(dv->dv_demux, pkt);
     if (size > 0)
         return size;
 
@@ -185,9 +186,9 @@ restart_poll:
     av_dlog(context, "index %d, avail %d, done %d\n", dv->index, dv->avail,
             dv->done);
 
-    size = avpriv_dv_produce_packet(dv->dv_demux, pkt,
+    size = dv_produce_packet(dv->dv_demux, pkt,
                              dv->ring + (dv->index * DV1394_PAL_FRAME_SIZE),
-                             DV1394_PAL_FRAME_SIZE, -1);
+                             DV1394_PAL_FRAME_SIZE);
     dv->index = (dv->index + 1) % DV1394_RING_FRAMES;
     dv->done++; dv->avail--;
 
@@ -213,10 +214,10 @@ static int dv1394_close(AVFormatContext * context)
 }
 
 static const AVOption options[] = {
-    { "standard", "", offsetof(struct dv1394_data, format), AV_OPT_TYPE_INT, {.dbl = DV1394_NTSC}, DV1394_PAL, DV1394_NTSC, AV_OPT_FLAG_DECODING_PARAM, "standard" },
-    { "PAL",      "", 0, AV_OPT_TYPE_CONST, {.dbl = DV1394_PAL},   0, 0, AV_OPT_FLAG_DECODING_PARAM, "standard" },
-    { "NTSC",     "", 0, AV_OPT_TYPE_CONST, {.dbl = DV1394_NTSC},  0, 0, AV_OPT_FLAG_DECODING_PARAM, "standard" },
-    { "channel",  "", offsetof(struct dv1394_data, channel), AV_OPT_TYPE_INT, {.dbl = DV1394_DEFAULT_CHANNEL}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
+    { "standard", "", offsetof(struct dv1394_data, format), FF_OPT_TYPE_INT, {.dbl = DV1394_NTSC}, DV1394_PAL, DV1394_NTSC, AV_OPT_FLAG_DECODING_PARAM, "standard" },
+    { "PAL",      "", 0, FF_OPT_TYPE_CONST, {.dbl = DV1394_PAL},   0, 0, AV_OPT_FLAG_DECODING_PARAM, "standard" },
+    { "NTSC",     "", 0, FF_OPT_TYPE_CONST, {.dbl = DV1394_NTSC},  0, 0, AV_OPT_FLAG_DECODING_PARAM, "standard" },
+    { "channel",  "", offsetof(struct dv1394_data, channel), FF_OPT_TYPE_INT, {.dbl = DV1394_DEFAULT_CHANNEL}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
     { NULL },
 };
 

@@ -1,20 +1,20 @@
 /*
  * (c) 2001 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -33,13 +33,14 @@
 #include "dsputil.h"
 #include "libavutil/lfg.h"
 
+#undef exit
 #undef printf
 
 #define WIDTH 64
 #define HEIGHT 64
 
-static uint8_t img1[WIDTH * HEIGHT];
-static uint8_t img2[WIDTH * HEIGHT];
+uint8_t img1[WIDTH * HEIGHT];
+uint8_t img2[WIDTH * HEIGHT];
 
 static void fill_random(uint8_t *tab, int size)
 {
@@ -48,7 +49,11 @@ static void fill_random(uint8_t *tab, int size)
 
     av_lfg_init(&prng, 1);
     for(i=0;i<size;i++) {
+#if 1
         tab[i] = av_lfg_get(&prng) % 256;
+#else
+        tab[i] = i;
+#endif
     }
 }
 
@@ -56,6 +61,7 @@ static void help(void)
 {
     printf("motion-test [-h]\n"
            "test motion implementations\n");
+    exit(1);
 }
 
 static int64_t gettime(void)
@@ -132,7 +138,7 @@ int main(int argc, char **argv)
         switch(c) {
         case 'h':
             help();
-            return 1;
+            break;
         }
     }
 
@@ -140,11 +146,11 @@ int main(int argc, char **argv)
 
     ctx = avcodec_alloc_context3(NULL);
     ctx->dsp_mask = AV_CPU_FLAG_FORCE;
-    ff_dsputil_init(&cctx, ctx);
+    dsputil_init(&cctx, ctx);
     for (c = 0; c < flags_size; c++) {
         int x;
         ctx->dsp_mask = AV_CPU_FLAG_FORCE | flags[c];
-        ff_dsputil_init(&mmxctx, ctx);
+        dsputil_init(&mmxctx, ctx);
 
         for (x = 0; x < 2; x++) {
             printf("%s for %dx%d pixels\n", c ? "mmx2" : "mmx",

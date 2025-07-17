@@ -22,7 +22,7 @@
 
 #include "osdep.h"
 
-#ifndef __OS2__
+#if defined(__MINGW32__) || defined(__CYGWIN__)
 #include <windows.h>
 #endif
 

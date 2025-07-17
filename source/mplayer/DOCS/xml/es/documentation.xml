@@ -172,6 +172,7 @@ sistema de plugin para la manipulación de vídeo.
   </para></listitem>
 </itemizedlist>
 
+<!-- FIXME: la licencia debe estar en bookinfo -->
 <para>
 <application>MPlayer</application> y <application>MEncoder</application>
 pueden ser distribuidos bajo los términos de la Licencia GNU General Public
@@ -179,3 +180,12 @@ License Version 2 (GPL v.2).
 </para>
 
 </chapter>
+
+&install.xml;
+&usage.xml;
+&video.xml;
+&ports.xml;
+&mencoder.xml;
+&faq.xml;
+&bugreports.xml;
+&skin.xml;

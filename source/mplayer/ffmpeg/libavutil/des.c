@@ -2,20 +2,20 @@
  * DES encryption/decryption
  * Copyright (c) 2007 Reimar Doeffinger
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include <inttypes.h>
@@ -298,7 +298,7 @@ int av_des_init(AVDES *d, const uint8_t *key, int key_bits, int decrypt) {
     return 0;
 }
 
-static void av_des_crypt_mac(AVDES *d, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt, int mac) {
+void av_des_crypt(AVDES *d, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt) {
     uint64_t iv_val = iv ? AV_RB64(iv) : 0;
     while (count-- > 0) {
         uint64_t dst_val;
@@ -321,23 +321,13 @@ static void av_des_crypt_mac(AVDES *d, uint8_t *dst, const uint8_t *src, int cou
         }
         AV_WB64(dst, dst_val);
         src += 8;
-        if (!mac)
-            dst += 8;
+        dst += 8;
     }
     if (iv)
         AV_WB64(iv, iv_val);
 }
 
-void av_des_crypt(AVDES *d, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt) {
-    av_des_crypt_mac(d, dst, src, count, iv, decrypt, 0);
-}
-
-void av_des_mac(AVDES *d, uint8_t *dst, const uint8_t *src, int count) {
-    av_des_crypt_mac(d, dst, src, count, (uint8_t[8]){0}, 0, 1);
-}
-
 #ifdef TEST
-// LCOV_EXCL_START
 #undef printf
 #undef rand
 #undef srand
@@ -417,10 +407,10 @@ int main(void) {
     for (i = 0; i < 1000; i++) {
         key[0] = rand64(); key[1] = rand64(); key[2] = rand64();
         data = rand64();
-        av_des_init(&d, (uint8_t*)key, 192, 0);
-        av_des_crypt(&d, (uint8_t*)&ct, (uint8_t*)&data, 1, NULL, 0);
-        av_des_init(&d, (uint8_t*)key, 192, 1);
-        av_des_crypt(&d, (uint8_t*)&ct, (uint8_t*)&ct, 1, NULL, 1);
+        av_des_init(&d, key, 192, 0);
+        av_des_crypt(&d, &ct, &data, 1, NULL, 0);
+        av_des_init(&d, key, 192, 1);
+        av_des_crypt(&d, &ct, &ct, 1, NULL, 1);
         if (ct != data) {
             printf("Test 2 failed\n");
             return 1;
@@ -444,5 +434,4 @@ int main(void) {
 #endif
     return 0;
 }
-// LCOV_EXCL_STOP
 #endif

@@ -1,20 +1,20 @@
 /*
  *    Copyright (C) 2005  Matthieu CASTET
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -22,7 +22,6 @@
 #include "libavcodec/get_bits.h"
 #include "libavcodec/flac.h"
 #include "avformat.h"
-#include "internal.h"
 #include "oggdec.h"
 
 #define OGG_FLAC_METADATA_TYPE_STREAMINFO 0x7F
@@ -56,18 +55,17 @@ flac_header (AVFormatContext * s, int idx)
         if (get_bits_long(&gb, 32) != FLAC_STREAMINFO_SIZE)
             return -1;
 
-        avpriv_flac_parse_streaminfo(st->codec, &si, streaminfo_start);
+        ff_flac_parse_streaminfo(st->codec, &si, streaminfo_start);
 
         st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codec->codec_id = CODEC_ID_FLAC;
-        st->need_parsing = AVSTREAM_PARSE_HEADERS;
 
         st->codec->extradata =
             av_malloc(FLAC_STREAMINFO_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
         memcpy(st->codec->extradata, streaminfo_start, FLAC_STREAMINFO_SIZE);
         st->codec->extradata_size = FLAC_STREAMINFO_SIZE;
 
-        avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
+        av_set_pts_info(st, 64, 1, st->codec->sample_rate);
     } else if (mdt == FLAC_METADATA_TYPE_VORBIS_COMMENT) {
         ff_vorbis_comment (s, &st->metadata, os->buf + os->pstart + 4, os->psize - 4);
     }

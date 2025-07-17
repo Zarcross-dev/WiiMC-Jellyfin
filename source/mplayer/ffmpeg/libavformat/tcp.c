@@ -2,20 +2,20 @@
  * TCP protocol
  * Copyright (c) 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
@@ -37,15 +37,15 @@ typedef struct TCPContext {
 /* return non zero if error */
 static int tcp_open(URLContext *h, const char *uri, int flags)
 {
-    struct addrinfo hints = { 0 }, *ai, *cur_ai;
+    struct addrinfo hints, *ai, *cur_ai;
     int port, fd = -1;
-    TCPContext *s = h->priv_data;
+    TCPContext *s = NULL;
     int listen_socket = 0;
     const char *p;
     char buf[256];
     int ret;
     socklen_t optlen;
-    int timeout = 50;
+    int timeout = 100;
     char hostname[1024],proto[1024],path[1024];
     char portstr[10];
 
@@ -62,6 +62,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
             timeout = strtol(buf, NULL, 10);
         }
     }
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     snprintf(portstr, sizeof(portstr), "%d", port);
@@ -83,19 +84,9 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
 
     if (listen_socket) {
         int fd1;
-        int reuse = 1;
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
         ret = bind(fd, cur_ai->ai_addr, cur_ai->ai_addrlen);
-        if (ret) {
-            ret = ff_neterrno();
-            goto fail1;
-        }
         listen(fd, 1);
         fd1 = accept(fd, NULL, NULL);
-        if (fd1 < 0) {
-            ret = ff_neterrno();
-            goto fail1;
-        }
         closesocket(fd);
         fd = fd1;
         ff_socket_nonblock(fd, 1);
@@ -114,7 +105,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         struct pollfd p = {fd, POLLOUT, 0};
         ret = ff_neterrno();
         if (ret == AVERROR(EINTR)) {
-            if (ff_check_interrupt(&h->interrupt_callback)) {
+            if (url_interrupt_cb()) {
                 ret = AVERROR_EXIT;
                 goto fail1;
             }
@@ -126,7 +117,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
 
         /* wait until we are connected or until abort */
         while(timeout--) {
-            if (ff_check_interrupt(&h->interrupt_callback)) {
+            if (url_interrupt_cb()) {
                 ret = AVERROR_EXIT;
                 goto fail1;
             }
@@ -149,6 +140,12 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
             goto fail;
         }
     }
+    s = av_malloc(sizeof(TCPContext));
+    if (!s) {
+        freeaddrinfo(ai);
+        return AVERROR(ENOMEM);
+    }
+    h->priv_data = s;
     h->is_streamed = 1;
     s->fd = fd;
     freeaddrinfo(ai);
@@ -197,26 +194,11 @@ static int tcp_write(URLContext *h, const uint8_t *buf, int size)
     return ret < 0 ? ff_neterrno() : ret;
 }
 
-static int tcp_shutdown(URLContext *h, int flags)
-{
-    TCPContext *s = h->priv_data;
-    int how;
-
-    if (flags & AVIO_FLAG_WRITE && flags & AVIO_FLAG_READ) {
-        how = SHUT_RDWR;
-    } else if (flags & AVIO_FLAG_WRITE) {
-        how = SHUT_WR;
-    } else {
-        how = SHUT_RD;
-    }
-
-    return shutdown(s->fd, how);
-}
-
 static int tcp_close(URLContext *h)
 {
     TCPContext *s = h->priv_data;
     closesocket(s->fd);
+    av_free(s);
     return 0;
 }
 
@@ -233,7 +215,4 @@ URLProtocol ff_tcp_protocol = {
     .url_write           = tcp_write,
     .url_close           = tcp_close,
     .url_get_file_handle = tcp_get_file_handle,
-    .url_shutdown        = tcp_shutdown,
-    .priv_data_size      = sizeof(TCPContext),
-    .flags               = URL_PROTOCOL_FLAG_NETWORK,
 };

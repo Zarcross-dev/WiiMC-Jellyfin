@@ -3,20 +3,20 @@
  * Copyright (C) 2004 Alex Beregszaszi
  * Copyright (C) 2006 Benjamin Larsson
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -115,7 +115,6 @@ static av_cold int flashsv_decode_init(AVCodecContext *avctx)
         return 1;
     }
     avctx->pix_fmt = PIX_FMT_BGR24;
-    avcodec_get_frame_defaults(&s->frame);
     s->frame.data[0] = NULL;
 
     return 0;
@@ -301,7 +300,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
     /* check for changes of image width and image height */
     if (avctx->width != s->image_width || avctx->height != s->image_height) {
         av_log(avctx, AV_LOG_ERROR,
-               "Frame width or height differs from first frame!\n");
+               "Frame width or height differs from first frames!\n");
         av_log(avctx, AV_LOG_ERROR, "fh = %d, fv %d  vs  ch = %d, cv = %d\n",
                avctx->height, avctx->width, s->image_height, s->image_width);
         return AVERROR_INVALIDDATA;
@@ -367,7 +366,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
                 if (s->color_depth != 0 && s->color_depth != 2) {
                     av_log(avctx, AV_LOG_ERROR,
                            "%dx%d invalid color depth %d\n", i, j, s->color_depth);
-                    return AVERROR_INVALIDDATA;
+                    return -1;
                 }
 
                 if (has_diff) {
@@ -462,7 +461,7 @@ AVCodec ff_flashsv_decoder = {
     .close          = flashsv_decode_end,
     .decode         = flashsv_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_BGR24, PIX_FMT_NONE },
+    .pix_fmts       = (const enum PixelFormat[]){PIX_FMT_BGR24, PIX_FMT_NONE},
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video v1"),
 };
 #endif /* CONFIG_FLASHSV_DECODER */
@@ -525,7 +524,7 @@ AVCodec ff_flashsv2_decoder = {
     .close          = flashsv2_decode_end,
     .decode         = flashsv_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_BGR24, PIX_FMT_NONE },
+    .pix_fmts       = (const enum PixelFormat[]){PIX_FMT_BGR24, PIX_FMT_NONE},
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video v2"),
 };
 #endif /* CONFIG_FLASHSV2_DECODER */

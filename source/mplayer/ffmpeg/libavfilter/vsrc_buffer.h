@@ -1,20 +1,21 @@
 /*
+ * Memory buffer source filter
  * Copyright (c) 2008 Vitor Sessak
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -24,43 +25,12 @@
 /**
  * @file
  * memory buffer source API for video
- *
- * @deprecated use buffersrc.h instead.
  */
 
+#include "libavcodec/avcodec.h" /* AVFrame */
 #include "avfilter.h"
 
-/**
- * Tell av_vsrc_buffer_add_video_buffer_ref() to overwrite the already
- * cached video buffer with the new added one, otherwise the function
- * will complain and exit.
- */
-#define AV_VSRC_BUF_FLAG_OVERWRITE 1
-
-/**
- * Add video buffer data in picref to buffer_src.
- *
- * @param buffer_src pointer to a buffer source context
- * @param flags a combination of AV_VSRC_BUF_FLAG_* flags
- * @return >= 0 in case of success, a negative AVERROR code in case of
- * failure
- *
- * @deprecated use av_buffersrc_add_ref() instead.
- */
-attribute_deprecated
-int av_vsrc_buffer_add_video_buffer_ref(AVFilterContext *buffer_src,
-                                        AVFilterBufferRef *picref, int flags);
-
-/**
- * Get the number of failed requests.
- *
- * A failed request is when the request_frame method is called while no
- * frame is present in the buffer.
- * The number is reset when a frame is added.
- *
- * @deprecated use av_buffersrc_get_nb_failed_requests() instead.
- */
-attribute_deprecated
-unsigned av_vsrc_buffer_get_nb_failed_requests(AVFilterContext *buffer_src);
+int av_vsrc_buffer_add_frame(AVFilterContext *buffer_filter, AVFrame *frame,
+                             int64_t pts, AVRational pixel_aspect);
 
 #endif /* AVFILTER_VSRC_BUFFER_H */

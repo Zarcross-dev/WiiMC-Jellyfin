@@ -1,6 +1,6 @@
-.\" sync with en/mplayer.1 rev. 34801
-.\" MPlayer (C) 2000-2012 MPlayer Team
-.\" This man page was/is translated by JRaSH<jrash06 at gmail.com>
+.\" sync with en/mplayer.1 rev. 33893
+.\" This man page was/is done by Gabucino, Diego Biurrun, Jonas Jermann
+.\" translation by JRaSH<jrash06 at 163.com>, currently fixed up to (10016)
 .
 .\" --------------------------------------------------------------------------
 .\" Macro definitions
@@ -31,7 +31,7 @@
 .\" 标题
 .\" --------------------------------------------------------------------------
 .
-.TH MPlayer 1 "2012-03-03" "MPlayer 项目" "影视播放器"
+.TH MPlayer 1 "2009-03-25" "MPlayer 项目" "影视播放器"
 .
 .SH 名称
 mplayer  \- 影视播放器
@@ -533,8 +533,6 @@ flip=yes
 mf=type=png:fps=25
 # 怪异的负片图像好酷。
 vf=eq2=1.0:\-0.8
-# OSD 播放进度条垂直放置方式
-progbar-align=50
 .fi
 .PP
 .I "MENCODER 配置文件示例："
@@ -2611,11 +2609,6 @@ FreeType 字体的默认路径为：~/.mplayer/\:subfont.ttf)。
 启用该项支持）。
 .
 .TP
-.B \-progbar\-align <0-100>
-指定播放进度条垂直方向放置方式\
-（0：置顶，100：置底，默认值为 50，即居中）。
-.
-.TP
 .B \-sid <代码>（也请参见 \-slang、\-vobsubid）
 显示由 <代码>（0\-31）指定的字幕流。\
 MPlayer 以详细输出模式（\-v）运行时，会打印可用的字幕代码。\
@@ -3033,6 +3026,10 @@ ALSA 0.9/1.x 音频输出驱动
 .PD 1
 .
 .TP
+.B "alsa5\ \ "
+ALSA 0.5 音频输出驱动
+.
+.TP
 .B "oss\ \ \ \ "
 OSS 音频输出驱动
 .PD 0
@@ -3115,14 +3112,10 @@ Mac OS X 自带的音频输出驱动
 PulseAudio 音频输出驱动
 .PD 0
 .RSs
-.IPs "[<主机>[:<输出目标>[:broken_pause]]]"
+.IPs "<主机>[:<输出泄漏值>]"
 指定所使用的主机，并可指定所使用的输出泄漏值。\
 <主机> 字符串为空的话，则使用本地连接。指定“localhost”则使用网络传输\
-（很可能并非所希望的方式）。\
-还可以明确表明强制使用变通逻辑，以修复存在故障的暂停功能（broken_pause）。\
-（默认值：自动侦测）。\
-如果只需要启用该功能而不指定主机/输出目标，则\
-形式为 \-ao pulse:::broken_pause。
+（很可能并非所希望的方式）。
 .RE
 .PD 1
 .
@@ -3469,9 +3462,8 @@ vdpau、x11、xv、xvmc、corevideo）时，坐标是相对于 \-xineramascreen 
 所给屏幕的值。
 .br
 .I 注意：
-该选项仅 x11、xmga、xv、xvmc、xvidix、gl、gl2、direct3d、\
-directx、fbdev、sdl、dfxfb 和 corevideo 视频输出驱动\
-支持。
+该选项仅 x11、xmga、xv、xvmc、xvidix、gl、gl2、directx、fbdev、tdfxfb 和 \
+corevideo 视频输出驱动支持。
 .sp 1
 .I 示例：
 .PD 0
@@ -3610,9 +3602,8 @@ ggi 和 gl2 的驱动都支持。
 不知道屏幕分辨率的情况。
 .
 .TP
-.B \-(no)stop\-xscreensaver（仅用于 X11）
-启动时关闭 xscreensaver，并在退出时重新将其开启\
-（默认值：启用）。\
+.B \-stop\-xscreensaver（仅用于 X11）
+启动时关闭 xscreensaver，退出时再将其打开。\
 如果屏保程序不支持 XSS 或 XResetScreenSaver 的 API，\
 请改用 \-heartbeat\-cmd 选项。
 .
@@ -4131,19 +4122,6 @@ OpenGL 视频输出驱动，简单版本。\
 可使用 glxinfo 或类似的工具显示已支持的 OpenGL 扩展功能。
 .PD 0
 .RSs
-.IPs backend=<n>
-选择要使用的后端/OpenGL的实现方式（默认值：-1）。
-.RSss
--1：自动选择
-.br
-0：Win32/WGL
-.br
-1：X11/GLX
-.br
-2：SDL
-.br
-3：X11/EGL（高度处于实验阶段）
-.RE
 .IPs (no)ati\-hack
 当使用了 PBO 时（当使用了 \-dr 或强制使用 \-pbo 时），\
 AIT 驱动可能输出损坏的图像。\
@@ -4278,13 +4256,9 @@ GL_ARB_fragment_shader！）。\
 详情参见 lscale。
 .IPs filter-strength=<值>
 设置支持强度设置的 lscale/cscale 过滤器的效果强度。
-.IPs noise-strength=<值>
-设置添加多强的噪声信号。0 用于禁止添加信号（默认值），1.0 用于产生适用于\
-抖动降级为 6 比特精度的信号等级。
 .IPs stereo=<值>
 选择用于立体显示的方式。\
 可能需要使用 \-aspect 以修正宽高比的数值。\
-数值加 32 可以实现左右画面对换。
 实验性的选项，勿对其期望太高。
 .RSss
 .IPs 0
@@ -5177,9 +5151,6 @@ all：跳过所有帧。
 .REss
 .IPs vstats
 打印一些统计信息并将其保存至 ./vstats_*.log 中。
-.IPs wait_keyframe
-显示任何内容前等待关键帧出现。\
-防止有些格式下开始播放或定位后帧画面损坏。
 .RE
 .
 .TP
@@ -6105,17 +6076,7 @@ unsigned long long counter   /*用于保持同步, 每当有新
 收集并打印音频流的统计信息，尤其是音量信息。\
 这些统计信息特别用于帮助调节音量\
 以防止削波。\
-音量以 dB 为单位打印并与用于音量的音频过滤器相兼容，\
-这些数值总是向 -0dB 方向取整。
-.sp 1
-‘n_samples’字段是过滤器读到的采样总数。\
-‘mean_volume’字段是均方值的平方根。\
-‘max_volume’字段的含义与其名完全一致（最大音量）。\
-‘histogram_Xdb’字段统计的是有多少采样的值是 -XdB，其中 X 为\
-刚好低于最大音量的值。
-.sp 1
-例如，如果 max_volume 为 -7dB 并且 histogram_7dB 为 19，则‘volume=7’不会\
-导致削波，而‘volume=8’将在刚好 19 个采样中导致削波。
+音量以 dB 为单位打印并与用于音量的音频过滤器兼容。
 .
 .
 .
@@ -7024,26 +6985,6 @@ softskip 将编码中跳过（丢弃）帧的步骤从过滤器序列之前\
 .TP
 .B lavcdeint（不推荐使用）
 FFmpeg 的解除隔行扫描过滤器，与 \-vf pp=fd 相同
-.
-.TP
-.B lavfi=filtergraph
-包装 FFmpeg libavfilter 接口的过滤器。\
-\fIfiltergraph\fR 定义的是具有单个输入和单个输出的 libavfilter 流程图。\
-参见 http://www.ffmpeg.org/\:libavfilter.html#SEC4 以了解详细信息。
-.sp 1
-有一种特殊情况，如果 \fIfiltergraph\fR 为 \fB$\fIword\fR，那么将\
-使用环境变量 \fIword\fR 的值；当逗号出现在流程图的描述中时，\
-这是有必要的，因为 mplayer 使用这些符号作为过滤器之间的\
-分隔符。
-.sp 1
-.I 注意：
-一般认为该过滤器只用于实验，因为其与其它过滤器交换\
-可能不正常。
-.sp 1
-.I 示例：
-.br
-overlay="movie=$small_video, scale=160:120 [ca]; [in] [ca] overlay=16:8"
-mplayer -vf lavfi='$overlay' $big_video
 .
 .TP
 .B kerndeint[=阈值[:映射[:次序[:锐化[:双向]]]]]
@@ -12252,7 +12193,7 @@ rar p test-SVCD.rar | mencoder \-ovc lavc \-lavcopts vcodec=mpeg4:vbitrate=800 \
 MPlayer 最初由 Arpad Gereoffy 制作。\
 参见 AUTHORS 文件以查看其它众多贡献者的部分列表。
 .PP
-MPlayer 为 (C) 2000\-2012 MPlayer 团队所有
+MPlayer 为 (C) 2000\-2011 MPlayer 团队所有
 .PP
 本（英文）手册主要由 Gabucino、Jonas Jermann 和 Diego Biurrun 编写，\
 由 Diego Biurrun 维护。中文版由 JRaSH <jrash06 AT 163.com> 翻译。\

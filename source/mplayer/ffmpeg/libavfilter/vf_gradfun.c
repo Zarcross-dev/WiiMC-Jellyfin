@@ -2,20 +2,20 @@
  * Copyright (c) 2010 Nolan Lum <nol888@gmail.com>
  * Copyright (c) 2009 Loren Merritt <lorenm@u.washignton.edu>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -49,7 +49,7 @@ DECLARE_ALIGNED(16, static const uint16_t, dither)[8][8] = {
     {0x54,0x34,0x4C,0x2C,0x52,0x32,0x4A,0x2A},
 };
 
-void ff_gradfun_filter_line_c(uint8_t *dst, const uint8_t *src, const uint16_t *dc, int width, int thresh, const uint16_t *dithers)
+void ff_gradfun_filter_line_c(uint8_t *dst, uint8_t *src, uint16_t *dc, int width, int thresh, const uint16_t *dithers)
 {
     int x;
     for (x = 0; x < width; x++, dc += x & 1) {
@@ -63,7 +63,7 @@ void ff_gradfun_filter_line_c(uint8_t *dst, const uint8_t *src, const uint16_t *
     }
 }
 
-void ff_gradfun_blur_line_c(uint16_t *dc, uint16_t *buf, const uint16_t *buf1, const uint8_t *src, int src_linesize, int width)
+void ff_gradfun_blur_line_c(uint16_t *dc, uint16_t *buf, uint16_t *buf1, uint8_t *src, int src_linesize, int width)
 {
     int x, v, old;
     for (x = 0; x < width; x++) {
@@ -74,7 +74,7 @@ void ff_gradfun_blur_line_c(uint16_t *dc, uint16_t *buf, const uint16_t *buf1, c
     }
 }
 
-static void filter(GradFunContext *ctx, uint8_t *dst, const uint8_t *src, int width, int height, int dst_linesize, int src_linesize, int r)
+static void filter(GradFunContext *ctx, uint8_t *dst, uint8_t *src, int width, int height, int dst_linesize, int src_linesize, int r)
 {
     int bstride = FFALIGN(width, 16) / 2;
     int y;
@@ -120,7 +120,7 @@ static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
     GradFunContext *gf = ctx->priv;
     float thresh = 1.2;
     int radius = 16;
-    int cpu_flags = av_get_cpu_flags();
+    av_unused int cpu_flags = av_get_cpu_flags();
 
     if (args)
         sscanf(args, "%f:%d", &thresh, &radius);
@@ -160,7 +160,7 @@ static int query_formats(AVFilterContext *ctx)
         PIX_FMT_NONE
     };
 
-    avfilter_set_common_pixel_formats(ctx, avfilter_make_format_list(pix_fmts));
+    avfilter_set_common_formats(ctx, avfilter_make_format_list(pix_fmts));
 
     return 0;
 }
@@ -240,7 +240,7 @@ AVFilter avfilter_vf_gradfun = {
     .uninit        = uninit,
     .query_formats = query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
+    .inputs    = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO,
                                     .config_props     = config_input,
                                     .start_frame      = start_frame,
@@ -248,7 +248,7 @@ AVFilter avfilter_vf_gradfun = {
                                     .end_frame        = end_frame,
                                     .min_perms        = AV_PERM_READ, },
                                   { .name = NULL}},
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
+    .outputs   = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO, },
                                   { .name = NULL}},
 };

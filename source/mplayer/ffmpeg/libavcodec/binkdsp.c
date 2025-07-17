@@ -2,20 +2,20 @@
  * Bink DSP routines
  * Copyright (c) 2009 Kostya Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,9 +26,6 @@
 
 #include "dsputil.h"
 #include "binkdsp.h"
-#ifdef HAVE_PAIRED
-#include "libavutil/ppc/paired.h"
-#endif
 
 #define A1  2896 /* (1/sqrt(2))<<12 */
 #define A2  2217
@@ -131,44 +128,9 @@ static void scale_block_c(const uint8_t src[64]/*align 8*/, uint8_t *dst/*align 
     }
 }
 
-#ifdef HAVE_PAIRED
-static void scale_block_paired(const uint8_t src[64], uint8_t *dst, int linesize)
-{
-	const float scalar = 257.0;
-	vector float pair;
-	
-	uint16_t *dst1 = (uint16_t *)(dst - linesize*2);
-	uint16_t *dst2 = (uint16_t *)(dst - linesize);
-	src -= 8;
-	
-	for (int i = 0; i < 8; i++) {
-		pair = psq_lu(8,src,0,4);
-		pair = ps_mul(pair, scalar);
-		psq_stux(pair,dst1,linesize*2,0,5);
-		psq_stux(pair,dst2,linesize*2,0,5);
-		
-		pair = psq_l(2,src,0,4);
-		pair = ps_mul(pair, scalar);
-		psq_st(pair,4,dst1,0,5);
-		psq_st(pair,4,dst2,0,5);
-		
-		pair = psq_l(4,src,0,4);
-		pair = ps_mul(pair, scalar);
-		psq_st(pair,8,dst1,0,5);
-		psq_st(pair,8,dst2,0,5);
-		
-		pair = psq_l(6,src,0,4);
-		pair = ps_mul(pair, scalar);
-		psq_st(pair,12,dst1,0,5);
-		psq_st(pair,12,dst2,0,5);
-	}
-}
-#endif
-
 void ff_binkdsp_init(BinkDSPContext *c)
 {
     c->idct_add    = bink_idct_add_c;
-    c->idct_put    = bink_idct_put_c;    
+    c->idct_put    = bink_idct_put_c;
     c->scale_block = scale_block_c;
-    if (HAVE_PAIRED) c->scale_block = scale_block_paired;
 }

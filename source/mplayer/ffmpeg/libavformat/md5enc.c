@@ -2,26 +2,25 @@
  * MD5 encoder (for codec/format testing)
  * Copyright (c) 2009 Reimar Döffinger, based on crcenc (c) 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavutil/md5.h"
 #include "avformat.h"
-#include "internal.h"
 
 #define PRIVSIZE 512
 
@@ -69,13 +68,13 @@ static int write_trailer(struct AVFormatContext *s)
 AVOutputFormat ff_md5_muxer = {
     .name              = "md5",
     .long_name         = NULL_IF_CONFIG_SMALL("MD5 testing format"),
+    .extensions        = "",
     .priv_data_size    = PRIVSIZE,
     .audio_codec       = CODEC_ID_PCM_S16LE,
     .video_codec       = CODEC_ID_RAWVIDEO,
     .write_header      = write_header,
     .write_packet      = write_packet,
     .write_trailer     = write_trailer,
-    .flags             = AVFMT_NOTIMESTAMPS,
 };
 #endif
 
@@ -90,8 +89,7 @@ static int framemd5_write_packet(struct AVFormatContext *s, AVPacket *pkt)
     av_md5_init(s->priv_data);
     av_md5_update(s->priv_data, pkt->data, pkt->size);
 
-    snprintf(buf, sizeof(buf) - 64, "%d, %10"PRId64", %10"PRId64", %8d, %8d, ",
-             pkt->stream_index, pkt->dts, pkt->pts, pkt->duration, pkt->size);
+    snprintf(buf, sizeof(buf) - 64, "%d, %"PRId64", %d, ", pkt->stream_index, pkt->dts, pkt->size);
     md5_finish(s, buf);
     return 0;
 }
@@ -99,11 +97,10 @@ static int framemd5_write_packet(struct AVFormatContext *s, AVPacket *pkt)
 AVOutputFormat ff_framemd5_muxer = {
     .name              = "framemd5",
     .long_name         = NULL_IF_CONFIG_SMALL("Per-frame MD5 testing format"),
+    .extensions        = "",
     .priv_data_size    = PRIVSIZE,
     .audio_codec       = CODEC_ID_PCM_S16LE,
     .video_codec       = CODEC_ID_RAWVIDEO,
-    .write_header      = ff_framehash_write_header,
     .write_packet      = framemd5_write_packet,
-    .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT,
 };
 #endif

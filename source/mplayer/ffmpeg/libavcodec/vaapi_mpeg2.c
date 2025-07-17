@@ -3,20 +3,20 @@
  *
  * Copyright (C) 2008-2009 Splitted-Desktop Systems
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,8 +26,8 @@
 /** Reconstruct bitstream f_code */
 static inline int mpeg2_get_f_code(MpegEncContext *s)
 {
-    return (s->mpeg_f_code[0][0] << 12) | (s->mpeg_f_code[0][1] << 8) |
-           (s->mpeg_f_code[1][0] <<  4) |  s->mpeg_f_code[1][1];
+    return ((s->mpeg_f_code[0][0] << 12) | (s->mpeg_f_code[0][1] << 8) |
+            (s->mpeg_f_code[1][0] <<  4) |  s->mpeg_f_code[1][1]);
 }
 
 /** Determine frame start: first field for field picture or frame picture */
@@ -132,7 +132,7 @@ static int vaapi_mpeg2_decode_slice(AVCodecContext *avctx, const uint8_t *buffer
         return -1;
     slice_param->macroblock_offset              = macroblock_offset;
     slice_param->slice_horizontal_position      = s->mb_x;
-    slice_param->slice_vertical_position        = s->mb_y >> (s->picture_structure != PICT_FRAME);
+    slice_param->slice_vertical_position        = s->mb_y;
     slice_param->quantiser_scale_code           = quantiser_scale_code;
     slice_param->intra_slice_flag               = intra_slice_flag;
     return 0;
@@ -143,7 +143,9 @@ AVHWAccel ff_mpeg2_vaapi_hwaccel = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_MPEG2VIDEO,
     .pix_fmt        = PIX_FMT_VAAPI_VLD,
+    .capabilities   = 0,
     .start_frame    = vaapi_mpeg2_start_frame,
     .end_frame      = vaapi_mpeg2_end_frame,
     .decode_slice   = vaapi_mpeg2_decode_slice,
+    .priv_data_size = 0,
 };

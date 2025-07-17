@@ -3,20 +3,20 @@
  *
  * copyright (c) 2010 Laurent Aimar
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -42,11 +42,11 @@ static void fill_picture_parameters(AVCodecContext *avctx,
     memset(pp, 0, sizeof(*pp));
     pp->wDecodedPictureIndex    =
     pp->wDeblockedPictureIndex  = ff_dxva2_get_surface_index(ctx, current_picture);
-    if (s->pict_type != AV_PICTURE_TYPE_I && !v->bi_type)
+    if (s->pict_type != AV_PICTURE_TYPE_I)
         pp->wForwardRefPictureIndex = ff_dxva2_get_surface_index(ctx, &s->last_picture);
     else
         pp->wForwardRefPictureIndex = 0xffff;
-    if (s->pict_type == AV_PICTURE_TYPE_B && !v->bi_type)
+    if (s->pict_type == AV_PICTURE_TYPE_B)
         pp->wBackwardRefPictureIndex = ff_dxva2_get_surface_index(ctx, &s->next_picture);
     else
         pp->wBackwardRefPictureIndex = 0xffff;
@@ -68,9 +68,9 @@ static void fill_picture_parameters(AVCodecContext *avctx,
         pp->bPicStructure      |= 0x01;
     if (s->picture_structure & PICT_BOTTOM_FIELD)
         pp->bPicStructure      |= 0x02;
-    pp->bSecondField            = v->interlace && v->fcm != ILACE_FIELD && !s->first_field;
-    pp->bPicIntra               = s->pict_type == AV_PICTURE_TYPE_I || v->bi_type;
-    pp->bPicBackwardPrediction  = s->pict_type == AV_PICTURE_TYPE_B && !v->bi_type;
+    pp->bSecondField            = v->interlace && v->fcm != 0x03 && !s->first_field;
+    pp->bPicIntra               = s->pict_type == AV_PICTURE_TYPE_I;
+    pp->bPicBackwardPrediction  = s->pict_type == AV_PICTURE_TYPE_B;
     pp->bBidirectionalAveragingMode = (1                                           << 7) |
                                       ((ctx->cfg->ConfigIntraResidUnsigned != 0)   << 6) |
                                       ((ctx->cfg->ConfigResidDiffAccelerator != 0) << 5) |
@@ -100,9 +100,8 @@ static void fill_picture_parameters(AVCodecContext *avctx,
                                   (s->resync_marker  << 4) |
                                   (v->rangered       << 3) |
                                   (s->max_b_frames       );
-    pp->bPicExtrapolation       = (!v->interlace || v->fcm == PROGRESSIVE) ? 1 : 2;
-    pp->bPicDeblocked           = ((!pp->bPicBackwardPrediction && v->overlap)        << 6) |
-                                  ((v->profile != PROFILE_ADVANCED && v->rangeredfrm) << 5) |
+    pp->bPicExtrapolation       = (!v->interlace || v->fcm == 0x00) ? 1 : 2;
+    pp->bPicDeblocked           = ((v->profile != PROFILE_ADVANCED && v->rangeredfrm) << 5) |
                                   (s->loop_filter                                     << 1);
     pp->bPicDeblockConfined     = (v->postprocflag             << 7) |
                                   (v->broadcast                << 6) |
@@ -270,6 +269,7 @@ AVHWAccel ff_wmv3_dxva2_hwaccel = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_WMV3,
     .pix_fmt        = PIX_FMT_DXVA2_VLD,
+    .capabilities   = 0,
     .start_frame    = start_frame,
     .decode_slice   = decode_slice,
     .end_frame      = end_frame,
@@ -282,8 +282,10 @@ AVHWAccel ff_vc1_dxva2_hwaccel = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_VC1,
     .pix_fmt        = PIX_FMT_DXVA2_VLD,
+    .capabilities   = 0,
     .start_frame    = start_frame,
     .decode_slice   = decode_slice,
     .end_frame      = end_frame,
     .priv_data_size = sizeof(struct dxva2_picture_context),
 };
+

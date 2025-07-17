@@ -345,8 +345,6 @@ static const ati_card_ids_t ati_card_ids[] =
  { DEVICE_ATI_RAGE_128_PRO2, 0 },
  { DEVICE_ATI_RAGE_128_PRO3, 0 },
 /* these seem to be based on rage 128 instead of mach64 */
- { DEVICE_ATI_RAGE_MOBILITY_M4, 0 },
- { DEVICE_ATI_RAGE_MOBILITY_M42, 0 },
  { DEVICE_ATI_RAGE_MOBILITY_M3, 0 },
  { DEVICE_ATI_RAGE_MOBILITY_M32, 0 },
 #else
@@ -547,7 +545,7 @@ static inline uint32_t INREG (uint32_t addr) {
 		OUTREG(addr, _tmp);					\
 	} while (0)
 
-static inline uint32_t INPLL(uint32_t addr)
+static __inline__ uint32_t INPLL(uint32_t addr)
 {
 	OUTREG8(CLOCK_CNTL_INDEX, addr & 0x0000001f);
 	return INREG(CLOCK_CNTL_DATA);
@@ -712,7 +710,7 @@ static void _radeon_fifo_wait(unsigned);
 #define radeon_engine_idle()		_radeon_engine_idle()
 #define radeon_fifo_wait(entries)	_radeon_fifo_wait(entries)
 /* Flush all dirty data in the Pixel Cache to memory. */
-static inline void radeon_engine_flush(void)
+static __inline__ void radeon_engine_flush ( void )
 {
     unsigned i;
 
@@ -750,7 +748,7 @@ static void radeon_engine_reset( void )
 }
 #else
 
-static inline void radeon_engine_flush(void)
+static __inline__ void radeon_engine_flush ( void )
 {
 	int i;
 
@@ -1434,7 +1432,7 @@ static const fourcc_desc_t supported_fourcc[] =
   { IMGFMT_BGR32, 775 }
 };
 
-static inline int is_supported_fourcc(uint32_t fourcc)
+__inline__ static int is_supported_fourcc(uint32_t fourcc)
 {
   unsigned i;
   for(i=0;i<sizeof(supported_fourcc)/sizeof(fourcc_desc_t);i++)

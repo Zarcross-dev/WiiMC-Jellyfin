@@ -75,7 +75,6 @@ struct ogg_stream {
     int incomplete; ///< whether we're expecting a continuation in the next page
     int page_end;   ///< current packet is the last one completed in the page
     int keyframe_seek;
-    int got_start;
     void *private;
 };
 
@@ -99,7 +98,6 @@ struct ogg {
 #define OGG_FLAG_BOS  2
 #define OGG_FLAG_EOS  4
 
-extern const struct ogg_codec ff_celt_codec;
 extern const struct ogg_codec ff_dirac_codec;
 extern const struct ogg_codec ff_flac_codec;
 extern const struct ogg_codec ff_ogm_audio_codec;
@@ -108,7 +106,6 @@ extern const struct ogg_codec ff_ogm_text_codec;
 extern const struct ogg_codec ff_ogm_video_codec;
 extern const struct ogg_codec ff_old_dirac_codec;
 extern const struct ogg_codec ff_old_flac_codec;
-extern const struct ogg_codec ff_opus_codec;
 extern const struct ogg_codec ff_skeleton_codec;
 extern const struct ogg_codec ff_speex_codec;
 extern const struct ogg_codec ff_theora_codec;

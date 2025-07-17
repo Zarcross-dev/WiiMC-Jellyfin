@@ -2,20 +2,20 @@
  * RTSP muxer
  * Copyright (c) 2010 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -33,13 +33,20 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/avstring.h"
 #include "url.h"
+#include "libavutil/opt.h"
+#include "rtpenc.h"
 
 #define SDP_MAX_SIZE 16384
+
+static const AVOption options[] = {
+    FF_RTP_FLAG_OPTS(RTSPState, rtp_muxer_flags),
+    { NULL },
+};
 
 static const AVClass rtsp_muxer_class = {
     .class_name = "RTSP muxer",
     .item_name  = av_default_item_name,
-    .option     = ff_rtsp_options,
+    .option     = options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -159,7 +166,7 @@ static int tcp_write_packet(AVFormatContext *s, RTSPStream *rtsp_st)
         size -= 4;
         if (packet_len > size || packet_len < 2)
             break;
-        if (RTP_PT_IS_RTCP(ptr[1]))
+        if (ptr[1] >= RTCP_SR && ptr[1] <= RTCP_APP)
             id = rtsp_st->interleaved_max; /* RTCP */
         else
             id = rtsp_st->interleaved_min; /* RTP */
@@ -242,6 +249,7 @@ AVOutputFormat ff_rtsp_muxer = {
     .write_header      = rtsp_write_header,
     .write_packet      = rtsp_write_packet,
     .write_trailer     = rtsp_write_close,
-    .flags             = AVFMT_NOFILE | AVFMT_GLOBALHEADER,
-    .priv_class        = &rtsp_muxer_class,
+    .flags = AVFMT_NOFILE | AVFMT_GLOBALHEADER,
+    .priv_class = &rtsp_muxer_class,
 };
+

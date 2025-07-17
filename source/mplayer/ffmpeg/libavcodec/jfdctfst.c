@@ -1,4 +1,6 @@
 /*
+ * jfdctfst.c
+ *
  * This file is part of the Independent JPEG Group's software.
  *
  * The authors make NO WARRANTY or representation, either express or implied,
@@ -205,7 +207,7 @@ static av_always_inline void row_fdct(DCTELEM * data){
  */
 
 GLOBAL(void)
-ff_fdct_ifast (DCTELEM * data)
+fdct_ifast (DCTELEM * data)
 {
   int tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   int tmp10, tmp11, tmp12, tmp13;
@@ -271,7 +273,7 @@ ff_fdct_ifast (DCTELEM * data)
  */
 
 GLOBAL(void)
-ff_fdct_ifast248 (DCTELEM * data)
+fdct_ifast248 (DCTELEM * data)
 {
   int tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   int tmp10, tmp11, tmp12, tmp13;

@@ -3,20 +3,20 @@
  * Copyright (c) 2007 Justin Ruggles
  * Copyright (c) 2009 Peter Ross
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,11 +26,10 @@
  */
 
 #include "avformat.h"
-#include "internal.h"
 #include "riff.h"
 #include "isom.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/intfloat.h"
+#include "libavutil/intfloat_readwrite.h"
 #include "libavutil/dict.h"
 #include "caf.h"
 
@@ -62,14 +61,14 @@ static int read_desc_chunk(AVFormatContext *s)
     int flags;
 
     /* new audio stream */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
     /* parse format description */
     st->codec->codec_type  = AVMEDIA_TYPE_AUDIO;
-    st->codec->sample_rate = av_int2double(avio_rb64(pb));
-    st->codec->codec_tag   = avio_rl32(pb);
+    st->codec->sample_rate = av_int2dbl(avio_rb64(pb));
+    st->codec->codec_tag   = avio_rb32(pb);
     flags = avio_rb32(pb);
     caf->bytes_per_packet  = avio_rb32(pb);
     st->codec->block_align = caf->bytes_per_packet;
@@ -86,7 +85,7 @@ static int read_desc_chunk(AVFormatContext *s)
     }
 
     /* determine codec */
-    if (st->codec->codec_tag == MKTAG('l','p','c','m'))
+    if (st->codec->codec_tag == MKBETAG('l','p','c','m'))
         st->codec->codec_id = ff_mov_get_lpcm_codec_id(st->codec->bits_per_coded_sample, (flags ^ 0x2) | 0x4);
     else
         st->codec->codec_id = ff_codec_get_id(ff_codec_caf_tags, st->codec->codec_tag);
@@ -121,28 +120,18 @@ static int read_kuki_chunk(AVFormatContext *s, int64_t size)
     } else if (st->codec->codec_id == CODEC_ID_ALAC) {
 #define ALAC_PREAMBLE 12
 #define ALAC_HEADER   36
-#define ALAC_NEW_KUKI 24
-        if (size == ALAC_NEW_KUKI) {
-            st->codec->extradata = av_mallocz(ALAC_HEADER + FF_INPUT_BUFFER_PADDING_SIZE);
-            if (!st->codec->extradata)
-                return AVERROR(ENOMEM);
-            memcpy(st->codec->extradata, "\0\0\0\24alac", 8);
-            avio_read(pb, st->codec->extradata + ALAC_HEADER - ALAC_NEW_KUKI, ALAC_NEW_KUKI);
-            st->codec->extradata_size = ALAC_HEADER;
-        } else {
-            if (size < ALAC_PREAMBLE + ALAC_HEADER) {
-                av_log(s, AV_LOG_ERROR, "invalid ALAC magic cookie\n");
-                avio_skip(pb, size);
-                return AVERROR_INVALIDDATA;
-            }
-            avio_skip(pb, ALAC_PREAMBLE);
-            st->codec->extradata = av_mallocz(ALAC_HEADER + FF_INPUT_BUFFER_PADDING_SIZE);
-            if (!st->codec->extradata)
-                return AVERROR(ENOMEM);
-            avio_read(pb, st->codec->extradata, ALAC_HEADER);
-            st->codec->extradata_size = ALAC_HEADER;
-            avio_skip(pb, size - ALAC_PREAMBLE - ALAC_HEADER);
+        if (size < ALAC_PREAMBLE + ALAC_HEADER) {
+            av_log(s, AV_LOG_ERROR, "invalid ALAC magic cookie\n");
+            avio_skip(pb, size);
+            return AVERROR_INVALIDDATA;
         }
+        avio_skip(pb, ALAC_PREAMBLE);
+        st->codec->extradata = av_mallocz(ALAC_HEADER + FF_INPUT_BUFFER_PADDING_SIZE);
+        if (!st->codec->extradata)
+            return AVERROR(ENOMEM);
+        avio_read(pb, st->codec->extradata, ALAC_HEADER);
+        st->codec->extradata_size = ALAC_HEADER;
+        avio_skip(pb, size - ALAC_PREAMBLE - ALAC_HEADER);
     } else {
         st->codec->extradata = av_mallocz(size + FF_INPUT_BUFFER_PADDING_SIZE);
         if (!st->codec->extradata)
@@ -198,13 +187,14 @@ static void read_info_chunk(AVFormatContext *s, int64_t size)
     for (i = 0; i < nb_entries; i++) {
         char key[32];
         char value[1024];
-        avio_get_str(pb, INT_MAX, key, sizeof(key));
+        avio_get_str(pb, INT_MAX, key,   sizeof(key));
         avio_get_str(pb, INT_MAX, value, sizeof(value));
         av_dict_set(&s->metadata, key, value, 0);
     }
 }
 
-static int read_header(AVFormatContext *s)
+static int read_header(AVFormatContext *s,
+                       AVFormatParameters *ap)
 {
     AVIOContext *pb = s->pb;
     CaffContext *caf  = s->priv_data;
@@ -231,7 +221,7 @@ static int read_header(AVFormatContext *s)
 
     /* parse each chunk */
     found_data = 0;
-    while (!url_feof(pb)) {
+    while (!pb->eof_reached) {
 
         /* stop at data chunk if seeking is not supported or
            data chunk size is unknown */
@@ -240,7 +230,7 @@ static int read_header(AVFormatContext *s)
 
         tag  = avio_rb32(pb);
         size = avio_rb64(pb);
-        if (url_feof(pb))
+        if (pb->eof_reached)
             break;
 
         switch (tag) {
@@ -269,16 +259,10 @@ static int read_header(AVFormatContext *s)
             read_info_chunk(s, size);
             break;
 
-        case MKBETAG('c','h','a','n'):
-            if (size < 12)
-                return AVERROR_INVALIDDATA;
-            ff_mov_read_chan(s, size, st->codec);
-            break;
-
         default:
 #define _(x) ((x) >= ' ' ? (x) : ' ')
-            av_log(s, AV_LOG_WARNING, "skipping CAF chunk: %08X (%c%c%c%c), size %"PRId64"\n",
-                tag, _(tag>>24), _((tag>>16)&0xFF), _((tag>>8)&0xFF), _(tag&0xFF), size);
+            av_log(s, AV_LOG_WARNING, "skipping CAF chunk: %08X (%c%c%c%c)\n",
+                tag, _(tag>>24), _((tag>>16)&0xFF), _((tag>>8)&0xFF), _(tag&0xFF));
 #undef _
         case MKBETAG('f','r','e','e'):
             if (size < 0)
@@ -302,8 +286,10 @@ static int read_header(AVFormatContext *s)
                                 "block size or frame size are variable.\n");
         return AVERROR_INVALIDDATA;
     }
+    s->file_size = avio_size(pb);
+    s->file_size = FFMAX(0, s->file_size);
 
-    avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
+    av_set_pts_info(st, 64, 1, st->codec->sample_rate);
     st->start_time = 0;
 
     /* position the stream at the start of data */
@@ -323,7 +309,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     int res, pkt_size = 0, pkt_frames = 0;
     int64_t left      = CAF_MAX_PKT_SIZE;
 
-    if (url_feof(pb))
+    if (pb->eof_reached)
         return AVERROR(EIO);
 
     /* don't read past end of data chunk */
@@ -374,7 +360,7 @@ static int read_seek(AVFormatContext *s, int stream_index,
 {
     AVStream *st = s->streams[0];
     CaffContext *caf = s->priv_data;
-    int64_t pos, packet_cnt, frame_cnt;
+    int64_t pos;
 
     timestamp = FFMAX(timestamp, 0);
 
@@ -383,22 +369,17 @@ static int read_seek(AVFormatContext *s, int stream_index,
         pos = caf->bytes_per_packet * timestamp / caf->frames_per_packet;
         if (caf->data_size > 0)
             pos = FFMIN(pos, caf->data_size);
-        packet_cnt = pos / caf->bytes_per_packet;
-        frame_cnt  = caf->frames_per_packet * packet_cnt;
+        caf->packet_cnt = pos / caf->bytes_per_packet;
+        caf->frame_cnt  = caf->frames_per_packet * caf->packet_cnt;
     } else if (st->nb_index_entries) {
-        packet_cnt = av_index_search_timestamp(st, timestamp, flags);
-        frame_cnt  = st->index_entries[packet_cnt].timestamp;
-        pos        = st->index_entries[packet_cnt].pos;
+        caf->packet_cnt = av_index_search_timestamp(st, timestamp, flags);
+        caf->frame_cnt  = st->index_entries[caf->packet_cnt].timestamp;
+        pos             = st->index_entries[caf->packet_cnt].pos;
     } else {
         return -1;
     }
 
-    if (avio_seek(s->pb, pos + caf->data_start, SEEK_SET) < 0)
-        return -1;
-
-    caf->packet_cnt = packet_cnt;
-    caf->frame_cnt  = frame_cnt;
-
+    avio_seek(s->pb, pos + caf->data_start, SEEK_SET);
     return 0;
 }
 
@@ -410,5 +391,5 @@ AVInputFormat ff_caf_demuxer = {
     .read_header    = read_header,
     .read_packet    = read_packet,
     .read_seek      = read_seek,
-    .codec_tag      = (const AVCodecTag*[]){ ff_codec_caf_tags, 0 },
+    .codec_tag = (const AVCodecTag*[]){ff_codec_caf_tags, 0},
 };

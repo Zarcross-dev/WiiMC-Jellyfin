@@ -2,20 +2,20 @@
  * Sierra SOL demuxer
  * Copyright Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -23,9 +23,8 @@
  * Based on documents from Game Audio Player and own research
  */
 
-#include "libavutil/intreadwrite.h"
+#include "libavutil/bswap.h"
 #include "avformat.h"
-#include "internal.h"
 #include "pcm.h"
 
 /* if we don't know the size in advance */
@@ -34,7 +33,8 @@
 static int sol_probe(AVProbeData *p)
 {
     /* check file header */
-    uint16_t magic = AV_RL32(p->buf);
+    uint16_t magic;
+    magic=av_le2ne16(*((uint16_t*)p->buf));
     if ((magic == 0x0B8D || magic == 0x0C0D || magic == 0x0C8D) &&
         p->buf[2] == 'S' && p->buf[3] == 'O' &&
         p->buf[4] == 'L' && p->buf[5] == 0)
@@ -82,7 +82,8 @@ static int sol_channels(int magic, int type)
     return 2;
 }
 
-static int sol_read_header(AVFormatContext *s)
+static int sol_read_header(AVFormatContext *s,
+                          AVFormatParameters *ap)
 {
     unsigned int magic,tag;
     AVIOContext *pb = s->pb;
@@ -109,7 +110,7 @@ static int sol_read_header(AVFormatContext *s)
     else id = 0;
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return -1;
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -117,7 +118,7 @@ static int sol_read_header(AVFormatContext *s)
     st->codec->codec_id = codec;
     st->codec->channels = channels;
     st->codec->sample_rate = rate;
-    avpriv_set_pts_info(st, 64, 1, rate);
+    av_set_pts_info(st, 64, 1, rate);
     return 0;
 }
 
@@ -128,13 +129,14 @@ static int sol_read_packet(AVFormatContext *s,
 {
     int ret;
 
-    if (url_feof(s->pb))
+    if (s->pb->eof_reached)
         return AVERROR(EIO);
     ret= av_get_packet(s->pb, pkt, MAX_SIZE);
-    if (ret < 0)
-        return ret;
-    pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;
+
+    /* note: we need to modify the packet size here to handle the last
+       packet */
+    pkt->size = ret;
     return 0;
 }
 
@@ -144,5 +146,5 @@ AVInputFormat ff_sol_demuxer = {
     .read_probe     = sol_probe,
     .read_header    = sol_read_header,
     .read_packet    = sol_read_packet,
-    .read_seek      = ff_pcm_read_seek,
+    .read_seek      = pcm_read_seek,
 };

@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2009 Stefano Sabatini
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -72,9 +72,8 @@ static void start_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
     }
 
     /* copy palette */
-    if (priv->pix_desc->flags & PIX_FMT_PAL ||
-        priv->pix_desc->flags & PIX_FMT_PSEUDOPAL)
-        memcpy(outpicref->data[1], picref->data[1], AVPALETTE_SIZE);
+    if (priv->pix_desc->flags & PIX_FMT_PAL)
+        memcpy(outpicref->data[1], outpicref->data[1], 256*4);
 
     avfilter_start_frame(outlink, avfilter_ref_buffer(outpicref, ~0));
 }
@@ -93,7 +92,7 @@ static void draw_slice(AVFilterLink *inlink, int y, int h, int slice_dir)
 
         for (i = y1; i < y1 + h1; i++) {
             av_read_image_line(priv->line,
-                               (void*)inpic->data,
+                               inpic->data,
                                inpic->linesize,
                                priv->pix_desc,
                                0, i, c, w1, 0);
@@ -116,7 +115,7 @@ AVFilter avfilter_vf_pixdesctest = {
     .priv_size = sizeof(PixdescTestContext),
     .uninit    = uninit,
 
-    .inputs    = (const AVFilterPad[]) {{ .name      = "default",
+    .inputs    = (AVFilterPad[]) {{ .name            = "default",
                                     .type            = AVMEDIA_TYPE_VIDEO,
                                     .start_frame     = start_frame,
                                     .draw_slice      = draw_slice,
@@ -124,7 +123,7 @@ AVFilter avfilter_vf_pixdesctest = {
                                     .min_perms       = AV_PERM_READ, },
                                   { .name = NULL}},
 
-    .outputs   = (const AVFilterPad[]) {{ .name      = "default",
+    .outputs   = (AVFilterPad[]) {{ .name            = "default",
                                     .type            = AVMEDIA_TYPE_VIDEO, },
                                   { .name = NULL}},
 };

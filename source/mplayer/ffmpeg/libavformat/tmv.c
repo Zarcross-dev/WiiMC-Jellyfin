@@ -2,20 +2,20 @@
  * 8088flex TMV file demuxer
  * Copyright (c) 2009 Daniel Verkamp <daniel at drv.nu>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -28,7 +28,6 @@
 
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
-#include "internal.h"
 
 enum {
     TMV_PADDING = 0x01,
@@ -63,7 +62,7 @@ static int tmv_probe(AVProbeData *p)
     return 0;
 }
 
-static int tmv_read_header(AVFormatContext *s)
+static int tmv_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     TMVContext *tmv   = s->priv_data;
     AVIOContext *pb = s->pb;
@@ -74,10 +73,10 @@ static int tmv_read_header(AVFormatContext *s)
     if (avio_rl32(pb) != TMV_TAG)
         return -1;
 
-    if (!(vst = avformat_new_stream(s, NULL)))
+    if (!(vst = av_new_stream(s, 0)))
         return AVERROR(ENOMEM);
 
-    if (!(ast = avformat_new_stream(s, NULL)))
+    if (!(ast = av_new_stream(s, 0)))
         return AVERROR(ENOMEM);
 
     ast->codec->sample_rate = avio_rl16(pb);
@@ -116,7 +115,7 @@ static int tmv_read_header(AVFormatContext *s)
     ast->codec->bits_per_coded_sample = 8;
     ast->codec->bit_rate              = ast->codec->sample_rate *
                                         ast->codec->bits_per_coded_sample;
-    avpriv_set_pts_info(ast, 32, 1, ast->codec->sample_rate);
+    av_set_pts_info(ast, 32, 1, ast->codec->sample_rate);
 
     fps.num = ast->codec->sample_rate * ast->codec->channels;
     fps.den = tmv->audio_chunk_size;
@@ -127,7 +126,7 @@ static int tmv_read_header(AVFormatContext *s)
     vst->codec->pix_fmt    = PIX_FMT_PAL8;
     vst->codec->width      = char_cols * 8;
     vst->codec->height     = char_rows * 8;
-    avpriv_set_pts_info(vst, 32, fps.den, fps.num);
+    av_set_pts_info(vst, 32, fps.den, fps.num);
 
     if (features & TMV_PADDING)
         tmv->padding =
@@ -147,7 +146,7 @@ static int tmv_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret, pkt_size = tmv->stream_index ?
                         tmv->audio_chunk_size : tmv->video_chunk_size;
 
-    if (url_feof(pb))
+    if (pb->eof_reached)
         return AVERROR_EOF;
 
     ret = av_get_packet(pb, pkt, pkt_size);
@@ -174,8 +173,7 @@ static int tmv_read_seek(AVFormatContext *s, int stream_index,
     pos = timestamp *
           (tmv->audio_chunk_size + tmv->video_chunk_size + tmv->padding);
 
-    if (avio_seek(s->pb, pos + TMV_HEADER_SIZE, SEEK_SET) < 0)
-        return -1;
+    avio_seek(s->pb, pos + TMV_HEADER_SIZE, SEEK_SET);
     tmv->stream_index = 0;
     return 0;
 }
@@ -188,5 +186,5 @@ AVInputFormat ff_tmv_demuxer = {
     .read_header    = tmv_read_header,
     .read_packet    = tmv_read_packet,
     .read_seek      = tmv_read_seek,
-    .flags          = AVFMT_GENERIC_INDEX,
+    .flags = AVFMT_GENERIC_INDEX,
 };

@@ -1,128 +1,151 @@
 stream/pnm.o: stream/pnm.c config.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/assert.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stat.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/fcntl.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/fcntl.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_default_fcntl.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/errno.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/errno.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/assert.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stat.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/fcntl.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/fcntl.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_default_fcntl.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/errno.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/errno.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h \
  ffmpeg/libavutil/intreadwrite.h ffmpeg/libavutil/avconfig.h \
  ffmpeg/libavutil/attributes.h ffmpeg/libavutil/bswap.h \
- ffmpeg/libavutil/ppc/intreadwrite.h mp_msg.h config.h stream/stream.h \
- m_option.h stream/url.h stream/network.h \
- C:/devkitPro/libogc/include/network.h \
- C:/devkitPro/libogc/include/gctypes.h \
- c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h \
+ ffmpeg/libavutil/ppc/intreadwrite.h stream/stream.h m_option.h mp_msg.h \
+ config.h stream/url.h stream/network.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/network.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/gctypes.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h \
  stream/http.h libmpdemux/demuxer.h stream/stream.h sub/ass_mp.h \
- sub/subreader.h libass/ass.h libass/ass_types.h help_mp.h osdep/timer.h \
- C:/devkitPro/libogc/include/ogc/lwp_watchdog.h \
- C:/devkitPro/libogc/include/ogc/lwp_queue.h stream/pnm.h stream/tcp.h
+ sub/subreader.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-common.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-config.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-unicode.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-types.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-begindecls.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-enddecls.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-unicode-version.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-flags.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-bidi-types.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-bidi-types-list.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-bidi.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-joining-types.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-joining-types-list.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-joining.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-mirroring.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-arabic.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-shape.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-char-sets.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-char-sets-list.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-deprecated.h \
+ libass/ass.h libass/ass_types.h help_mp.h osdep/timer.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_watchdog.h \
+ /opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_queue.h stream/pnm.h \
+ stream/tcp.h
 
 config.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/unistd.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/unistd.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdio.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stdio.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/assert.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/assert.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stat.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/stat.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/fcntl.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/fcntl.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/fcntl.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/fcntl.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_default_fcntl.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_default_fcntl.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/errno.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/errno.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/errno.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/errno.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:
 
 ffmpeg/libavutil/intreadwrite.h:
 
@@ -134,23 +157,23 @@ ffmpeg/libavutil/bswap.h:
 
 ffmpeg/libavutil/ppc/intreadwrite.h:
 
-mp_msg.h:
-
-config.h:
-
 stream/stream.h:
 
 m_option.h:
+
+mp_msg.h:
+
+config.h:
 
 stream/url.h:
 
 stream/network.h:
 
-C:/devkitPro/libogc/include/network.h:
+/opt/devkitpro-r24/portlibs/ppc/include/network.h:
 
-C:/devkitPro/libogc/include/gctypes.h:
+/opt/devkitpro-r24/portlibs/ppc/include/gctypes.h:
 
-c:\devkitpro\devkitppc\bin\../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h:
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h:
 
 stream/http.h:
 
@@ -162,6 +185,48 @@ sub/ass_mp.h:
 
 sub/subreader.h:
 
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-common.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-config.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-unicode.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-types.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-begindecls.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-enddecls.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-unicode-version.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-flags.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-bidi-types.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-bidi-types-list.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-bidi.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-joining-types.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-joining-types-list.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-joining.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-mirroring.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-arabic.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-shape.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-char-sets.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-char-sets-list.h:
+
+/opt/devkitpro-r24/portlibs/ppc/include/fribidi/fribidi-deprecated.h:
+
 libass/ass.h:
 
 libass/ass_types.h:
@@ -170,9 +235,9 @@ help_mp.h:
 
 osdep/timer.h:
 
-C:/devkitPro/libogc/include/ogc/lwp_watchdog.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_watchdog.h:
 
-C:/devkitPro/libogc/include/ogc/lwp_queue.h:
+/opt/devkitpro-r24/portlibs/ppc/include/ogc/lwp_queue.h:
 
 stream/pnm.h:
 

@@ -100,19 +100,6 @@ static int inline query_format(uint32_t format)
 	else return VO_FALSE;
 }
 
-#define WIDTH_WIDE 854
-
-void wiiSetFullScreen()
-{
-	mplayerwidth = WIDTH_WIDE;
-}
-
-void wiiSetScreenNorm()
-{
-	if (CONF_GetAspectRatio() != CONF_ASPECT_16_9)
-		mplayerwidth = vmode->fbWidth;
-}
-
 void reinit_video()
 {
 	ShutdownGui(); // tell GUI to shut down, MPlayer is ready to take over
@@ -150,6 +137,7 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width,
 	mp_get_chroma_shift(format, &xs, &ys, NULL);
 	chroma_width=image_width >> xs;
 	chroma_height=image_height >> ys;
+	GX_AllocTextureMemory(image_width, image_height, chroma_width, chroma_height);
 	reinit_video();
 	return 0;
 }
@@ -188,7 +176,7 @@ static int preinit(const char *arg)
 	subopt_parse(arg, subopts);
 
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
-		mplayerwidth = WIDTH_WIDE; // 480 * 16 / 9
+		mplayerwidth = 854; // 480 * (16/9)
 
 	vo_screenheight = mplayerheight;
 	vo_screenwidth = mplayerwidth;

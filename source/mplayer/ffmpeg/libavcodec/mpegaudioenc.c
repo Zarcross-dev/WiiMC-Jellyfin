@@ -2,20 +2,20 @@
  * The simplest mpeg audio layer 2 encoder
  * Copyright (c) 2000, 2001 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -25,7 +25,6 @@
  */
 
 #include "avcodec.h"
-#include "internal.h"
 #include "put_bits.h"
 
 #define FRAC_BITS   15   /* fractional bits for sb_samples and dct */
@@ -75,37 +74,36 @@ static av_cold int MPA_encode_init(AVCodecContext *avctx)
 
     if (channels <= 0 || channels > 2){
         av_log(avctx, AV_LOG_ERROR, "encoding %d channel(s) is not allowed in mp2\n", channels);
-        return AVERROR(EINVAL);
+        return -1;
     }
     bitrate = bitrate / 1000;
     s->nb_channels = channels;
     avctx->frame_size = MPA_FRAME_SIZE;
-    avctx->delay      = 512 - 32 + 1;
 
     /* encoding freq */
     s->lsf = 0;
     for(i=0;i<3;i++) {
-        if (avpriv_mpa_freq_tab[i] == freq)
+        if (ff_mpa_freq_tab[i] == freq)
             break;
-        if ((avpriv_mpa_freq_tab[i] / 2) == freq) {
+        if ((ff_mpa_freq_tab[i] / 2) == freq) {
             s->lsf = 1;
             break;
         }
     }
     if (i == 3){
         av_log(avctx, AV_LOG_ERROR, "Sampling rate %d is not allowed in mp2\n", freq);
-        return AVERROR(EINVAL);
+        return -1;
     }
     s->freq_index = i;
 
     /* encoding bitrate & frequency */
     for(i=0;i<15;i++) {
-        if (avpriv_mpa_bitrate_tab[s->lsf][1][i] == bitrate)
+        if (ff_mpa_bitrate_tab[s->lsf][1][i] == bitrate)
             break;
     }
     if (i == 15){
         av_log(avctx, AV_LOG_ERROR, "bitrate %d is not allowed in mp2\n", bitrate);
-        return AVERROR(EINVAL);
+        return -1;
     }
     s->bitrate_index = i;
 
@@ -181,11 +179,8 @@ static av_cold int MPA_encode_init(AVCodecContext *avctx)
         total_quant_bits[i] = 12 * v;
     }
 
-#if FF_API_OLD_ENCODE_AUDIO
     avctx->coded_frame= avcodec_alloc_frame();
-    if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
-#endif
+    avctx->coded_frame->key_frame= 1;
 
     return 0;
 }
@@ -729,14 +724,14 @@ static void encode_frame(MpegAudioContext *s,
     flush_put_bits(p);
 }
 
-static int MPA_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
-                            const AVFrame *frame, int *got_packet_ptr)
+static int MPA_encode_frame(AVCodecContext *avctx,
+                            unsigned char *frame, int buf_size, void *data)
 {
     MpegAudioContext *s = avctx->priv_data;
-    const int16_t *samples = (const int16_t *)frame->data[0];
+    const short *samples = data;
     short smr[MPA_MAX_CHANNELS][SBLIMIT];
     unsigned char bit_alloc[MPA_MAX_CHANNELS][SBLIMIT];
-    int padding, i, ret;
+    int padding, i;
 
     for(i=0;i<s->nb_channels;i++) {
         filter(s, i, samples + i, s->nb_channels);
@@ -751,47 +746,28 @@ static int MPA_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     }
     compute_bit_allocation(s, smr, bit_alloc, &padding);
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, MPA_MAX_CODED_FRAME_SIZE)))
-        return ret;
-
-    init_put_bits(&s->pb, avpkt->data, avpkt->size);
+    init_put_bits(&s->pb, frame, MPA_MAX_CODED_FRAME_SIZE);
 
     encode_frame(s, bit_alloc, padding);
 
-    if (frame->pts != AV_NOPTS_VALUE)
-        avpkt->pts = frame->pts - ff_samples_to_time_base(avctx, avctx->delay);
-
-    avpkt->size = put_bits_count(&s->pb) / 8;
-    *got_packet_ptr = 1;
-    return 0;
+    return put_bits_ptr(&s->pb) - s->pb.buf;
 }
 
 static av_cold int MPA_encode_close(AVCodecContext *avctx)
 {
-#if FF_API_OLD_ENCODE_AUDIO
     av_freep(&avctx->coded_frame);
-#endif
     return 0;
 }
 
-static const AVCodecDefault mp2_defaults[] = {
-    { "b",    "128k" },
-    { NULL },
-};
-
 AVCodec ff_mp2_encoder = {
-    .name                  = "mp2",
-    .type                  = AVMEDIA_TYPE_AUDIO,
-    .id                    = CODEC_ID_MP2,
-    .priv_data_size        = sizeof(MpegAudioContext),
-    .init                  = MPA_encode_init,
-    .encode2               = MPA_encode_frame,
-    .close                 = MPA_encode_close,
-    .sample_fmts           = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
-                                                            AV_SAMPLE_FMT_NONE },
-    .supported_samplerates = (const int[]){
-        44100, 48000,  32000, 22050, 24000, 16000, 0
-    },
-    .long_name             = NULL_IF_CONFIG_SMALL("MP2 (MPEG audio layer 2)"),
-    .defaults              = mp2_defaults,
+    .name           = "mp2",
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = CODEC_ID_MP2,
+    .priv_data_size = sizeof(MpegAudioContext),
+    .init           = MPA_encode_init,
+    .encode         = MPA_encode_frame,
+    .close          = MPA_encode_close,
+    .sample_fmts = (const enum AVSampleFormat[]){AV_SAMPLE_FMT_S16,AV_SAMPLE_FMT_NONE},
+    .supported_samplerates= (const int[]){44100, 48000,  32000, 22050, 24000, 16000, 0},
+    .long_name = NULL_IF_CONFIG_SMALL("MP2 (MPEG audio layer 2)"),
 };

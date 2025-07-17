@@ -2,20 +2,20 @@
  * WavPack demuxer
  * Copyright (c) 2006,2011 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -23,7 +23,6 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/dict.h"
 #include "avformat.h"
-#include "internal.h"
 #include "apetag.h"
 #include "id3v1.h"
 
@@ -203,7 +202,8 @@ static int wv_read_block_header(AVFormatContext *ctx, AVIOContext *pb, int appen
     return 0;
 }
 
-static int wv_read_header(AVFormatContext *s)
+static int wv_read_header(AVFormatContext *s,
+                          AVFormatParameters *ap)
 {
     AVIOContext *pb = s->pb;
     WVContext *wc = s->priv_data;
@@ -220,7 +220,7 @@ static int wv_read_header(AVFormatContext *s)
     }
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return -1;
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -229,7 +229,7 @@ static int wv_read_header(AVFormatContext *s)
     st->codec->channel_layout = wc->chmask;
     st->codec->sample_rate = wc->rate;
     st->codec->bits_per_coded_sample = wc->bpp;
-    avpriv_set_pts_info(st, 64, 1, wc->rate);
+    av_set_pts_info(st, 64, 1, wc->rate);
     st->start_time = 0;
     st->duration = wc->samples;
 
@@ -250,17 +250,14 @@ static int wv_read_packet(AVFormatContext *s,
     WVContext *wc = s->priv_data;
     int ret;
     int size, ver, off;
-    int64_t pos;
-    uint32_t block_samples;
 
-    if (url_feof(s->pb))
+    if (s->pb->eof_reached)
         return AVERROR(EIO);
     if(wc->block_parsed){
         if(wv_read_block_header(s, s->pb, 0) < 0)
             return -1;
     }
 
-    pos = wc->pos;
     off = wc->multichannel ? 4 : 0;
     if(av_new_packet(pkt, wc->blksize + WV_EXTRA_SIZE + off) < 0)
         return AVERROR(ENOMEM);
@@ -317,13 +314,7 @@ static int wv_read_packet(AVFormatContext *s,
     pkt->stream_index = 0;
     wc->block_parsed = 1;
     pkt->pts = wc->soff;
-    block_samples = AV_RN32(wc->extra);
-    if (block_samples > INT32_MAX)
-        av_log(s, AV_LOG_WARNING, "Too many samples in block: %"PRIu32"\n", block_samples);
-    else
-        pkt->duration = block_samples;
-
-    av_add_index_entry(s->streams[0], pos, pkt->pts, 0, 0, AVINDEX_KEYFRAME);
+    av_add_index_entry(s->streams[0], wc->pos, pkt->pts, 0, 0, AVINDEX_KEYFRAME);
     return 0;
 }
 
@@ -337,8 +328,7 @@ static int wv_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp,
     int64_t pos, pts;
 
     /* if found, seek there */
-    if (index >= 0 &&
-        timestamp <= st->index_entries[st->nb_index_entries - 1].timestamp) {
+    if (index >= 0){
         wc->block_parsed = 1;
         avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET);
         return 0;

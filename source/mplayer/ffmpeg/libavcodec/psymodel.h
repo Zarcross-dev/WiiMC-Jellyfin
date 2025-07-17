@@ -2,20 +2,20 @@
  * audio encoder psychoacoustic model
  * Copyright (C) 2008 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -109,7 +109,7 @@ typedef struct FFPsyModel {
      *
      * @return suggested window information in a structure
      */
-    FFPsyWindowInfo (*window)(FFPsyContext *ctx, const float *audio, const float *la, int channel, int prev_type);
+    FFPsyWindowInfo (*window)(FFPsyContext *ctx, const int16_t *audio, const int16_t *la, int channel, int prev_type);
 
     /**
      * Perform psychoacoustic analysis and set band info (threshold, energy) for a group of channels.
@@ -174,10 +174,14 @@ av_cold struct FFPsyPreprocessContext* ff_psy_preprocess_init(AVCodecContext *av
  * Preprocess several channel in audio frame in order to compress it better.
  *
  * @param ctx      preprocessing context
- * @param audio    samples to be filtered (in place)
- * @param channels number of channel to preprocess
+ * @param audio    samples to preprocess
+ * @param dest     place to put filtered samples
+ * @param tag      channel number
+ * @param channels number of channel to preprocess (some additional work may be done on stereo pair)
  */
-void ff_psy_preprocess(struct FFPsyPreprocessContext *ctx, float **audio, int channels);
+void ff_psy_preprocess(struct FFPsyPreprocessContext *ctx,
+                       const int16_t *audio, int16_t *dest,
+                       int tag, int channels);
 
 /**
  * Cleanup audio preprocessing module.

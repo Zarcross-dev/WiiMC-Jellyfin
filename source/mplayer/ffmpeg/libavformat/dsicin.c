@@ -2,20 +2,20 @@
  * Delphine Software International CIN File Demuxer
  * Copyright (c) 2006 Gregory Montoir (cyx@users.sourceforge.net)
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,8 +26,6 @@
 
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
-#include "internal.h"
-#include "avio_internal.h"
 
 
 typedef struct CinFileHeader {
@@ -92,7 +90,7 @@ static int cin_read_file_header(CinDemuxContext *cin, AVIOContext *pb) {
     return 0;
 }
 
-static int cin_read_header(AVFormatContext *s)
+static int cin_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     int rc;
     CinDemuxContext *cin = s->priv_data;
@@ -109,11 +107,11 @@ static int cin_read_header(AVFormatContext *s)
     cin->audio_buffer_size = 0;
 
     /* initialize the video decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 32, 1, 12);
+    av_set_pts_info(st, 32, 1, 12);
     cin->video_stream_index = st->index;
     st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codec->codec_id = CODEC_ID_DSICINVIDEO;
@@ -122,19 +120,20 @@ static int cin_read_header(AVFormatContext *s)
     st->codec->height = hdr->video_frame_height;
 
     /* initialize the audio decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 32, 1, 22050);
+    av_set_pts_info(st, 32, 1, 22050);
     cin->audio_stream_index = st->index;
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codec->codec_id = CODEC_ID_DSICINAUDIO;
     st->codec->codec_tag = 0;  /* no tag */
     st->codec->channels = 1;
     st->codec->sample_rate = 22050;
-    st->codec->bits_per_coded_sample = 8;
+    st->codec->bits_per_coded_sample = 16;
     st->codec->bit_rate = st->codec->sample_rate * st->codec->bits_per_coded_sample * st->codec->channels;
+    st->codec->block_align = st->codec->channels * st->codec->bits_per_coded_sample;
 
     return 0;
 }
@@ -148,7 +147,7 @@ static int cin_read_frame_header(CinDemuxContext *cin, AVIOContext *pb) {
     hdr->video_frame_size = avio_rl32(pb);
     hdr->audio_frame_size = avio_rl32(pb);
 
-    if (url_feof(pb) || pb->error)
+    if (pb->eof_reached || pb->error)
         return AVERROR(EIO);
 
     if (avio_rl32(pb) != 0xAA55AA55)
@@ -179,8 +178,6 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         /* palette and video packet */
         pkt_size = (palette_type + 3) * hdr->pal_colors_count + hdr->video_frame_size;
-
-        pkt_size = ffio_limit(pb, pkt_size);
 
         ret = av_new_packet(pkt, 4 + pkt_size);
         if (ret < 0)
@@ -214,8 +211,7 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->stream_index = cin->audio_stream_index;
     pkt->pts = cin->audio_stream_pts;
-    pkt->duration = cin->audio_buffer_size - (pkt->pts == 0);
-    cin->audio_stream_pts += pkt->duration;
+    cin->audio_stream_pts += cin->audio_buffer_size * 2 / cin->file_header.audio_frame_size;
     cin->audio_buffer_size = 0;
     return 0;
 }

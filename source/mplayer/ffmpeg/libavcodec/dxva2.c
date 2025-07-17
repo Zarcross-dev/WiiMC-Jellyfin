@@ -3,20 +3,20 @@
  *
  * copyright (c) 2010 Laurent Aimar
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -86,7 +86,7 @@ int ff_dxva2_common_end_frame(AVCodecContext *avctx, MpegEncContext *s,
     struct dxva_context *ctx = avctx->hwaccel_context;
     unsigned               buffer_count = 0;
     DXVA2_DecodeBufferDesc buffer[4];
-    DXVA2_DecodeExecuteParams exec = { 0 };
+    DXVA2_DecodeExecuteParams exec;
     int      result;
 
     if (FAILED(IDirectXVideoDecoder_BeginFrame(ctx->decoder,
@@ -132,6 +132,7 @@ int ff_dxva2_common_end_frame(AVCodecContext *avctx, MpegEncContext *s,
 
     assert(buffer_count == 1 + (qm_size > 0) + 2);
 
+    memset(&exec, 0, sizeof(exec));
     exec.NumCompBuffers      = buffer_count;
     exec.pCompressedBuffers  = buffer;
     exec.pExtensionData      = NULL;
@@ -150,3 +151,4 @@ end:
         ff_draw_horiz_band(s, 0, s->avctx->height);
     return result;
 }
+

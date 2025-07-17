@@ -5,20 +5,20 @@
  * This algorithm (though not any of the implementation details) is
  * based on libdjbfft by D. J. Bernstein.
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -353,7 +353,6 @@ extfunc ff_fft_calc\interleave\()_altivec
     mflr    r0
     stp     r0, 2*PS(r1)
     stpu    r1, -(160+16*PS)(r1)
-    get_got r11
     addi    r6, r1, 16*PS
     stvm    r6, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29
     mfvrsave r0
@@ -361,14 +360,14 @@ extfunc ff_fft_calc\interleave\()_altivec
     li      r6, 0xfffffffc
     mtvrsave r6
 
-    movrel  r6, fft_data, r11
+    movrel  r6, fft_data
     lvm     r6, v14, v15, v16, v17, v18, v19, v20, v21
     lvm     r6, v22, v23, v24, v25, v26, v27, v28, v29
 
     li      r9, 16
-    movrel  r12, X(ff_cos_tabs), r11
+    movrel  r12, X(ff_cos_tabs)
 
-    movrel  r6, fft_dispatch_tab\interleave\()_altivec, r11
+    movrel  r6, fft_dispatch_tab\interleave\()_altivec
     lwz     r3, 0(r3)
     subi    r3, r3, 2
     slwi    r3, r3, 2+ARCH_PPC64

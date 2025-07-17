@@ -26,8 +26,8 @@
 #include "config.h"
 #include "mp_msg.h"
 #include "help_mp.h"
-#include "path.h"
 
+#include <libgen.h>
 #include <errno.h>
 
 #define FIRST_AC3_AID 128
@@ -149,7 +149,7 @@ int dvd_chapter_from_cell(dvd_priv_t* dvd,int title,int cell)
   return chapter;
 }
 
-static int dvd_lang_from_aid(stream_t *stream, int id) {
+int dvd_lang_from_aid(stream_t *stream, int id) {
   dvd_priv_t *d;
   int i;
   if (!stream) return 0;
@@ -195,7 +195,7 @@ int dvd_number_of_subs(stream_t *stream) {
   return maxid + 1;
 }
 
-static int dvd_lang_from_sid(stream_t *stream, int id) {
+int dvd_lang_from_sid(stream_t *stream, int id) {
   int i;
   dvd_priv_t *d;
   if (!stream) return 0;
@@ -665,11 +665,6 @@ static int control(stream_t *stream,int cmd,void* arg)
             *((double *)arg) = (double) mp_get_titleset_length(d->vts_file, d->tt_srpt, d->cur_title-1)/1000.0;
             return 1;
         }
-        case STREAM_CTRL_GET_NUM_TITLES:
-        {
-            *((unsigned int *)arg) = d->vmg_file->tt_srpt->nr_of_srpts;
-            return 1;
-        }
         case STREAM_CTRL_GET_NUM_CHAPTERS:
         {
             int r;
@@ -730,25 +725,6 @@ static int control(stream_t *stream,int cmd,void* arg)
             dvd_angle = ang - 1;
             d->angle_seek = 1;
             return 1;
-        }
-        case STREAM_CTRL_GET_LANG:
-        {
-            struct stream_lang_req *req = arg;
-            int lang = 0;
-            switch(req->type) {
-            case stream_ctrl_audio:
-                lang = dvd_lang_from_aid(stream, req->id);
-                break;
-            case stream_ctrl_sub:
-                lang = dvd_lang_from_sid(stream, req->id);
-                break;
-            }
-            if (!lang)
-                break;
-            req->buf[0] = lang >> 8;
-            req->buf[1] = lang;
-            req->buf[2] = 0;
-            return STREAM_OK;
         }
     }
     return STREAM_UNSUPPORTED;
@@ -1151,7 +1127,7 @@ static int ifo_stream_open (stream_t *stream, int mode, void *opts, int *file_fo
 #ifdef GEKKO
     filename = gekko_basename(stream->url);
 #else
-    filename = strdup(mp_basename(stream->url));
+    filename = strdup(basename(stream->url));
 #endif
 
     spriv=calloc(1, sizeof(struct stream_priv_s));
@@ -1159,7 +1135,7 @@ static int ifo_stream_open (stream_t *stream, int mode, void *opts, int *file_fo
 #ifdef GEKKO
     spriv->device = gekko_dirname(stream->url);
 #else
-    spriv->device = mp_dirname(stream->url);
+    spriv->device = strdup(dirname(stream->url));
 #endif
 
     if(!strncasecmp(filename,"vts_",4))

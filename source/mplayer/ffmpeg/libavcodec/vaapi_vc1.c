@@ -3,20 +3,20 @@
  *
  * Copyright (C) 2008-2009 Splitted-Desktop Systems
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -24,7 +24,7 @@
 #include "vc1.h"
 #include "vc1data.h"
 
-/** Translate FFmpeg MV modes to VA API */
+/** Translate Libav MV modes to VA API */
 static int get_VAMvModeVC1(enum MVModes mv_mode)
 {
     switch (mv_mode) {
@@ -42,10 +42,10 @@ static inline int vc1_has_MVTYPEMB_bitplane(VC1Context *v)
 {
     if (v->mv_type_is_raw)
         return 0;
-    return v->s.pict_type == AV_PICTURE_TYPE_P &&
-           (v->mv_mode == MV_PMODE_MIXED_MV ||
-            (v->mv_mode == MV_PMODE_INTENSITY_COMP &&
-             v->mv_mode2 == MV_PMODE_MIXED_MV));
+    return (v->s.pict_type == AV_PICTURE_TYPE_P &&
+            (v->mv_mode == MV_PMODE_MIXED_MV ||
+             (v->mv_mode == MV_PMODE_INTENSITY_COMP &&
+              v->mv_mode2 == MV_PMODE_MIXED_MV)));
 }
 
 /** Check whether the SKIPMB bitplane is present */
@@ -53,8 +53,8 @@ static inline int vc1_has_SKIPMB_bitplane(VC1Context *v)
 {
     if (v->skip_is_raw)
         return 0;
-    return v->s.pict_type == AV_PICTURE_TYPE_P ||
-           (v->s.pict_type == AV_PICTURE_TYPE_B && !v->bi_type);
+    return (v->s.pict_type == AV_PICTURE_TYPE_P ||
+            (v->s.pict_type == AV_PICTURE_TYPE_B && !v->bi_type));
 }
 
 /** Check whether the DIRECTMB bitplane is present */
@@ -70,9 +70,9 @@ static inline int vc1_has_ACPRED_bitplane(VC1Context *v)
 {
     if (v->acpred_is_raw)
         return 0;
-    return v->profile == PROFILE_ADVANCED &&
-           (v->s.pict_type == AV_PICTURE_TYPE_I ||
-            (v->s.pict_type == AV_PICTURE_TYPE_B && v->bi_type));
+    return (v->profile == PROFILE_ADVANCED &&
+            (v->s.pict_type == AV_PICTURE_TYPE_I ||
+             (v->s.pict_type == AV_PICTURE_TYPE_B && v->bi_type)));
 }
 
 /** Check whether the OVERFLAGS bitplane is present */
@@ -80,11 +80,11 @@ static inline int vc1_has_OVERFLAGS_bitplane(VC1Context *v)
 {
     if (v->overflg_is_raw)
         return 0;
-    return v->profile == PROFILE_ADVANCED &&
-           (v->s.pict_type == AV_PICTURE_TYPE_I ||
-            (v->s.pict_type == AV_PICTURE_TYPE_B && v->bi_type)) &&
-           (v->overlap && v->pq <= 8) &&
-           v->condover == CONDOVER_SELECT;
+    return (v->profile == PROFILE_ADVANCED &&
+            (v->s.pict_type == AV_PICTURE_TYPE_I ||
+             (v->s.pict_type == AV_PICTURE_TYPE_B && v->bi_type)) &&
+            (v->overlap && v->pq <= 8) &&
+            v->condover == CONDOVER_SELECT);
 }
 
 /** Reconstruct bitstream PTYPE (7.1.1.4, index into Table-35) */
@@ -116,19 +116,7 @@ static inline VAMvModeVC1 vc1_get_MVMODE2(VC1Context *v)
     return 0;
 }
 
-/** Reconstruct bitstream TTFRM (7.1.1.41, Table-53) */
-static inline int vc1_get_TTFRM(VC1Context *v)
-{
-    switch (v->ttfrm) {
-    case TT_8X8: return 0;
-    case TT_8X4: return 1;
-    case TT_4X8: return 2;
-    case TT_4X4: return 3;
-    }
-    return 0;
-}
-
-/** Pack FFmpeg bitplanes into a VABitPlaneBuffer element */
+/** Pack Libav bitplanes into a VABitPlaneBuffer element */
 static inline void vc1_pack_bitplanes(uint8_t *bitplane, int n, const uint8_t *ff_bp[3], int x, int y, int stride)
 {
     const int bitplane_index = n / 2;
@@ -251,7 +239,7 @@ static int vaapi_vc1_start_frame(AVCodecContext *avctx, av_unused const uint8_t 
     pic_param->transform_fields.value                               = 0; /* reset all bits */
     pic_param->transform_fields.bits.variable_sized_transform_flag  = v->vstransform;
     pic_param->transform_fields.bits.mb_level_transform_type_flag   = v->ttmbf;
-    pic_param->transform_fields.bits.frame_level_transform_type     = vc1_get_TTFRM(v);
+    pic_param->transform_fields.bits.frame_level_transform_type     = v->ttfrm;
     pic_param->transform_fields.bits.transform_ac_codingset_idx1    = v->c_ac_table_index;
     pic_param->transform_fields.bits.transform_ac_codingset_idx2    = v->y_ac_table_index;
     pic_param->transform_fields.bits.intra_transform_dc_table       = v->s.dc_table_index;
@@ -346,9 +334,11 @@ AVHWAccel ff_wmv3_vaapi_hwaccel = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_WMV3,
     .pix_fmt        = PIX_FMT_VAAPI_VLD,
+    .capabilities   = 0,
     .start_frame    = vaapi_vc1_start_frame,
     .end_frame      = vaapi_vc1_end_frame,
     .decode_slice   = vaapi_vc1_decode_slice,
+    .priv_data_size = 0,
 };
 #endif
 
@@ -357,7 +347,9 @@ AVHWAccel ff_vc1_vaapi_hwaccel = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_VC1,
     .pix_fmt        = PIX_FMT_VAAPI_VLD,
+    .capabilities   = 0,
     .start_frame    = vaapi_vc1_start_frame,
     .end_frame      = vaapi_vc1_end_frame,
     .decode_slice   = vaapi_vc1_decode_slice,
+    .priv_data_size = 0,
 };

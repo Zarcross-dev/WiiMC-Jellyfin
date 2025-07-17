@@ -2,20 +2,20 @@
  * Common code between the AC-3 and E-AC-3 decoders
  * Copyright (c) 2007 Bartlomiej Wolowiec <bartek.wolowiec@gmail.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -62,14 +62,11 @@
 
 #define SPX_MAX_BANDS    17
 
-/** Large enough for maximum possible frame size when the specification limit is ignored */
-#define AC3_FRAME_BUFFER_SIZE 32768
-
 typedef struct {
     AVClass        *class;                  ///< class for AVOptions
     AVCodecContext *avctx;                  ///< parent context
-    AVFrame frame;                          ///< AVFrame for decoded output
     GetBitContext gbc;                      ///< bitstream reader
+    uint8_t *input_buffer;                  ///< temp buffer to prevent overread
 
 ///@name Bit stream information
 ///@{
@@ -88,12 +85,6 @@ typedef struct {
     int surround_mix_level;                 ///< Surround mix level index
     int eac3;                               ///< indicates if current frame is E-AC-3
 ///@}
-
-    int preferred_stereo_downmix;
-    float ltrt_center_mix_level;
-    float ltrt_surround_mix_level;
-    float loro_center_mix_level;
-    float loro_surround_mix_level;
 
 ///@name Frame syntax parameters
     int snr_offset_strategy;                ///< SNR offset strategy                    (snroffststr)
@@ -211,7 +202,6 @@ typedef struct {
     DECLARE_ALIGNED(32, float, window)[AC3_BLOCK_SIZE];                              ///< window coefficients
     DECLARE_ALIGNED(32, float, tmp_output)[AC3_BLOCK_SIZE];                          ///< temporary storage for output before windowing
     DECLARE_ALIGNED(32, float, output)[AC3_MAX_CHANNELS][AC3_BLOCK_SIZE];            ///< output after imdct transform and windowing
-    DECLARE_ALIGNED(32, uint8_t, input_buffer)[AC3_FRAME_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE]; ///< temp buffer to prevent overread
 ///@}
 } AC3DecodeContext;
 

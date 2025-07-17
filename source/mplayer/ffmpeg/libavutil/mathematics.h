@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2005 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -57,12 +57,6 @@
 #define INFINITY       (1.0/0.0)
 #endif
 
-/**
- * @addtogroup lavu_math
- * @{
- */
-
-
 enum AVRounding {
     AV_ROUND_ZERO     = 0, ///< Round toward zero.
     AV_ROUND_INF      = 1, ///< Round away from zero.
@@ -96,12 +90,6 @@ int64_t av_rescale_rnd(int64_t a, int64_t b, int64_t c, enum AVRounding) av_cons
 int64_t av_rescale_q(int64_t a, AVRational bq, AVRational cq) av_const;
 
 /**
- * Rescale a 64-bit integer by 2 rational numbers with specified rounding.
- */
-int64_t av_rescale_q_rnd(int64_t a, AVRational bq, AVRational cq,
-                         enum AVRounding) av_const;
-
-/**
  * Compare 2 timestamps each in its own timebases.
  * The result of the function is undefined if one of the timestamps
  * is outside the int64_t range when represented in the others timebase.
@@ -120,9 +108,5 @@ int av_compare_ts(int64_t ts_a, AVRational tb_a, int64_t ts_b, AVRational tb_b);
  *         0                if a equals          b
  */
 int64_t av_compare_mod(uint64_t a, uint64_t b, uint64_t mod);
-
-/**
- * @}
- */
 
 #endif /* AVUTIL_MATHEMATICS_H */

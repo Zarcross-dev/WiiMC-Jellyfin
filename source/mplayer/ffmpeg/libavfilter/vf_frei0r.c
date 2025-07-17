@@ -1,19 +1,19 @@
 /*
  * Copyright (c) 2010 Stefano Sabatini
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -216,7 +216,7 @@ static av_cold int frei0r_init(AVFilterContext *ctx,
     /* see: http://piksel.org/frei0r/1.2/spec/1.2/spec/group__pluglocations.html */
     if ((path = av_strdup(getenv("FREI0R_PATH")))) {
         char *p, *ptr = NULL;
-        for (p = path; p = av_strtok(p, ":", &ptr); p = NULL)
+        for (p = path; p = strtok_r(p, ":", &ptr); p = NULL)
             if (frei0r->dl_handle = load_path(ctx, p, dl_name))
                 break;
         av_free(path);
@@ -333,7 +333,7 @@ static int query_formats(AVFilterContext *ctx)
     if (!formats)
         return AVERROR(ENOMEM);
 
-    avfilter_set_common_pixel_formats(ctx, formats);
+    avfilter_set_common_formats(ctx, formats);
     return 0;
 }
 
@@ -365,7 +365,7 @@ AVFilter avfilter_vf_frei0r = {
 
     .priv_size = sizeof(Frei0rContext),
 
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
+    .inputs    = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO,
                                     .draw_slice       = null_draw_slice,
                                     .config_props     = config_input_props,
@@ -373,7 +373,7 @@ AVFilter avfilter_vf_frei0r = {
                                     .min_perms        = AV_PERM_READ },
                                   { .name = NULL}},
 
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
+    .outputs   = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO, },
                                   { .name = NULL}},
 };
@@ -418,7 +418,6 @@ static int source_config_props(AVFilterLink *outlink)
     outlink->w = frei0r->w;
     outlink->h = frei0r->h;
     outlink->time_base = frei0r->time_base;
-    outlink->sample_aspect_ratio = (AVRational){1,1};
 
     if (!(frei0r->instance = frei0r->construct(outlink->w, outlink->h))) {
         av_log(ctx, AV_LOG_ERROR, "Impossible to load frei0r instance");
@@ -432,7 +431,7 @@ static int source_request_frame(AVFilterLink *outlink)
 {
     Frei0rContext *frei0r = outlink->src->priv;
     AVFilterBufferRef *picref = avfilter_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
-    picref->video->sample_aspect_ratio = (AVRational) {1, 1};
+    picref->video->pixel_aspect = (AVRational) {1, 1};
     picref->pts = frei0r->pts++;
     picref->pos = -1;
 
@@ -456,9 +455,9 @@ AVFilter avfilter_vsrc_frei0r_src = {
 
     .query_formats = query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name = NULL}},
+    .inputs    = (AVFilterPad[]) {{ .name = NULL}},
 
-    .outputs   = (const AVFilterPad[]) {{ .name      = "default",
+    .outputs   = (AVFilterPad[]) {{ .name            = "default",
                                     .type            = AVMEDIA_TYPE_VIDEO,
                                     .request_frame   = source_request_frame,
                                     .config_props    = source_config_props },

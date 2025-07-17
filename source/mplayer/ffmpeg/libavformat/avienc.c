@@ -2,24 +2,23 @@
  * AVI muxer
  * Copyright (c) 2000 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
-#include "internal.h"
 #include "avi.h"
 #include "avio_internal.h"
 #include "riff.h"
@@ -255,12 +254,9 @@ static int avi_write_header(AVFormatContext *s)
 
         ff_parse_specific_params(stream, &au_byterate, &au_ssize, &au_scale);
 
-        avpriv_set_pts_info(s->streams[i], 64, au_scale, au_byterate);
-        if(stream->codec_id == CODEC_ID_XSUB)
-            au_scale = au_byterate = 0;
-
         avio_wl32(pb, au_scale); /* scale */
         avio_wl32(pb, au_byterate); /* rate */
+        av_set_pts_info(s->streams[i], 64, au_scale, au_byterate);
 
         avio_wl32(pb, 0); /* start */
         avist->frames_hdr_strm = avio_tell(pb); /* remember this offset to fill later */
@@ -382,9 +378,9 @@ static int avi_write_header(AVFormatContext *s)
 
     list2 = ff_start_tag(pb, "LIST");
     ffio_wfourcc(pb, "INFO");
-    ff_metadata_conv(&s->metadata, ff_riff_info_conv, NULL);
-    for (i = 0; *ff_riff_tags[i]; i++) {
-        if ((t = av_dict_get(s->metadata, ff_riff_tags[i], NULL, AV_DICT_MATCH_CASE)))
+    ff_metadata_conv(&s->metadata, ff_avi_metadata_conv, NULL);
+    for (i = 0; *ff_avi_tags[i]; i++) {
+        if ((t = av_dict_get(s->metadata, ff_avi_tags[i], NULL, AV_DICT_MATCH_CASE)))
             avi_write_info_tag(s->pb, t->key, t->value);
     }
     ff_end_tag(pb, list2);
@@ -523,21 +519,16 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
     AVCodecContext *enc= s->streams[stream_index]->codec;
     int size= pkt->size;
 
-//    av_log(s, AV_LOG_DEBUG, "%"PRId64" %d %d\n", pkt->dts, avist->packet_count, stream_index);
-    while(enc->block_align==0 && pkt->dts != AV_NOPTS_VALUE && pkt->dts > avist->packet_count && enc->codec_id != CODEC_ID_XSUB){
+//    av_log(s, AV_LOG_DEBUG, "%"PRId64" %d %d\n", pkt->dts, avi->packet_count[stream_index], stream_index);
+    while(enc->block_align==0 && pkt->dts != AV_NOPTS_VALUE && pkt->dts > avist->packet_count){
         AVPacket empty_packet;
-
-        if(pkt->dts - avist->packet_count > 60000){
-            av_log(s, AV_LOG_ERROR, "Too large number of skiped frames %"PRId64"\n", pkt->dts - avist->packet_count);
-            return AVERROR(EINVAL);
-        }
 
         av_init_packet(&empty_packet);
         empty_packet.size= 0;
         empty_packet.data= NULL;
         empty_packet.stream_index= stream_index;
         avi_write_packet(s, &empty_packet);
-//        av_log(s, AV_LOG_DEBUG, "dup %"PRId64" %d\n", pkt->dts, avist->packet_count);
+//        av_log(s, AV_LOG_DEBUG, "dup %"PRId64" %d\n", pkt->dts, avi->packet_count[stream_index]);
     }
     avist->packet_count++;
 
@@ -567,7 +558,7 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
         int cl = idx->entry / AVI_INDEX_CLUSTER_SIZE;
         int id = idx->entry % AVI_INDEX_CLUSTER_SIZE;
         if (idx->ents_allocated <= idx->entry) {
-            idx->cluster = av_realloc_f(idx->cluster, sizeof(void*), cl+1);
+            idx->cluster = av_realloc(idx->cluster, (cl+1)*sizeof(void*));
             if (!idx->cluster)
                 return -1;
             idx->cluster[cl] = av_malloc(AVI_INDEX_CLUSTER_SIZE*sizeof(AVIIentry));
@@ -653,17 +644,11 @@ AVOutputFormat ff_avi_muxer = {
     .mime_type         = "video/x-msvideo",
     .extensions        = "avi",
     .priv_data_size    = sizeof(AVIContext),
-#if CONFIG_LIBMP3LAME_ENCODER
-    .audio_codec       = CODEC_ID_MP3,
-#else
-    .audio_codec       = CODEC_ID_AC3,
-#endif
+    .audio_codec       = CODEC_ID_MP2,
     .video_codec       = CODEC_ID_MPEG4,
     .write_header      = avi_write_header,
     .write_packet      = avi_write_packet,
     .write_trailer     = avi_write_trailer,
-    .codec_tag         = (const AVCodecTag* const []){
-        ff_codec_bmp_tags, ff_codec_wav_tags, 0
-    },
-    .flags             = AVFMT_VARIABLE_FPS,
+    .codec_tag= (const AVCodecTag* const []){ff_codec_bmp_tags, ff_codec_wav_tags, 0},
+    .flags= AVFMT_VARIABLE_FPS,
 };

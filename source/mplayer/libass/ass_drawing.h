@@ -20,7 +20,7 @@
 #define LIBASS_DRAWING_H
 
 #include <ft2build.h>
-#include FT_OUTLINE_H
+#include FT_GLYPH_H
 
 #include "ass.h"
 
@@ -53,12 +53,13 @@ typedef struct {
     double scale_y;     // FontScaleY
     int asc;            // ascender
     int desc;           // descender
-    FT_Outline outline; // target outline
-    FT_Vector advance;  // advance (from cbox)
+    FT_OutlineGlyph glyph;  // the "fake" glyph created for later rendering
     int hash;           // hash value (for caching)
 
     // private
     FT_Library ftlibrary;   // needed for font ops
+    ASS_Font *font;         // dito
+    void *fontconfig_priv;  // dito
     ASS_Library *library;
     int size;           // current buffer size
     ASS_DrawingToken *tokens;    // tokenized drawing
@@ -69,10 +70,11 @@ typedef struct {
     FT_BBox cbox;   // bounding box, or let's say... VSFilter's idea of it
 } ASS_Drawing;
 
-ASS_Drawing *ass_drawing_new(ASS_Library *lib, FT_Library ftlib);
+ASS_Drawing *ass_drawing_new(void *fontconfig_priv, ASS_Font *font,
+                             FT_Library lib);
 void ass_drawing_free(ASS_Drawing* drawing);
 void ass_drawing_add_char(ASS_Drawing* drawing, char symbol);
 void ass_drawing_hash(ASS_Drawing* drawing);
-FT_Outline *ass_drawing_parse(ASS_Drawing *drawing, int raw_mode);
+FT_OutlineGlyph *ass_drawing_parse(ASS_Drawing *drawing, int raw_mode);
 
 #endif /* LIBASS_DRAWING_H */

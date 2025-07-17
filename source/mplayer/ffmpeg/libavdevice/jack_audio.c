@@ -3,20 +3,20 @@
  * Copyright (c) 2009 Samalyse
  * Author: Olivier Guilyardi <olivier samalyse com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -29,9 +29,7 @@
 #include "libavutil/opt.h"
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
-#include "libavformat/internal.h"
-#include "timefilter.h"
-#include "avdevice.h"
+#include "libavformat/timefilter.h"
 
 /**
  * Size of the internal FIFO buffers as a number of audio packets
@@ -145,6 +143,7 @@ static int start_jack(AVFormatContext *context)
     JackData *self = context->priv_data;
     jack_status_t status;
     int i, test;
+    double o, period;
 
     /* Register as a JACK client, using the context filename as client name. */
     self->client = jack_client_open(context->filename, JackNullOption, &status);
@@ -180,7 +179,9 @@ static int start_jack(AVFormatContext *context)
     jack_set_xrun_callback(self->client, xrun_callback, self);
 
     /* Create time filter */
-    self->timefilter  = ff_timefilter_new (1.0 / self->sample_rate, self->buffer_size, 1.5);
+    period            = (double) self->buffer_size / self->sample_rate;
+    o                 = 2 * M_PI * 1.5 * period; /// bandwidth: 1.5Hz
+    self->timefilter  = ff_timefilter_new (1.0 / self->sample_rate, sqrt(2 * o), o * o);
 
     /* Create FIFO buffers */
     self->filled_pkts = av_fifo_alloc(FIFO_PACKETS_NUM * sizeof(AVPacket));
@@ -219,7 +220,7 @@ static void stop_jack(JackData *self)
     ff_timefilter_destroy(self->timefilter);
 }
 
-static int audio_read_header(AVFormatContext *context)
+static int audio_read_header(AVFormatContext *context, AVFormatParameters *params)
 {
     JackData *self = context->priv_data;
     AVStream *stream;
@@ -228,7 +229,7 @@ static int audio_read_header(AVFormatContext *context)
     if ((test = start_jack(context)))
         return test;
 
-    stream = avformat_new_stream(context, NULL);
+    stream = av_new_stream(context, 0);
     if (!stream) {
         stop_jack(self);
         return AVERROR(ENOMEM);
@@ -243,7 +244,7 @@ static int audio_read_header(AVFormatContext *context)
     stream->codec->sample_rate  = self->sample_rate;
     stream->codec->channels     = self->nports;
 
-    avpriv_set_pts_info(stream, 64, 1, 1000000);  /* 64 bits pts in us */
+    av_set_pts_info(stream, 64, 1, 1000000);  /* 64 bits pts in us */
     return 0;
 }
 
@@ -269,7 +270,7 @@ static int audio_read_packet(AVFormatContext *context, AVPacket *pkt)
         }
     }
 
-    /* Wait for a packet coming back from process_callback(), if one isn't available yet */
+    /* Wait for a packet comming back from process_callback(), if one isn't available yet */
     timeout.tv_sec = av_gettime() / 1000000 + 2;
     if (sem_timedwait(&self->packet_count, &timeout)) {
         if (errno == ETIMEDOUT) {
@@ -313,7 +314,7 @@ static int audio_read_close(AVFormatContext *context)
 
 #define OFFSET(x) offsetof(JackData, x)
 static const AVOption options[] = {
-    { "channels", "Number of audio channels.", OFFSET(nports), AV_OPT_TYPE_INT, { 2 }, 1, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
+    { "channels", "Number of audio channels.", OFFSET(nports), FF_OPT_TYPE_INT, { 2 }, 1, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
     { NULL },
 };
 
@@ -325,12 +326,13 @@ static const AVClass jack_indev_class = {
 };
 
 AVInputFormat ff_jack_demuxer = {
-    .name           = "jack",
-    .long_name      = NULL_IF_CONFIG_SMALL("JACK Audio Connection Kit"),
-    .priv_data_size = sizeof(JackData),
-    .read_header    = audio_read_header,
-    .read_packet    = audio_read_packet,
-    .read_close     = audio_read_close,
-    .flags          = AVFMT_NOFILE,
-    .priv_class     = &jack_indev_class,
+    "jack",
+    NULL_IF_CONFIG_SMALL("JACK Audio Connection Kit"),
+    sizeof(JackData),
+    NULL,
+    audio_read_header,
+    audio_read_packet,
+    audio_read_close,
+    .flags = AVFMT_NOFILE,
+    .priv_class = &jack_indev_class,
 };

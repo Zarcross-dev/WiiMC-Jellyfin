@@ -3,20 +3,20 @@
  * Copyright (c) 2002 Fabrice Bellard
  * Copyright (c) 2006 Ryan Martell <rdm4@martellventures.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #ifndef AVFORMAT_RTPDEC_H
@@ -38,18 +38,18 @@ typedef struct RTPDynamicProtocolHandler_s RTPDynamicProtocolHandler;
 #define RTP_NOTS_VALUE ((uint32_t)-1)
 
 typedef struct RTPDemuxContext RTPDemuxContext;
-RTPDemuxContext *ff_rtp_parse_open(AVFormatContext *s1, AVStream *st, URLContext *rtpc, int payload_type, int queue_size);
-void ff_rtp_parse_set_dynamic_protocol(RTPDemuxContext *s, PayloadContext *ctx,
-                                       RTPDynamicProtocolHandler *handler);
-int ff_rtp_parse_packet(RTPDemuxContext *s, AVPacket *pkt,
-                        uint8_t **buf, int len);
-void ff_rtp_parse_close(RTPDemuxContext *s);
+RTPDemuxContext *rtp_parse_open(AVFormatContext *s1, AVStream *st, URLContext *rtpc, int payload_type, int queue_size);
+void rtp_parse_set_dynamic_protocol(RTPDemuxContext *s, PayloadContext *ctx,
+                                    RTPDynamicProtocolHandler *handler);
+int rtp_parse_packet(RTPDemuxContext *s, AVPacket *pkt,
+                     uint8_t **buf, int len);
+void rtp_parse_close(RTPDemuxContext *s);
 int64_t ff_rtp_queued_packet_time(RTPDemuxContext *s);
 void ff_rtp_reset_packet_queue(RTPDemuxContext *s);
-int ff_rtp_get_local_rtp_port(URLContext *h);
-int ff_rtp_get_local_rtcp_port(URLContext *h);
+int rtp_get_local_rtp_port(URLContext *h);
+int rtp_get_local_rtcp_port(URLContext *h);
 
-int ff_rtp_set_remote_url(URLContext *h, const char *uri);
+int rtp_set_remote_url(URLContext *h, const char *uri);
 
 /**
  * Send a dummy packet on both port pairs to set up the connection
@@ -62,19 +62,19 @@ int ff_rtp_set_remote_url(URLContext *h, const char *uri);
  * The same routine is used with RDT too, even if RDT doesn't use normal
  * RTP packets otherwise.
  */
-void ff_rtp_send_punch_packets(URLContext* rtp_handle);
+void rtp_send_punch_packets(URLContext* rtp_handle);
 
 /**
  * some rtp servers assume client is dead if they don't hear from them...
  * so we send a Receiver Report to the provided ByteIO context
  * (we don't have access to the rtcp handle from here)
  */
-int ff_rtp_check_and_send_back_rr(RTPDemuxContext *s, int count);
+int rtp_check_and_send_back_rr(RTPDemuxContext *s, int count);
 
 /**
  * Get the file handle for the RTCP socket.
  */
-int ff_rtp_get_rtcp_file_handle(URLContext *h);
+int rtp_get_rtcp_file_handle(URLContext *h);
 
 // these statistics are used for rtcp receiver reports...
 typedef struct {
@@ -122,7 +122,6 @@ struct RTPDynamicProtocolHandler_s {
                             * require any custom depacketization code. */
 
     // may be null
-    int (*init)(AVFormatContext *s, int st_index, PayloadContext *priv_data); ///< Initialize dynamic protocol handler, called after the full rtpmap line is parsed
     int (*parse_sdp_a_line) (AVFormatContext *s,
                              int st_index,
                              PayloadContext *priv_data,
@@ -152,7 +151,6 @@ struct RTPDemuxContext {
     uint32_t timestamp;
     uint32_t base_timestamp;
     uint32_t cur_timestamp;
-    int64_t  unwrapped_timestamp;
     int64_t  range_start_offset;
     int max_payload_size;
     struct MpegTSContext *ts;   /* only used for MP2T payloads */

@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * imagelist.h
  * Contains a list of all of the files in the images, fonts, sounds folders
@@ -133,8 +133,6 @@ extern const u8		actionbar_single_png[];
 extern const u32	actionbar_single_png_size;
 extern const u8		actionbar_volume_png[];
 extern const u32	actionbar_volume_png_size;
-extern const u8		actionbar_through_png[];
-extern const u32	actionbar_through_png_size;
 
 extern const u8		volume_empty_png[];
 extern const u32	volume_empty_png_size;
@@ -368,10 +366,7 @@ extern const u32	player3_point_png_size;
 extern const u8		player4_point_png[];
 extern const u32	player4_point_png_size;
 
-extern const u8		grab_png[];
-extern const u32	grab_png_size;
-
-/*extern const u8		player1_grab_png[];
+extern const u8		player1_grab_png[];
 extern const u32	player1_grab_png_size;
 
 extern const u8		player2_grab_png[];
@@ -381,6 +376,6 @@ extern const u8		player3_grab_png[];
 extern const u32	player3_grab_png_size;
 
 extern const u8		player4_grab_png[];
-extern const u32	player4_grab_png_size;*/
+extern const u32	player4_grab_png_size;
 
 #endif

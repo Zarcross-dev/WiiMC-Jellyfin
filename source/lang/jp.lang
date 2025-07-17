@@ -1,1 +1,638 @@
-�
+msgid "********"
+msgstr "••••••••"
+
+msgid "Videos"
+msgstr "ビデオ"
+
+msgid "Music"
+msgstr "ミュージック"
+
+msgid "Pictures"
+msgstr "ピクチャー"
+
+msgid "Online Media"
+msgstr "ネットメディア"
+
+msgid "Please Wait"
+msgstr "お待ちください"
+
+msgid "Error"
+msgstr "エラー"
+
+msgid "OK"
+msgstr "ＯＫ"
+
+msgid "Retry"
+msgstr "再試行"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Information"
+msgstr "お知らせ"
+
+msgid "Credits"
+msgstr "クレジット"
+
+msgid "Play"
+msgstr "再生"
+
+msgid "Pause"
+msgstr "一時停止"
+
+msgid "Single Play"
+msgstr "１曲だけ再生"
+
+msgid "Continuous Play"
+msgstr "連続再生"
+
+msgid "Shuffle"
+msgstr "シャッフル再生"
+
+msgid "Loop"
+msgstr "ループ再生"
+
+msgid "Continuous"
+msgstr "連続再生"
+
+msgid "Playlist"
+msgstr "再生リスト"
+
+msgid "Restart"
+msgstr "曲の最初へ"
+
+msgid "Loading..."
+msgstr "読み込み中…"
+
+msgid "Global"
+msgstr "共通設定"
+
+msgid "Network"
+msgstr "ネットワーク"
+
+msgid "Subtitles"
+msgstr "字幕"
+
+msgid "Subtitle Delay"
+msgstr "字幕の遅延表示"
+
+msgid "Settings"
+msgstr "設定"
+
+msgid "On"
+msgstr "ＯＮ"
+
+msgid "Off"
+msgstr "ＯＦＦ"
+
+msgid "Always"
+msgstr "常時"
+
+msgid "Disabled"
+msgstr "無効"
+
+msgid "Skip Backward"
+msgstr "後戻し"
+
+msgid "Pause"
+msgstr "中断"
+
+msgid "Skip Forward"
+msgstr "先送り"
+
+msgid "Single"
+msgstr "一曲だけ再生"
+
+msgid "now playing"
+msgstr "再生ファイル"
+
+msgid "Previous"
+msgstr "前へ"
+
+msgid "Next"
+msgstr "次へ"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "DVD"
+msgstr "ＤＶＤ"
+
+msgid "Go back"
+msgstr "戻る"
+
+msgid "Update Available"
+msgstr "更新のお知らせ"
+
+msgid "An update is available!"
+msgstr "最新版に更新できます"
+
+msgid "Update now"
+msgstr "更新する"
+
+msgid "Update later"
+msgstr "キャンセル"
+
+msgid "Online media file not found."
+msgstr "ネットメディアファイルが見つかりません"
+
+msgid "Unrecognized DVD format!"
+msgstr "認識できない種類のＤＶＤです"
+
+msgid "Port cannot be blank!"
+msgstr "ポートの設定は必須です"
+
+msgid "Port is not a number!"
+msgstr "ポートの指定は数字にしてください"
+
+msgid "Port is outside the allowed range (4-49151)!"
+msgstr "ポートは(4-49151)の範囲で設定してください"
+
+msgid "Settings - Global"
+msgstr "設定 - 共通"
+
+msgid "Settings - Videos"
+msgstr "設定 - ビデオ"
+
+msgid "Settings - Music"
+msgstr "設定 - ミュージック"
+
+msgid "Settings - Pictures"
+msgstr "設定 - ピクチャー"
+
+msgid "Settings - Online Media"
+msgstr "設定 - ネットメディア"
+
+msgid "Settings - Network"
+msgstr "設定 - ネットワーク"
+
+msgid "Settings - DVD"
+msgstr "設定 - ＤＶＤ"
+
+msgid "File Extensions"
+msgstr "ファイル拡張子"
+
+msgid "Language"
+msgstr "言語"
+
+msgid "Volume"
+msgstr "音量"
+
+msgid "Exit Action"
+msgstr "ＷｉｉＭＣ終了処理"
+
+msgid "Wiimote Rumble"
+msgstr "Ｗｉｉリモコンの振動"
+
+msgid "Hide"
+msgstr "非表示"
+
+msgid "Show"
+msgstr "表示"
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Return to Wii Menu"
+msgstr "Ｗｉｉメニューに戻る"
+
+msgid "Power Off Wii"
+msgstr "電源を切る"
+
+msgid "Return to Loader"
+msgstr "ＨＢＣに戻る"
+
+msgid "Screen Zoom"
+msgstr "スクリーンの拡大率"
+
+msgid "Screen Position"
+msgstr "スクリーンの位置"
+
+msgid "Frame Dropping"
+msgstr "フレームドロップ処理"
+
+msgid "Aspect Ratio"
+msgstr "スクリーンの縦横比"
+
+msgid "Cache Fill"
+msgstr "キャッシュサイズ"
+
+msgid "Audio Delay"
+msgstr "音声の遅延再生"
+
+msgid "Auto-Resume"
+msgstr "自動レジューム再生"
+
+msgid "Videos Files Folder"
+msgstr "ビデオフォルダ"
+
+msgid "Play Order"
+msgstr "再生指定"
+
+msgid "Music Files Folder"
+msgstr "ミュージックフォルダ"
+
+msgid "Pictures Files Folder"
+msgstr "ピクチャーフォルダ"
+
+msgid "Display Name"
+msgstr "表示名"
+
+msgid "Share IP"
+msgstr "共有ＩＰアドレス"
+
+msgid "Share Name"
+msgstr "共有名"
+
+msgid "Username"
+msgstr "ユーザー名"
+
+msgid "Password"
+msgstr "パスワード"
+
+msgid "New Share"
+msgstr "新しい共有"
+
+msgid "Delete"
+msgstr "削除"
+
+msgid "Delete Share"
+msgstr "共有を削除する"
+
+msgid "Are you sure that you want to delete this share?"
+msgstr "本当に削除しますか？"
+
+msgid "IP"
+msgstr "ＩＰアドレス"
+
+msgid "Folder"
+msgstr "フォルダ"
+
+msgid "Mode"
+msgstr "モード"
+
+msgid "New Site"
+msgstr "新しいサイト"
+
+msgid "Passive"
+msgstr "パッシブモード"
+
+msgid "Active"
+msgstr "アクティブモード"
+
+msgid "Delete Site"
+msgstr "サイトを削除する"
+
+msgid "Are you sure that you want to delete this site?"
+msgstr "本当に削除しますか？"
+
+msgid "Port"
+msgstr "ポート"
+
+msgid "Error loading file!"
+msgstr "ファイルの読み込みでエラーが発生しました"
+
+msgid "Resume"
+msgstr "レジューム"
+
+msgid "Stop Slideshow"
+msgstr "スライドショーを中止"
+
+msgid "Start Slideshow"
+msgstr "スライドショーを開始"
+
+msgid "Slideshow Delay"
+msgstr "スライドショーの切替時間"
+
+msgid "Online Media Folder"
+msgstr "ネットメディアフォルダ"
+
+msgid "Add SMB Share"
+msgstr "ＳＭＢ設定"
+
+msgid "Add FTP Site"
+msgstr "ＦＴＰ設定"
+
+msgid "DVD Menu"
+msgstr "ＤＶＤメニュー"
+
+msgid "Skip to Main Title"
+msgstr "メインタイトルをスキップ"
+
+msgid "Unable to Initialize MPlayer"
+msgstr "再生処理の初期化に失敗しました"
+
+msgid "Unable to find a valid working path"
+msgstr "有効なパスがありません"
+
+msgid "Unable to change path to"
+msgstr "変更できません"
+
+msgid "Out of memory: too many files!"
+msgstr "メモリ不足エラー: ファイルが多すぎます！"
+
+msgid "Directory name is too long!"
+msgstr "フォルダ名を短くしてください"
+
+msgid "SD Card"
+msgstr "ＳＤカード"
+
+msgid "USB Mass Storage"
+msgstr "ＵＳＢ機器"
+
+msgid "Data DVD"
+msgstr "データＤＶＤ"
+
+msgid "USB drive not found!"
+msgstr "ＵＳＢドライブが見つかりません"
+
+msgid "SD card not found!"
+msgstr "ＳＤカードが見つかりません"
+
+msgid "Loading DVD..."
+msgstr "ＤＶＤを読み込み中…"
+
+msgid "No disc inserted!"
+msgstr "ディスクが挿入されていません！"
+
+msgid "Unsupported DVD."
+msgstr "無効なＤＶＤです"
+
+msgid "Up One Level"
+msgstr "上の階層へ.."
+
+msgid "Error opening"
+msgstr "表示処理中にエラーが発生しました"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable."
+msgstr "６ＭＢ以上の画像ファイルがフォルダ内に存在します 該当する画像ファイルは表示できません"
+
+msgid "Error loading playlist!"
+msgstr "再生リストの読み込み中にエラーが発生しました"
+
+msgid "Playlist does not contain any supported entries!"
+msgstr "再生リストにサポートしているエントリが 含まれていません"
+
+msgid "No Results Found"
+msgstr "該当なし"
+
+msgid "Your search did not match any media files."
+msgstr "検索条件に合うメディアファイルが 見つかりませんでした"
+
+msgid "Error opening file!"
+msgstr "ファイルの表示処理中にエラーが発生しました"
+
+msgid "Saving..."
+msgstr "保存中…"
+
+msgid "Error creating file!"
+msgstr "ファイルの作成中にエラーが発生しました"
+
+msgid "Error saving file!"
+msgstr "ファイルの保存中にエラーが発生しました"
+
+msgid "Playlist is Empty"
+msgstr "再生リストが空です"
+
+msgid "Hover over items and push the + button to add them to your playlist."
+msgstr "アイテムにカーソルを合わせて[+]ボタンを押すと 再生リストに追加できます"
+
+msgid "Exit Playlist"
+msgstr "再生リストを終了"
+
+msgid "Update successful!"
+msgstr "更新が完了しました"
+
+msgid "Update failed!"
+msgstr "更新に失敗しました"
+
+msgid "Initializing network..."
+msgstr "ネットワークを初期化中…"
+
+msgid "Check settings file."
+msgstr "設定ファイルを確認してください"
+
+msgid "Share name is blank."
+msgstr "共有名が設定されていません"
+
+msgid "Share IP is blank."
+msgstr "共有ＩＰアドレスが設定されていません"
+
+msgid "Invalid network share settings"
+msgstr "ネットワーク共有設定が無効です"
+
+msgid "Connecting to network share..."
+msgstr "共有フォルダに接続中…"
+
+msgid "Failed to connect to network share."
+msgstr "共有フォルダへの接続に失敗しました"
+
+msgid "IP is blank."
+msgstr "ＩＰアドレスが設定されていません"
+
+msgid "Username is blank."
+msgstr "ユーザー名が設定されていません"
+
+msgid "Password is blank."
+msgstr "パスワードが設定されていません"
+
+msgid "Invalid FTP site settings"
+msgstr "ＦＴＰの設定が無効です"
+
+msgid "Connecting to FTP site..."
+msgstr "ＦＴＰサイトに接続中…"
+
+msgid "Failed to connect to FTP site."
+msgstr "ＦＴＰサイトへの接続に失敗しました"
+
+msgid "Could not find a valid SD or USB device - one is required for normal operation."
+msgstr "有効なＳＤ・ＵＳＢデバイスが見つかりません"
+
+msgid "Could not create folder"
+msgstr "フォルダを作成できませんでした"
+
+msgid "Saving settings..."
+msgstr "設定を保存中…"
+
+msgid "Could not save settings to"
+msgstr "設定を保存できませんでした"
+
+msgid "Thanks to"
+msgstr "このソフトの開発に当たって次の方々に感謝します"
+
+msgid "This software is open source and may be copied, distributed, or modified under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "このソフトウェアはオープンソースです。GNU General Public License (GPL) Version 2に従い、複製、配布、編集が許可されます。"
+
+msgid "Menu artwork"
+msgstr "メニューアートワーク"
+
+msgid "Coding"
+msgstr "コーディング"
+
+msgid "Coding & menu design"
+msgstr "コーディング＆メニューデザイン"
+
+msgid "Logo"
+msgstr "ロゴデザイン"
+
+msgid "Version"
+msgstr "バージョン"
+
+msgid "Buffering..."
+msgstr "バッファ中…"
+
+msgid "Buffering"
+msgstr "バッファ中"
+
+msgid "Unable to initialize network (Error #:"
+msgstr "ネットワーク初期化エラー (Error #:"
+
+msgid "Settings - Subtitles"
+msgstr "設定 - 字幕"
+
+msgid "Visibility"
+msgstr "字幕表示"
+
+msgid "Delay"
+msgstr "遅延表示"
+
+msgid "Codepage"
+msgstr "文字コード"
+
+msgid "Subtitle Language"
+msgstr "字幕言語"
+
+msgid "Default"
+msgstr "初期値"
+
+msgid "Could not change language. Not enough memory!"
+msgstr "メモリ不足のため言語設定を変更できませんでした"
+
+msgid "Font Required"
+msgstr "他言語フォントの導入"
+
+msgid "A new font is required to display this language."
+msgstr "選択した言語のフォントをダウンロードします"
+
+msgid "Download font"
+msgstr "ダウンロード"
+
+msgid "Unable to save font file!"
+msgstr "フォントの導入に失敗しました"
+
+msgid "Out of Memory"
+msgstr "メモリ不足エラー"
+
+msgid "WiiMC does not have enough free memory to load the picture viewer."
+msgstr "画像を表示するための 空きメモリが不足しています"
+
+msgid "Close MPlayer"
+msgstr "閉じる"
+
+msgid "Subtitle Codepage"
+msgstr "字幕コードページの設定"
+
+msgid "Japanese"
+msgstr "日本語"
+
+msgid "This directory contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "フォルダ内のエントリ数が多過ぎます 全てを表示できません"
+
+msgid "This playlist contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "再生リストのエントリ数が多過ぎます 全てを表示できません"
+
+msgid "Downloading..."
+msgstr "ダウンロード中…"
+
+msgid "Unzipping..."
+msgstr "インストール中…"
+
+msgid "Color"
+msgstr "色"
+
+msgid "Size"
+msgstr "サイズ"
+
+msgid "White"
+msgstr "白"
+
+msgid "Black"
+msgstr "黒"
+
+msgid "Yellow"
+msgstr "黄"
+
+msgid "Red"
+msgstr "赤"
+
+msgid "Sleep Timer"
+msgstr "スリープタイマー"
+
+msgid "sec"
+msgstr "秒"
+
+msgid "min"
+msgstr "分"
+
+msgid "Blue"
+msgstr "青"
+
+msgid "Green"
+msgstr "緑"
+
+msgid "Grey"
+msgstr "灰色"
+
+msgid "Orange"
+msgstr "オレンジ"
+
+msgid "Theme"
+msgstr "テーマ"
+
+msgid "Purple (Default)"
+msgstr "紫（初期値）"
+
+msgid "Auto-Play Next Video"
+msgstr "自動連続再生"
+
+msgid "Adding files to playlist..."
+msgstr "再生リストに追加中…"
+
+msgid "Browser Folders"
+msgstr "フォルダ表示設定"
+
+msgid "Static"
+msgstr "表示中のフォルダに固定"
+
+msgid "Use Last Browsed"
+msgstr "最後に表示したフォルダ"
+
+msgid "Audio Language"
+msgstr "音声の言語"
+
+msgid "DVD Support"
+msgstr "ＤＶＤのサポート"
+
+msgid "Enabled"
+msgstr "有効"
+
+msgid "Error loading YouTube file!"
+msgstr "YouTubeファイルの読み込み中に エラーが発生しました"
+
+msgid "Rotate"
+msgstr "回転する"
+
+msgid "Resolution exceeds maximum allowed (1280x720)!"
+msgstr "解像度が最大値(1280x720)を超えています！"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "お使いのIOSは改造されています 機能性および安定性において 不安定となる場合があります"
+
+msgid "Online media file is invalid."
+msgstr "無効なネットメディアファイルです"
+
+msgid "Subtitle font file not found. Subtitles will not be visible."
+msgstr "字幕フォントが無いため 字幕は表示されません"

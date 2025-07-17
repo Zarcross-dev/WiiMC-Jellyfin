@@ -3,20 +3,20 @@
  *
  * AltiVec optimizations (C) 2004 Romain Dolbeau <romain@dolbeau.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or modify
+ * Libav is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FFmpeg; if not, write to the Free Software
+ * along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -75,7 +75,6 @@ try to unroll inner for(x=0 ... loop to avoid these damn if(x ... checks
 
 #include "config.h"
 #include "libavutil/avutil.h"
-#include "libavutil/avassert.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,19 +90,18 @@ try to unroll inner for(x=0 ... loop to avoid these damn if(x ... checks
 
 unsigned postproc_version(void)
 {
-    av_assert0(LIBPOSTPROC_VERSION_MICRO >= 100);
     return LIBPOSTPROC_VERSION_INT;
 }
 
 const char *postproc_configuration(void)
 {
-    return FFMPEG_CONFIGURATION;
+    return LIBAV_CONFIGURATION;
 }
 
 const char *postproc_license(void)
 {
 #define LICENSE_PREFIX "libpostproc license: "
-    return LICENSE_PREFIX FFMPEG_LICENSE + sizeof(LICENSE_PREFIX) - 1;
+    return LICENSE_PREFIX LIBAV_LICENSE + sizeof(LICENSE_PREFIX) - 1;
 }
 
 #if HAVE_ALTIVEC_H
@@ -150,7 +148,6 @@ static struct PPFilter filters[]=
     {"l5", "lowpass5",              1, 1, 4, LOWPASS5_DEINT_FILTER},
     {"tn", "tmpnoise",              1, 7, 8, TEMP_NOISE_FILTER},
     {"fq", "forcequant",            1, 0, 0, FORCE_QUANT},
-    {"be", "bitexact",              1, 0, 0, BITEXACT},
     {NULL, NULL,0,0,0,0} //End Marker
 };
 
@@ -537,8 +534,9 @@ static av_always_inline void do_a_deblock_C(uint8_t *src, int step, int stride, 
 
 //Note: we have C, MMX, MMX2, 3DNOW version there is no 3DNOW+MMX2 one
 //Plain C versions
-//we always compile C for testing which needs bitexactness
+#if !(HAVE_MMX || HAVE_ALTIVEC) || CONFIG_RUNTIME_CPUDETECT
 #define COMPILE_C
+#endif
 
 #if HAVE_ALTIVEC
 #define COMPILE_ALTIVEC
@@ -624,9 +622,6 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
     PPMode *ppMode= (PPMode *)vm;
     c->ppMode= *ppMode; //FIXME
 
-    if(ppMode->lumMode & BITEXACT)
-        return postProcess_C(src, srcStride, dst, dstStride, width, height, QPs, QPStride, isColor, c);
-
     // Using ifs here as they are faster than function pointers although the
     // difference would not be measurable here but it is much better because
     // someone might exchange the CPU whithout restarting MPlayer ;)
@@ -649,7 +644,7 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
 #endif
             postProcess_C(src, srcStride, dst, dstStride, width, height, QPs, QPStride, isColor, c);
 #endif
-#else /* CONFIG_RUNTIME_CPUDETECT */
+#else //CONFIG_RUNTIME_CPUDETECT
 #if   HAVE_MMX2
             postProcess_MMX2(src, srcStride, dst, dstStride, width, height, QPs, QPStride, isColor, c);
 #elif HAVE_AMD3DNOW
@@ -661,7 +656,7 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
 #else
             postProcess_C(src, srcStride, dst, dstStride, width, height, QPs, QPStride, isColor, c);
 #endif
-#endif /* !CONFIG_RUNTIME_CPUDETECT */
+#endif //!CONFIG_RUNTIME_CPUDETECT
 }
 
 //static void postProcess(uint8_t src[], int srcStride, uint8_t dst[], int dstStride, int width, int height,
@@ -669,13 +664,7 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
 
 /* -pp Command line Help
 */
-#if LIBPOSTPROC_VERSION_INT < (52<<16)
-//const char *const pp_help=
-#else
-//const char pp_help[] =
-#endif
-
-#if 0
+const char pp_help[] =
 "Available postprocessing filters:\n"
 "Filters                        Options\n"
 "short  long name       short   long option     Description\n"
@@ -718,7 +707,7 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
 "tn:64:128:256\n"
 "\n"
 ;
-#endif
+
 pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality)
 {
     char temp[GET_MODE_BUFFER_SIZE];
@@ -727,16 +716,7 @@ pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality)
     static const char optionDelimiters[] = ":";
     struct PPMode *ppMode;
     char *filterToken;
-#if 0
-    if (!strcmp(name, "help")) {
-        const char *p;
-        for (p = pp_help; strchr(p, '\n'); p = strchr(p, '\n') + 1) {
-            av_strlcpy(temp, p, FFMIN(sizeof(temp), strchr(p, '\n') - p + 2));
-            av_log(NULL, AV_LOG_INFO, "%s", temp);
-        }
-        return NULL;
-    }
-#endif
+
     ppMode= av_malloc(sizeof(PPMode));
 
     ppMode->lumMode= 0;
@@ -751,8 +731,7 @@ pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality)
     ppMode->maxClippedThreshold= 0.01;
     ppMode->error=0;
 
-    memset(temp, 0, GET_MODE_BUFFER_SIZE);
-    av_strlcpy(temp, name, GET_MODE_BUFFER_SIZE - 1);
+    av_strlcpy(temp, name, GET_MODE_BUFFER_SIZE);
 
     av_log(NULL, AV_LOG_DEBUG, "pp: %s\n", name);
 
@@ -803,11 +782,12 @@ pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality)
                 int plen;
                 int spaceLeft;
 
-                p--, *p=',';
+                if(p==NULL) p= temp, *p=0;      //last filter
+                else p--, *p=',';               //not last filter
 
                 plen= strlen(p);
                 spaceLeft= p - temp + plen;
-                if(spaceLeft + newlen  >= GET_MODE_BUFFER_SIZE - 1){
+                if(spaceLeft + newlen  >= GET_MODE_BUFFER_SIZE){
                     ppMode->error++;
                     break;
                 }
@@ -928,7 +908,7 @@ static void reallocBuffers(PPContext *c, int width, int height, int stride, int 
             c->yHistogram[i]= width*height/64*15/256;
 
     for(i=0; i<3; i++){
-        //Note: The +17*1024 is just there so I do not have to worry about r/w over the end.
+        //Note: The +17*1024 is just there so i do not have to worry about r/w over the end.
         reallocAlign((void **)&c->tempBlurred[i], 8, stride*mbHeight*16 + 17*1024);
         reallocAlign((void **)&c->tempBlurredPast[i], 8, 256*((height+7)&(~7))/2 + 17*1024);//FIXME size
     }

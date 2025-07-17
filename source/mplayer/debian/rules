@@ -44,7 +44,6 @@ CONFIGURE_FLAGS = \
 	--confdir=/etc/mplayer \
 	--enable-xvmc \
 	--enable-menu \
-	--enable-radio --enable-radio-capture \
 	--disable-arts \
 	--language=all \
 	$(archconf)
@@ -122,18 +121,8 @@ debian/mplayer-gui/usr/bin/gmplayer:
 	install -D -m 755 mplayer $(CURDIR)/debian/mplayer-gui/usr/bin/gmplayer
 	install -D -m 644 etc/mplayer.desktop \
 	                  $(CURDIR)/debian/mplayer-gui/usr/share/applications/mplayer.desktop
-	install -D -m 644 etc/mplayer16x16.png \
-	                  $(CURDIR)/debian/mplayer-gui/usr/share/icons/hicolor/16x16/apps/mplayer.png
-	install -D -m 644 etc/mplayer22x22.png \
-	                  $(CURDIR)/debian/mplayer-gui/usr/share/icons/hicolor/22x22/apps/mplayer.png
-	install -D -m 644 etc/mplayer24x24.png \
-	                  $(CURDIR)/debian/mplayer-gui/usr/share/icons/hicolor/24x24/apps/mplayer.png
-	install -D -m 644 etc/mplayer32x32.png \
-	                  $(CURDIR)/debian/mplayer-gui/usr/share/icons/hicolor/32x32/apps/mplayer.png
-	install -D -m 644 etc/mplayer48x48.png \
-	                  $(CURDIR)/debian/mplayer-gui/usr/share/icons/hicolor/48x48/apps/mplayer.png
-	install -D -m 644 etc/mplayer256x256.png \
-	                  $(CURDIR)/debian/mplayer-gui/usr/share/icons/hicolor/256x256/apps/mplayer.png
+	install -D -m 644 etc/mplayer.png \
+	                  $(CURDIR)/debian/mplayer-gui/usr/share/pixmaps/mplayer.png
 
 
 # binaries already installed via build rules as we have to build several flavors
@@ -141,7 +130,9 @@ install-arch: build-arch
 
 ###### build-indep
 DOCS/HTML/en/index.html:
-	$(MAKE) html-chunked
+	sh debian/all-lang-config-mak.sh > config.mak
+	cd DOCS/xml && ./configure
+	$(MAKE) -C DOCS/xml html-chunked
 
 build-indep:
 	dh_testdir
@@ -160,7 +151,9 @@ install-indep: build-indep
 clean:
 	dh_testdir
 	dh_testroot
-	-test -f config.mak && $(MAKE) distclean
+	-test ! -f config.mak || ( $(MAKE) -C DOCS/xml releaseclean ; $(MAKE) distclean )
+	# in case the previous command fails for some reason, remove 'svn ignored' files
+	rm -rf DOCS/HTML DOCS/codecs-status.html
 
 # Build architecture-independent packages
 binary-indep: install-indep
@@ -188,6 +181,10 @@ binary-arch: install-arch
 	dh_builddeb
 
 binary: binary-indep binary-arch
+
+get-orig-source:
+	dh_testdir
+	sh debian/get-orig-source.sh -d $(SVN_VERSION)
 
 PHONY += build clean binary-indep binary-arch binary-common binary
 PHONY += install binary binary-arch binary-indep clean checkroot get-orig-source

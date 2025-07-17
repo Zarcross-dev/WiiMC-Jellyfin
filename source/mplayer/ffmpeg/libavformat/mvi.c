@@ -2,25 +2,24 @@
  * Motion Pixels MVI Demuxer
  * Copyright (c) 2008 Gregory Montoir (cyx@users.sourceforge.net)
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "avformat.h"
-#include "internal.h"
 
 #define MVI_FRAC_BITS 10
 
@@ -36,18 +35,18 @@ typedef struct MviDemuxContext {
     int video_frame_size;
 } MviDemuxContext;
 
-static int read_header(AVFormatContext *s)
+static int read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     MviDemuxContext *mvi = s->priv_data;
     AVIOContext *pb = s->pb;
     AVStream *ast, *vst;
     unsigned int version, frames_count, msecs_per_frame, player_version;
 
-    ast = avformat_new_stream(s, NULL);
+    ast = av_new_stream(s, 0);
     if (!ast)
         return AVERROR(ENOMEM);
 
-    vst = avformat_new_stream(s, NULL);
+    vst = av_new_stream(s, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
@@ -77,14 +76,14 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    avpriv_set_pts_info(ast, 64, 1, ast->codec->sample_rate);
+    av_set_pts_info(ast, 64, 1, ast->codec->sample_rate);
     ast->codec->codec_type      = AVMEDIA_TYPE_AUDIO;
     ast->codec->codec_id        = CODEC_ID_PCM_U8;
     ast->codec->channels        = 1;
     ast->codec->bits_per_coded_sample = 8;
     ast->codec->bit_rate        = ast->codec->sample_rate * 8;
 
-    avpriv_set_pts_info(vst, 64, msecs_per_frame, 1000000);
+    av_set_pts_info(vst, 64, msecs_per_frame, 1000000);
     vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codec->codec_id   = CODEC_ID_MOTIONPIXELS;
 
@@ -130,5 +129,5 @@ AVInputFormat ff_mvi_demuxer = {
     .priv_data_size = sizeof(MviDemuxContext),
     .read_header    = read_header,
     .read_packet    = read_packet,
-    .extensions     = "mvi",
+    .extensions = "mvi"
 };

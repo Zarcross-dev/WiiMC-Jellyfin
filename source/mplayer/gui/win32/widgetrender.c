@@ -26,7 +26,6 @@
 #include <windows.h>
 
 #include "gui/util/bitmap.h"
-#include "gui/util/string.h"
 #include "gui/interface.h"
 #include "gui.h"
 
@@ -144,7 +143,7 @@ static char *generatetextfromlabel(widget *item)
     stringreplace(text, "$b", "%3.2f", guiInfo.Balance);
     stringreplace(text, "$B", "%3.1f", guiInfo.Balance);
     stringreplace(text, "$t", "%.2i", guiInfo.Track);
-    stringreplace(text, "$o", "%s", acp(TranslateFilename(0, tmp, sizeof(tmp))));
+    stringreplace(text, "$o", "%s", guiInfo.Filename);
     stringreplace(text, "$x", "%i", guiInfo.VideoWidth);
     stringreplace(text, "$y", "%i", guiInfo.VideoHeight);
     stringreplace(text, "$C", "%s", guiInfo.sh_video ? codecname : "");
@@ -163,12 +162,22 @@ static char *generatetextfromlabel(widget *item)
 
     if(guiInfo.StreamType == 0)
         stringreplace(text, "$T", "f");
+#ifdef CONFIG_DVDREAD
     else if(guiInfo.StreamType == STREAMTYPE_DVD || guiInfo.StreamType == STREAMTYPE_DVDNAV)
         stringreplace(text, "$T", "d");
+#endif
     else stringreplace(text, "$T", "u");
 
-    stringreplace(text, "$f", acp(TranslateFilename(1, tmp, sizeof(tmp))));
-    stringreplace(text, "$F", acp(TranslateFilename(2, tmp, sizeof(tmp))));
+    if(guiInfo.Filename)
+    {
+        for (i=0; i<strlen(guiInfo.Filename); i++)
+            tmp[i] = tolower(guiInfo.Filename[i]);
+        stringreplace(text, "$f", tmp);
+
+        for (i=0; i<strlen(guiInfo.Filename); i++)
+            tmp[i] = toupper(guiInfo.Filename[i]);
+        stringreplace(text, "$F", tmp);
+    }
 
     return text;
 }

@@ -3,28 +3,28 @@
  * Copyright (c) 2009 Luca Abeni
  * Copyright (c) 2009 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "avformat.h"
 #include "rtpenc.h"
 
-const uint8_t *ff_h263_find_resync_marker_reverse(const uint8_t *restrict start,
-                                                  const uint8_t *restrict end)
+static const uint8_t *find_resync_marker_reverse(const uint8_t *restrict start,
+                                                 const uint8_t *restrict end)
 {
     const uint8_t *p = end - 1;
     start += 1; /* Make sure we never return the original start. */
@@ -63,8 +63,7 @@ void ff_rtp_send_h263(AVFormatContext *s1, const uint8_t *buf1, int size)
 
         /* Look for a better place to split the frame into packets. */
         if (len < size) {
-            const uint8_t *end = ff_h263_find_resync_marker_reverse(buf1,
-                                                                    buf1 + len);
+            const uint8_t *end = find_resync_marker_reverse(buf1, buf1 + len);
             len = end - buf1;
         }
 

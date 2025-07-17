@@ -1,18 +1,18 @@
 /*
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -21,22 +21,14 @@
 
 #include <stdint.h>
 #include "config.h"
-#include "libavutil/attributes.h"
 
-#if HAVE_FAST_UNALIGNED && HAVE_INLINE_ASM && !AV_GCC_VERSION_AT_LEAST(4,7)
+#if HAVE_FAST_UNALIGNED && HAVE_INLINE_ASM
 
 #define AV_RN16 AV_RN16
 static av_always_inline unsigned AV_RN16(const void *p)
 {
-    const uint8_t *q = p;
     unsigned v;
-#if !AV_GCC_VERSION_AT_LEAST(4,6)
-    __asm__ ("ldrh %0, %1" : "=r"(v) : "m"(*(const uint16_t *)q));
-#elif defined __thumb__
-    __asm__ ("ldrh %0, %1" : "=r"(v) : "m"(q[0]), "m"(q[1]));
-#else
-    __asm__ ("ldrh %0, %1" : "=r"(v) : "Uq"(q[0]), "m"(q[1]));
-#endif
+    __asm__ ("ldrh %0, %1" : "=r"(v) : "m"(*(const uint16_t *)p));
     return v;
 }
 
@@ -49,9 +41,8 @@ static av_always_inline void AV_WN16(void *p, uint16_t v)
 #define AV_RN32 AV_RN32
 static av_always_inline uint32_t AV_RN32(const void *p)
 {
-    const struct __attribute__((packed)) { uint32_t v; } *q = p;
     uint32_t v;
-    __asm__ ("ldr  %0, %1" : "=r"(v) : "m"(*q));
+    __asm__ ("ldr  %0, %1" : "=r"(v) : "m"(*(const uint32_t *)p));
     return v;
 }
 
@@ -64,12 +55,11 @@ static av_always_inline void AV_WN32(void *p, uint32_t v)
 #define AV_RN64 AV_RN64
 static av_always_inline uint64_t AV_RN64(const void *p)
 {
-    const struct __attribute__((packed)) { uint32_t v; } *q = p;
     uint64_t v;
     __asm__ ("ldr   %Q0, %1  \n\t"
              "ldr   %R0, %2  \n\t"
              : "=&r"(v)
-             : "m"(q[0]), "m"(q[1]));
+             : "m"(*(const uint32_t*)p), "m"(*((const uint32_t*)p+1)));
     return v;
 }
 

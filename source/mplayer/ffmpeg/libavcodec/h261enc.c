@@ -3,20 +3,20 @@
  * Copyright (c) 2002-2004 Michael Niedermayer <michaelni@gmx.at>
  * Copyright (c) 2004 Maarten Daniels
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -53,7 +53,7 @@ void ff_h261_encode_picture_header(MpegEncContext * s, int picture_number){
     H261Context * h = (H261Context *) s;
     int format, temp_ref;
 
-    avpriv_align_put_bits(&s->pb);
+    align_put_bits(&s->pb);
 
     /* Update the pointer to last GOB */
     s->ptr_lastgob = put_bits_ptr(&s->pb);
@@ -128,7 +128,7 @@ static void h261_encode_motion(H261Context * h, int val){
     int sign, code;
     if(val==0){
         code = 0;
-        put_bits(&s->pb,ff_h261_mv_tab[code][1],ff_h261_mv_tab[code][0]);
+        put_bits(&s->pb,h261_mv_tab[code][1],h261_mv_tab[code][0]);
     }
     else{
         if(val > 15)
@@ -137,7 +137,7 @@ static void h261_encode_motion(H261Context * h, int val){
             val+=32;
         sign = val < 0;
         code = sign ? -val : val;
-        put_bits(&s->pb,ff_h261_mv_tab[code][1],ff_h261_mv_tab[code][0]);
+        put_bits(&s->pb,h261_mv_tab[code][1],h261_mv_tab[code][0]);
         put_bits(&s->pb,1,sign);
     }
 }
@@ -182,7 +182,7 @@ void ff_h261_encode_mb(MpegEncContext * s,
     }
 
     /* MB is not skipped, encode MBA */
-    put_bits(&s->pb, ff_h261_mba_bits[(h->current_mba-h->previous_mba)-1], ff_h261_mba_code[(h->current_mba-h->previous_mba)-1]);
+    put_bits(&s->pb, h261_mba_bits[(h->current_mba-h->previous_mba)-1], h261_mba_code[(h->current_mba-h->previous_mba)-1]);
 
     /* calculate MTYPE */
     if(!s->mb_intra){
@@ -200,9 +200,9 @@ void ff_h261_encode_mb(MpegEncContext * s,
     if(s->dquant)
         h->mtype++;
 
-    put_bits(&s->pb, ff_h261_mtype_bits[h->mtype], ff_h261_mtype_code[h->mtype]);
+    put_bits(&s->pb, h261_mtype_bits[h->mtype], h261_mtype_code[h->mtype]);
 
-    h->mtype = ff_h261_mtype_map[h->mtype];
+    h->mtype = h261_mtype_map[h->mtype];
 
     if(IS_QUANT(h->mtype)){
         ff_set_qscale(s,s->qscale+s->dquant);
@@ -222,7 +222,7 @@ void ff_h261_encode_mb(MpegEncContext * s,
 
     if(HAS_CBP(h->mtype)){
         assert(cbp>0);
-        put_bits(&s->pb,ff_h261_cbp_tab[cbp-1][1],ff_h261_cbp_tab[cbp-1][0]);
+        put_bits(&s->pb,h261_cbp_tab[cbp-1][1],h261_cbp_tab[cbp-1][0]);
     }
     for(i=0; i<6; i++) {
         /* encode each block */
@@ -240,7 +240,7 @@ void ff_h261_encode_init(MpegEncContext *s){
 
     if (!done) {
         done = 1;
-        ff_init_rl(&ff_h261_rl_tcoeff, ff_h261_rl_table_store);
+        init_rl(&h261_rl_tcoeff, ff_h261_rl_table_store);
     }
 
     s->min_qcoeff= -127;
@@ -251,7 +251,7 @@ void ff_h261_encode_init(MpegEncContext *s){
 
 
 /**
- * Encode an 8x8 block.
+ * encodes a 8x8 block.
  * @param block the 8x8 block
  * @param n block index (0-3 are luma, 4-5 are chroma)
  */
@@ -260,7 +260,7 @@ static void h261_encode_block(H261Context * h, DCTELEM * block, int n){
     int level, run, i, j, last_index, last_non_zero, sign, slevel, code;
     RLTable *rl;
 
-    rl = &ff_h261_rl_tcoeff;
+    rl = &h261_rl_tcoeff;
     if (s->mb_intra) {
         /* DC coef */
         level = block[0];
@@ -321,17 +321,15 @@ static void h261_encode_block(H261Context * h, DCTELEM * block, int n){
     }
 }
 
-FF_MPV_GENERIC_CLASS(h261)
-
 AVCodec ff_h261_encoder = {
     .name           = "h261",
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_H261,
     .priv_data_size = sizeof(H261Context),
-    .init           = ff_MPV_encode_init,
-    .encode2        = ff_MPV_encode_picture,
-    .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
-    .long_name      = NULL_IF_CONFIG_SMALL("H.261"),
-    .priv_class     = &h261_class,
+    .init           = MPV_encode_init,
+    .encode         = MPV_encode_picture,
+    .close          = MPV_encode_end,
+    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, PIX_FMT_NONE},
+    .long_name= NULL_IF_CONFIG_SMALL("H.261"),
 };
+

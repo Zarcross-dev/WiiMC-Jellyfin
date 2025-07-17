@@ -2,20 +2,20 @@
  * MPEG2 transport stream defines
  * Copyright (c) 2003 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -39,7 +39,6 @@
 /* table ids */
 #define PAT_TID   0x00
 #define PMT_TID   0x02
-#define M4OD_TID  0x05
 #define SDT_TID   0x42
 
 #define STREAM_TYPE_VIDEO_MPEG1     0x01
@@ -65,30 +64,6 @@ int ff_mpegts_parse_packet(MpegTSContext *ts, AVPacket *pkt,
                            const uint8_t *buf, int len);
 void ff_mpegts_parse_close(MpegTSContext *ts);
 
-typedef struct {
-    int use_au_start;
-    int use_au_end;
-    int use_rand_acc_pt;
-    int use_padding;
-    int use_timestamps;
-    int use_idle;
-    int timestamp_res;
-    int timestamp_len;
-    int ocr_len;
-    int au_len;
-    int inst_bitrate_len;
-    int degr_prior_len;
-    int au_seq_num_len;
-    int packet_seq_num_len;
-} SLConfigDescr;
-
-typedef struct {
-    int es_id;
-    int dec_config_descr_len;
-    uint8_t *dec_config_descr;
-    SLConfigDescr sl;
-} Mp4Descr;
-
 /**
  * Parse an MPEG-2 descriptor
  * @param[in] fc                    Format context (used for logging only)
@@ -96,11 +71,15 @@ typedef struct {
  * @param stream_type               STREAM_TYPE_xxx
  * @param pp                        Descriptor buffer pointer
  * @param desc_list_end             End of buffer
+ * @param mp4_dec_config_descr_len  Length of 'mp4_dec_config_descr', or zero if not present
+ * @param mp4_es_id
+ * @param pid
+ * @param mp4_dec_config_descr
  * @return <0 to stop processing
  */
 int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type,
                               const uint8_t **pp, const uint8_t *desc_list_end,
-                              Mp4Descr *mp4_descr, int mp4_descr_count, int pid,
-                              MpegTSContext *ts);
+                              int mp4_dec_config_descr_len, int mp4_es_id, int pid,
+                              uint8_t *mp4_dec_config_descr);
 
 #endif /* AVFORMAT_MPEGTS_H */

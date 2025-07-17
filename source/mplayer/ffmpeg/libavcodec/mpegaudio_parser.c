@@ -3,20 +3,20 @@
  * Copyright (c) 2003 Fabrice Bellard
  * Copyright (c) 2003 Michael Niedermayer
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -64,10 +64,9 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
 
                 state= (state<<8) + buf[i++];
 
-                ret = avpriv_mpa_decode_header(avctx, state, &sr, &channels, &frame_size, &bit_rate);
+                ret = ff_mpa_decode_header(avctx, state, &sr, &channels, &frame_size, &bit_rate);
                 if (ret < 4) {
-                    if (i > 4)
-                        s->header_count = -2;
+                    s->header_count= -2;
                 } else {
                     if((state&SAME_HEADER_MASK) != (s->header&SAME_HEADER_MASK) && s->header)
                         s->header_count= -3;
@@ -75,10 +74,10 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
                     s->header_count++;
                     s->frame_size = ret-4;
 
-                    if (s->header_count > 1) {
+                    if(s->header_count > 1){
                         avctx->sample_rate= sr;
                         avctx->channels   = channels;
-                        s1->duration      = frame_size;
+                        avctx->frame_size = frame_size;
                         avctx->bit_rate   = bit_rate;
                     }
                     break;
@@ -101,8 +100,9 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
 
 
 AVCodecParser ff_mpegaudio_parser = {
-    .codec_ids      = { CODEC_ID_MP1, CODEC_ID_MP2, CODEC_ID_MP3 },
-    .priv_data_size = sizeof(MpegAudioParseContext),
-    .parser_parse   = mpegaudio_parse,
-    .parser_close   = ff_parse_close,
+    { CODEC_ID_MP1, CODEC_ID_MP2, CODEC_ID_MP3 },
+    sizeof(MpegAudioParseContext),
+    NULL,
+    mpegaudio_parse,
+    ff_parse_close,
 };

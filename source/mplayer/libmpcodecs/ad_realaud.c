@@ -21,7 +21,6 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "mp_msg.h"
 
 //#include <stddef.h>
 #ifdef HAVE_LIBDL

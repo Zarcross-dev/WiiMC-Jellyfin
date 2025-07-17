@@ -2,20 +2,20 @@
  * Electronic Arts TQI Video Decoder
  * Copyright (c) 2007-2009 Peter Ross <pross@xvid.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
@@ -48,7 +48,7 @@ static av_cold int tqi_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
     if(avctx->idct_algo==FF_IDCT_AUTO)
         avctx->idct_algo=FF_IDCT_EA;
-    ff_dsputil_init(&s->dsp, avctx);
+    dsputil_init(&s->dsp, avctx);
     ff_init_scantable(s->dsp.idct_permutation, &s->intra_scantable, ff_zigzag_direct);
     s->qscale = 1;
     avctx->time_base = (AVRational){1, 15};
@@ -57,15 +57,12 @@ static av_cold int tqi_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int tqi_decode_mb(MpegEncContext *s, DCTELEM (*block)[64])
+static void tqi_decode_mb(MpegEncContext *s, DCTELEM (*block)[64])
 {
     int n;
     s->dsp.clear_blocks(block[0]);
     for (n=0; n<6; n++)
-        if (ff_mpeg1_decode_block_intra(s, block[n], n) < 0)
-            return -1;
-
-    return 0;
+        ff_mpeg1_decode_block_intra(s, block[n], n);
 }
 
 static inline void tqi_idct_put(TqiContext *t, DCTELEM (*block)[64])
@@ -127,8 +124,7 @@ static int tqi_decode_frame(AVCodecContext *avctx,
         return -1;
     }
 
-    av_fast_padded_malloc(&t->bitstream_buf, &t->bitstream_buf_size,
-                          buf_end - buf);
+    av_fast_malloc(&t->bitstream_buf, &t->bitstream_buf_size, (buf_end-buf) + FF_INPUT_BUFFER_PADDING_SIZE);
     if (!t->bitstream_buf)
         return AVERROR(ENOMEM);
     s->dsp.bswap_buf(t->bitstream_buf, (const uint32_t*)buf, (buf_end-buf)/4);
@@ -138,11 +134,9 @@ static int tqi_decode_frame(AVCodecContext *avctx,
     for (s->mb_y=0; s->mb_y<(avctx->height+15)/16; s->mb_y++)
     for (s->mb_x=0; s->mb_x<(avctx->width+15)/16; s->mb_x++)
     {
-        if (tqi_decode_mb(s, t->block) < 0)
-            goto end;
+        tqi_decode_mb(s, t->block);
         tqi_idct_put(t, t->block);
     }
-    end:
 
     *data_size = sizeof(AVFrame);
     *(AVFrame*)data = t->frame;
@@ -167,5 +161,5 @@ AVCodec ff_eatqi_decoder = {
     .close          = tqi_decode_end,
     .decode         = tqi_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Electronic Arts TQI Video"),
+    .long_name = NULL_IF_CONFIG_SMALL("Electronic Arts TQI Video"),
 };

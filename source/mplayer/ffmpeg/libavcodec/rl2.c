@@ -2,20 +2,20 @@
  * RL2 Video Decoder
  * Copyright (C) 2008 Sascha Sommer (saschasommer@freenet.de)
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -51,7 +51,7 @@ typedef struct Rl2Context {
  * @param s rl2 context
  * @param in input buffer
  * @param size input buffer size
- * @param out output buffer
+ * @param out ouput buffer
  * @param stride stride of the output buffer
  * @param video_base offset of the rle data inside the frame
  */
@@ -133,7 +133,6 @@ static av_cold int rl2_decode_init(AVCodecContext *avctx)
     int i;
     s->avctx = avctx;
     avctx->pix_fmt = PIX_FMT_PAL8;
-    avcodec_get_frame_defaults(&s->frame);
 
     /** parse extra data */
     if(!avctx->extradata || avctx->extradata_size < EXTRADATA1_SIZE){
@@ -152,7 +151,7 @@ static av_cold int rl2_decode_init(AVCodecContext *avctx)
 
     /** initialize palette */
     for(i=0;i<AVPALETTE_COUNT;i++)
-        s->palette[i] = 0xFF << 24 | AV_RB24(&avctx->extradata[6 + i * 3]);
+        s->palette[i] = AV_RB24(&avctx->extradata[6 + i * 3]);
 
     /** decode background frame if present */
     back_size = avctx->extradata_size - EXTRADATA1_SIZE;
@@ -228,5 +227,6 @@ AVCodec ff_rl2_decoder = {
     .close          = rl2_decode_end,
     .decode         = rl2_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("RL2 video"),
+    .long_name = NULL_IF_CONFIG_SMALL("RL2 video"),
 };
+

@@ -98,19 +98,7 @@
 #define STREAM_CTRL_GET_NUM_ANGLES 9
 #define STREAM_CTRL_GET_ANGLE 10
 #define STREAM_CTRL_SET_ANGLE 11
-#define STREAM_CTRL_GET_NUM_TITLES 12
-#define STREAM_CTRL_GET_LANG 13
 
-enum stream_ctrl_type {
-	stream_ctrl_audio,
-	stream_ctrl_sub,
-};
-
-struct stream_lang_req {
-	enum stream_ctrl_type type;
-	int id;
-	char buf[40];
-};
 
 typedef enum {
 	streaming_stopped_e,
@@ -205,8 +193,7 @@ int cache_stream_seek_long(stream_t *s,off_t pos);
 #endif
 int stream_write_buffer(stream_t *s, unsigned char *buf, int len);
 
-static inline int stream_read_char(stream_t *s)
-{
+inline static int stream_read_char(stream_t *s){
   return (s->buf_pos<s->buf_len)?s->buffer[s->buf_pos++]:
     (cache_stream_fill_buffer(s)?s->buffer[s->buf_pos++]:-256);
 //  if(s->buf_pos<s->buf_len) return s->buffer[s->buf_pos++];
@@ -215,16 +202,14 @@ static inline int stream_read_char(stream_t *s)
 //  return 0; // EOF
 }
 
-static inline unsigned int stream_read_word(stream_t *s)
-{
+inline static unsigned int stream_read_word(stream_t *s){
   int x,y;
   x=stream_read_char(s);
   y=stream_read_char(s);
   return (x<<8)|y;
 }
 
-static inline unsigned int stream_read_dword(stream_t *s)
-{
+inline static unsigned int stream_read_dword(stream_t *s){
   unsigned int y;
   y=stream_read_char(s);
   y=(y<<8)|stream_read_char(s);
@@ -235,16 +220,14 @@ static inline unsigned int stream_read_dword(stream_t *s)
 
 #define stream_read_fourcc stream_read_dword_le
 
-static inline unsigned int stream_read_word_le(stream_t *s)
-{
+inline static unsigned int stream_read_word_le(stream_t *s){
   int x,y;
   x=stream_read_char(s);
   y=stream_read_char(s);
   return (y<<8)|x;
 }
 
-static inline unsigned int stream_read_dword_le(stream_t *s)
-{
+inline static unsigned int stream_read_dword_le(stream_t *s){
   unsigned int y;
   y=stream_read_char(s);
   y|=stream_read_char(s)<<8;
@@ -253,8 +236,7 @@ static inline unsigned int stream_read_dword_le(stream_t *s)
   return y;
 }
 
-static inline uint64_t stream_read_qword(stream_t *s)
-{
+inline static uint64_t stream_read_qword(stream_t *s){
   uint64_t y;
   y = stream_read_char(s);
   y=(y<<8)|stream_read_char(s);
@@ -267,16 +249,14 @@ static inline uint64_t stream_read_qword(stream_t *s)
   return y;
 }
 
-static inline uint64_t stream_read_qword_le(stream_t *s)
-{
+inline static uint64_t stream_read_qword_le(stream_t *s){
   uint64_t y;
   y = stream_read_dword_le(s);
   y|=(uint64_t)stream_read_dword_le(s)<<32;
   return y;
 }
 
-static inline unsigned int stream_read_int24(stream_t *s)
-{
+inline static unsigned int stream_read_int24(stream_t *s){
   unsigned int y;
   y = stream_read_char(s);
   y=(y<<8)|stream_read_char(s);
@@ -286,8 +266,7 @@ static inline unsigned int stream_read_int24(stream_t *s)
 #ifdef GEKKO
 int stream_read(stream_t *s,char* mem,int total);
 #else
-static inline int stream_read(stream_t *s, char *mem, int total)
-{
+inline static int stream_read(stream_t *s,char* mem,int total){
   int len=total;
   while(len>0){
     int x;
@@ -306,30 +285,26 @@ static inline int stream_read(stream_t *s, char *mem, int total)
 #endif
 
 uint8_t *stream_read_until(stream_t *s, uint8_t *mem, int max, uint8_t term, int utf16);
-static inline uint8_t *stream_read_line(stream_t *s, uint8_t *mem,
-                                        int max, int utf16)
+inline static uint8_t *stream_read_line(stream_t *s, uint8_t *mem, int max, int utf16)
 {
   return stream_read_until(s, mem, max, '\n', utf16);
 }
 
-static inline int stream_eof(stream_t *s)
-{
+inline static int stream_eof(stream_t *s){
   return s->eof;
 }
 
-static inline off_t stream_tell(stream_t *s)
-{
+inline static off_t stream_tell(stream_t *s){
   return s->pos+s->buf_pos-s->buf_len;
 }
 
-static inline int stream_seek(stream_t *s, off_t pos)
-{
+inline static int stream_seek(stream_t *s,off_t pos){
 
-  mp_dbg(MSGT_DEMUX, MSGL_DBG3, "seek to 0x%"PRIX64"\n", pos);
+  mp_dbg(MSGT_DEMUX, MSGL_DBG3, "seek to 0x%qX\n",(long long)pos);
 
   if (pos < 0) {
-    mp_msg(MSGT_DEMUX, MSGL_ERR,
-           "Invalid seek to negative position %"PRIx64"!\n", pos);
+    mp_msg(MSGT_DEMUX, MSGL_ERR, "Invalid seek to negative position %llx!\n",
+           (long long)pos);
     pos = 0;
   }
   if(pos<s->pos){
@@ -344,8 +319,7 @@ static inline int stream_seek(stream_t *s, off_t pos)
   return cache_stream_seek_long(s,pos);
 }
 
-static inline int stream_skip(stream_t *s, off_t len)
-{
+inline static int stream_skip(stream_t *s,off_t len){
   if( len<0 || (len>2*STREAM_BUFFER_SIZE && (s->flags & MP_STREAM_SEEK_FW)) ) {
     // negative or big skip!
     return stream_seek(s,stream_tell(s)+len);

@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * mem2_manager.h
  *
@@ -22,7 +22,6 @@ enum mem2_areas_enum {
 	MEM2_PICTURE,
 	MEM2_INDEX,
 	MEM2_EXTFONT,
-	MEM2_DESC,
 	MEM2_MAX
 };
  

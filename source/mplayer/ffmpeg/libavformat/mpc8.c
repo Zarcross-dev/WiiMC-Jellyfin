@@ -2,27 +2,26 @@
  * Musepack SV8 demuxer
  * Copyright (c) 2007 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavcodec/get_bits.h"
 #include "libavcodec/unary.h"
 #include "avformat.h"
-#include "internal.h"
 #include "avio_internal.h"
 
 /// Two-byte MPC tag
@@ -188,7 +187,7 @@ static void mpc8_handle_chunk(AVFormatContext *s, int tag, int64_t chunk_pos, in
     }
 }
 
-static int mpc8_read_header(AVFormatContext *s)
+static int mpc8_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     MPCContext *c = s->priv_data;
     AVIOContext *pb = s->pb;
@@ -202,7 +201,7 @@ static int mpc8_read_header(AVFormatContext *s)
         return -1;
     }
 
-    while(!url_feof(pb)){
+    while(!pb->eof_reached){
         pos = avio_tell(pb);
         mpc8_get_chunk_header(pb, &tag, &size);
         if(tag == TAG_STREAMHDR)
@@ -223,7 +222,7 @@ static int mpc8_read_header(AVFormatContext *s)
     c->samples = ffio_read_varlen(pb);
     ffio_read_varlen(pb); //silence samples at the beginning
 
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -236,11 +235,9 @@ static int mpc8_read_header(AVFormatContext *s)
 
     st->codec->channels = (st->codec->extradata[1] >> 4) + 1;
     st->codec->sample_rate = mpc8_rate[st->codec->extradata[0] >> 5];
-    avpriv_set_pts_info(st, 32, 1152  << (st->codec->extradata[1]&3)*2, st->codec->sample_rate);
+    av_set_pts_info(st, 32, 1152  << (st->codec->extradata[1]&3)*2, st->codec->sample_rate);
     st->duration = c->samples / (1152 << (st->codec->extradata[1]&3)*2);
     size -= avio_tell(pb) - pos;
-    if (size > 0)
-        avio_skip(pb, size);
 
     return 0;
 }
@@ -251,7 +248,7 @@ static int mpc8_read_packet(AVFormatContext *s, AVPacket *pkt)
     int tag;
     int64_t pos, size;
 
-    while(!url_feof(s->pb)){
+    while(!s->pb->eof_reached){
         pos = avio_tell(s->pb);
         mpc8_get_chunk_header(s->pb, &tag, &size);
         if (size < 0)
@@ -267,7 +264,7 @@ static int mpc8_read_packet(AVFormatContext *s, AVPacket *pkt)
             return AVERROR(EIO);
         mpc8_handle_chunk(s, tag, pos, size);
     }
-    return AVERROR_EOF;
+    return 0;
 }
 
 static int mpc8_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp, int flags)
@@ -277,8 +274,7 @@ static int mpc8_read_seek(AVFormatContext *s, int stream_index, int64_t timestam
     int index = av_index_search_timestamp(st, timestamp, flags);
 
     if(index < 0) return -1;
-    if (avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
-        return -1;
+    avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET);
     c->frame = st->index_entries[index].timestamp;
     return 0;
 }

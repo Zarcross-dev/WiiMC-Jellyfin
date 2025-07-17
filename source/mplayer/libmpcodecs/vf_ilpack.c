@@ -29,7 +29,6 @@
 #include "mp_image.h"
 #include "vf.h"
 #include "libavutil/attributes.h"
-#include "libavutil/x86_cpu.h"
 
 typedef void (pack_func_t)(unsigned char *dst, unsigned char *y,
     unsigned char *u, unsigned char *v, int w, int us, int vs);

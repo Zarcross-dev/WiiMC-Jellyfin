@@ -3,20 +3,20 @@
  * Copyright (c) 2005 DivX, Inc.
  * Copyright (c) 2009 Bjorn Axelsson
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -90,7 +90,7 @@ static int xsub_encode_rle(PutBitContext *pb, const uint8_t *bitmap,
         if (color != PADDING_COLOR && (PADDING + (w&1)))
             put_xsub_rle(pb, PADDING + (w&1), PADDING_COLOR);
 
-        avpriv_align_put_bits(pb);
+        align_put_bits(pb);
 
         bitmap += linesize;
     }
@@ -129,7 +129,7 @@ static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
     }
 
     // TODO: support multiple rects
-    if (h->num_rects != 1)
+    if (h->num_rects > 1)
         av_log(avctx, AV_LOG_WARNING, "Only single rects supported (%d in subtitle.)\n", h->num_rects);
 
     // TODO: render text-based subtitles into bitmaps
@@ -194,7 +194,7 @@ static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
     // Enforce total height to be be multiple of 2
     if (h->rects[0]->h & 1) {
         put_xsub_rle(&pb, h->rects[0]->w, PADDING_COLOR);
-        avpriv_align_put_bits(&pb);
+        align_put_bits(&pb);
     }
 
     flush_put_bits(&pb);

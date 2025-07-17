@@ -59,66 +59,69 @@ const gchar   * fsFilter = "*";
 
 int             fsType    = 0;
 
-static gint     fsCurrFNameListSelected, fsLastFNameListSelected;
-
 char * fsVideoFilterNames[][2] =
          {
-	   { MSGTR_Filter_AVIFiles,      "*.avi" },
-	   { MSGTR_Filter_DivXFiles,     "*.divx" },
-	   { MSGTR_Filter_FlashVideo,    "*.flv" },
-	   { MSGTR_Filter_MP3Files,      "*.mp3" },
-	   { MSGTR_Filter_MP4Files,      "*.aac,*.f4a,*.f4b,*.f4v,*.m4a,*.m4b,*.m4v,*.mp4" },
-	   { MSGTR_Filter_MPEGFiles,     "*.m1v,*.m2v,*.mp2,*.mpe,*.mpeg,*.mpg,*.mpga,*.vdr,*.vob" },
-	   { MSGTR_Filter_MP2TS,         "*.bdm,*.bdmv,*.clpi,*.cpi,*.m2t,*.m2ts,*.mpl,*.mpls,*.mts,*.rec,*.trp,*.ts,*.ty" },
-	   { MSGTR_Filter_MatroskaMedia, "*.mka,*.mkv" },
-	   { MSGTR_Filter_OGGMedia,      "*.oga,*.ogg,*.ogm,*.ogv,*.ogx,*.spx" },
-	   { MSGTR_Filter_QTMedia,       "*.moov,*.mov,*.qt,*.qtvr" },
-	   { MSGTR_Filter_RNMedia,       "*.ra,*.rm,*.rmvb,*.rv" },
-	   { MSGTR_Filter_VideoCDImages, "*.bin" },
-	   { MSGTR_Filter_WAVFiles,      "*.wav" },
-	   { MSGTR_Filter_WindowsMedia,  "*.asf,*.wma,*.wmv" },
-	   { MSGTR_Filter_Playlists,     "*.asx,*.m3u,*.m3u8,*.nsc,*.pls,*.ram,*.smi,*.smil,*.sml,*.vlc,*.wax,*.wmx,*.wvx" },
-	   { MSGTR_Filter_AllAudioFiles, "*.aac,*.ac3,*.aif,*.aifc,*.aiff,*.amr,*.ape,*.au,*.awb,*.cdg,*.f4a,*.f4b,*.flac,*.m4a,*.m4b,*.mka,*.mp+,*.mp2,*.mp3,*.mpc,*.mpga,*.mpp,*.nsa,*.oga,*.ogg,*.pcm,*.qcp,*.ra,*.snd,*.spx,*.voc,*.vqf,*.w64,*.wav,*.wma,*.wv,*.wvp" },
-	   { MSGTR_Filter_AllVideoFiles, "*.264,*.3g2,*.3ga,*.3gp,*.3gp2,*.3gpp,*.3gpp2,*.asf,*.avi,*.bdm,*.bdmv,*.bin,*.clpi,*.cpi,*.cpk,*.divx,*.dv,*.f4v,*.flc,*.fli,*.flv,*.m1v,*.m2t,*.m2ts,*.m2v,*.m4v,*.mjpg,*.mkv,*.moov,*.mov,*.mp2,*.mp4,*.mpe,*.mpeg,*.mpg,*.mpl,*.mpls,*.mts,*.mxf,*.nsv,*.nuv,*.ogg,*.ogm,*.ogv,*.ogx,*.pva,*.qt,*.qtvr,*.rec,*.rm,*.rmvb,*.roq,*.rv,*.spl,*.str,*.swf,*.trp,*.ts,*.ty,*.vdr,*.viv,*.vivo,*.vob,*.webm,*.wmv,*.y4m" },
-	   { MSGTR_Filter_AllFiles,      "*" },
+	   { "ASF files (*.asf)",					"*.asf" },
+	   { "AVI files (*.avi)",					"*.avi" },
+	   { "Autodesk animations (*.fli,*.flc)",			"*.fli,*.flc" },
+	   { "DGStation Cuberevo recordings (*.trp)",			"*.trp" },
+	   { "DiVX files (*.divx)",					"*.divx" },
+	   { "MP3 files (*.mp3,*.mp2)",					"*.mp3,*.mp2" },
+	   { "MPEG files (*.mpg,*.mpeg,*.m1v)",				"*.mpg,*.mpeg,*.m1v" },
+	   { "Macromedia Flash Video (*.flv)",				"*.flv" },
+	   { "Matroska Audio files (*.mka)",				"*.mka" },
+	   { "Matroska Media files (*.mkv)",				"*.mkv" },
+	   { "NuppelVideo files (*.nuv)",				"*.nuv" },
+	   { "OGG Vorbis files (*.ogg)",				"*.ogg" },
+	   { "OGG Media files (*.ogm)",					"*.ogm" },
+	   { "QuickTime files (*.mov,*.qt,*.mp4)",			"*.mov,*.qt,*.mp4" },
+	   { "RealVideo files (*.rm,*.rmvb)",				"*.rm,*.rmvb"  },
+	   { "Tivo files (*.ty)",					"*.ty"  },
+	   { "VCD/SVCD Images (*.bin)",					"*.bin" },
+	   { "VIVO files (*.viv)",					"*.viv" },
+	   { "VOB files (*.vob)",					"*.vob" },
+	   { "Wave files (*.wav)",					"*.wav" },
+	   { "Windows Media Audio (*.wma)",				"*.wma" },
+	   { "Windows Media Video (*.wmv)",				"*.wmv" },
+	   { "Audio files",						"*.mp2,*.mp3,*.mka,*.ogg,*.wav,*.wma" },
+	   { "Video files",						"*.asf,*.avi,*.fli,*.flc,*.trp,*.divx,*.mpg,*.mpeg,*.m1v,*.flv,*.mkv,*.nuv,*.ogm,*.mov,*.qt,*.mp4,*.rm,*.rmvb,*.ty,*.bin,*.viv,*.vob,*.wmv" },
+	   { "All files",						"*" },
 	   { NULL,NULL }
 	 };
 int fsLastVideoFilterSelected = -1;
 
 char * fsSubtitleFilterNames[][2] =
          {
-           { "AQTitle (*.aqt)",                   "*.aqt" },
-           { "Advanced SubStation Alpha (*.ass)", "*.ass" },
-           { "JACOSub (*.jss) ",                  "*.jss" },
-           { "RealText (*.rt) ",                  "*.rt"  },
-           { "SAMI (*.smi)",                      "*.smi" },
-           { "SubRip (*.srt)",                    "*.srt" },
-           { "SubStation Alpha (*.ssa)",          "*.ssa" },
-           { "MicroDVD (*.sub)",                  "*.sub" },
-           { "Text (*.txt)",                      "*.txt" },
-           { MSGTR_Filter_UTF8Subtitles,          "*.utf,*.utf-8,*.utf8" },
-           { MSGTR_Filter_AllSubtitles,           "*.aqt,*.ass,*.jss,*.rt,*.smi,*.srt,*.ssa,*.sub,*.txt,*.utf" },
-           { MSGTR_Filter_AllFiles,               "*" },
+           { "AQT (*.aqt)",						"*.aqt" },
+           { "ASS (*.ass)",						"*.ass" },
+           { "RT  (*.rt) ",						"*.rt"  },
+           { "SMI (*.smi)",						"*.smi" },
+           { "SRT (*.srt)",						"*.srt" },
+           { "SSA (*.ssa)",						"*.ssa" },
+           { "SUB (*.sub)",						"*.sub" },
+           { "TXT (*.txt)",						"*.txt" },
+           { "UTF (*.utf)",						"*.utf" },
+           { "Subtitles",						"*.aqt,*.ass,*.rt,*.smi,*.srt,*.ssa,*.sub,*.txt,*.utf" },
+           { "All files",						"*" },
 	   { NULL,NULL }
 	 };
 int fsLastSubtitleFilterSelected = -1;
 
 char * fsOtherFilterNames[][2] =
          {
-	   { MSGTR_Filter_AllFiles, "*" },
+	   { "All files",						"*" },
 	   { NULL,NULL }
 	 };
 
 char * fsAudioFileNames[][2] =
 	 {
-	   { MSGTR_Filter_DDRawAudio,    "*.ac3,*.pcm" },
-	   { MSGTR_Filter_MPEGAudio,     "*.aac,*.f4a,*.m4a,*.mp2,*.mp3,*.mpga" },
-	   { MSGTR_Filter_MatroskaAudio, "*.mka" },
-	   { MSGTR_Filter_OGGAudio,      "*.oga,*.ogg,*.spx" },
-	   { MSGTR_Filter_WAVAudio,      "*.wav" },
-	   { MSGTR_Filter_WMAAudio,      "*.wma" },
-	   { MSGTR_Filter_AllAudioFiles, "*.aac,*.ac3,*.f4a,*.m4a,*.mka,*.mp2,*.mp3,*.mpga,*.oga,*.ogg,*.pcm,*.spx,*.wav,*.wma" },
-	   { MSGTR_Filter_AllFiles,      "*" },
+	   { "MP3 files (*.mp2, *.mp3)",				"*.mp2,*.mp3" },
+	   { "Matroska Audio files (*.mka)",				"*.mka" },
+	   { "OGG Vorbis files (*.ogg)",				"*.ogg" },
+	   { "WAV files (*.wav)",					"*.wav" },
+	   { "WMA files (*.wma)",					"*.wma" },
+	   { "Audio files",						"*.mp2,*.mp3,*.mka,*.ogg,*.wav,*.wma" },
+	   { "All files",						"*" },
 	   { NULL, NULL }
 	 };
 int fsLastAudioFilterSelected = -1;
@@ -126,13 +129,13 @@ int fsLastAudioFilterSelected = -1;
 char * fsFontFileNames[][2] =
          {
 #ifdef CONFIG_FREETYPE
-	   { MSGTR_Filter_TTF,       "*.ttf" },
-	   { MSGTR_Filter_Type1,     "*.pfb" },
-	   { MSGTR_Filter_AllFonts,  "*.pfb,*.ttf" },
+	   { "True Type fonts (*.ttf)",					"*.ttf" },
+	   { "Type1 fonts (*.pfb)",					"*.pfb" },
+	   { "All fonts",						"*.ttf,*.pfb" },
 #else
-	   { MSGTR_Filter_FontFiles, "*.desc" },
+	   { "Font files (*.desc)",					"*.desc" },
 #endif
-	   { MSGTR_Filter_AllFiles,  "*" },
+	   { "All files",						"*" },
 	   { NULL,NULL }
 	 };
 int fsLastFontFilterSelected = -1;
@@ -167,6 +170,19 @@ static char * get_current_dir_name_utf8( void )
  return utf8dir;
 }
 
+static char * Filter( const char * name )
+{
+ static char tmp[32];
+ unsigned int  i,c;
+ for ( i=0,c=0;i < strlen( name );i++ )
+  {
+   if ( ( name[i] >='a' )&&( name[i] <= 'z' ) ) { tmp[c++]='['; tmp[c++]=name[i]; tmp[c++]=name[i] - 32; tmp[c++]=']'; }
+    else tmp[c++]=name[i];
+  }
+ tmp[c]=0;
+ return tmp;
+}
+
 static void clist_append_fname(GtkWidget * list, char *fname,
                                GdkPixmap *pixmap, GdkPixmap *mask) {
   gint pos;
@@ -182,9 +198,8 @@ static void clist_append_fname(GtkWidget * list, char *fname,
 static void CheckDir( GtkWidget * list )
 {
  struct stat     fs;
- unsigned int    i, j, fn;
+ int             i;
  glob_t          gg;
- gchar          *filter, **fext;
 
  if ( !fsFilter[0] ) return;
 
@@ -195,60 +210,40 @@ static void CheckDir( GtkWidget * list )
  clist_append_fname(list, "..", dpixmap, dmask);
 
  glob( "*",0,NULL,&gg );
- for(  i=0;i<gg.gl_pathc;i++ )
+ for(  i=0;(unsigned)i<gg.gl_pathc;i++ )
   {
    stat( gg.gl_pathv[i],&fs );
    if( !S_ISDIR( fs.st_mode ) ) continue;
    clist_append_fname(list, gg.gl_pathv[i], dpixmap, dmask);
   }
+ globfree( &gg );
 
- for (fn = 1, i = 0; fsFilter[i]; i++)
-   if (fsFilter[i] == ',') fn++;
+ if ( strchr( fsFilter,',' ) )
+  {
+   char tmp[8];
+   int  i,c,glob_param = 0;
+   for ( i=0,c=0;i<(int)strlen( fsFilter ) + 1;i++,c++ )
+    {
+     tmp[c]=fsFilter[i];
+     if ( ( tmp[c] == ',' )||( tmp[c] == '\0' ) )
+      {
+       tmp[c]=0; c=-1;
+       glob( Filter( tmp ),glob_param,NULL,&gg );
+       glob_param=GLOB_APPEND;
+      }
+    }
+  } else glob( Filter( fsFilter ),0,NULL,&gg );
 
- filter = g_strdup(fsFilter);
- fext = calloc(fn, sizeof(gchar *));
-
- if (filter && fext)
- {
-   for (j = 0, i = 0; filter[i]; i++)
-   {
-     if (filter[i] == '.') fext[j] = filter + i;
-
-     if (filter[i] == ',')
-     {
-       filter[i] = 0;
-       j++;
-     }
-   }
-
-   for(  i=0;i<gg.gl_pathc;i++ )
-   {
-     char *ext;
-
-     stat( gg.gl_pathv[i],&fs );
-     if(  S_ISDIR( fs.st_mode ) ) continue;
-
-     ext = strrchr(gg.gl_pathv[i], '.');
-
-     if (ext || !fext[0])
-     {
-       for (j = 0; j < fn; j++)
-       {
-         if (fext[j] == NULL || strcasecmp(fext[j], ext) == 0)
-         {
-           clist_append_fname(list, gg.gl_pathv[i], fpixmap, fmask);
-           break;
-         }
-       }
-     }
-   }
- }
-
- free(fext);
- g_free(filter);
+ for(  i=0;(unsigned)i<gg.gl_pathc;i++ )
+  {
+   stat( gg.gl_pathv[i],&fs );
+   if(  S_ISDIR( fs.st_mode ) ) continue;
+   clist_append_fname(list, gg.gl_pathv[i], fpixmap, fmask);
+  }
  globfree( &gg );
 
  gtk_clist_set_column_width( GTK_CLIST( list ),0,17 );
+ gtk_clist_select_row( GTK_CLIST( list ),0,1 );
  gtk_widget_show( list );
 }
 
@@ -256,7 +251,6 @@ void ShowFileSelect( int type,int modal )
 {
  int i, k, fsMedium;
  char * tmp = NULL, * dir = NULL;
- struct stat f;
 
  if ( fsFileSelect ) gtkActive( fsFileSelect );
   else fsFileSelect=create_FileSelect();
@@ -326,6 +320,7 @@ void ShowFileSelect( int type,int modal )
 
  if ( tmp && tmp[0] )
   {
+   struct stat f;
    dir = strdup( tmp );
 
    do
@@ -358,17 +353,10 @@ void ShowFileSelect( int type,int modal )
  }
  free( dir );
  if ( getenv( "HOME" ) ) fsTopList_items=g_list_append( fsTopList_items,getenv( "HOME" ) );
- else fsTopList_items=g_list_append( fsTopList_items,"/home" );
- if (stat( "/media",&f ) == 0) fsTopList_items=g_list_append( fsTopList_items,"/media" );
- if (stat( "/mnt",&f ) == 0) fsTopList_items=g_list_append( fsTopList_items,"/mnt" );
+ fsTopList_items=g_list_append( fsTopList_items,"/home" );
+ fsTopList_items=g_list_append( fsTopList_items,"/mnt" );
  fsTopList_items=g_list_append( fsTopList_items,"/" );
  gtk_combo_set_popdown_strings( GTK_COMBO( fsCombo4 ),fsTopList_items );
-
- gtk_widget_grab_focus( fsFNameList );
- if (fsLastFNameListSelected + 1 > ((GtkCList *)fsFNameList)->rows) fsLastFNameListSelected = 0;
- ((GtkCList *)fsFNameList)->focus_row = fsLastFNameListSelected;
- gtk_clist_select_row( GTK_CLIST( fsFNameList ),fsLastFNameListSelected,1 );
- fsLastFNameListSelected = 0;
 
  gtk_window_set_modal( GTK_WINDOW( fsFileSelect ),modal );
 
@@ -381,7 +369,6 @@ void HideFileSelect( void )
  gtk_widget_hide( fsFileSelect );
  gtk_widget_destroy( fsFileSelect );
  fsFileSelect=NULL;
- fsLastFNameListSelected = fsCurrFNameListSelected;
 }
 
 static void fs_PersistantHistory( char * subject )
@@ -400,9 +387,9 @@ static void fs_PersistantHistory( char * subject )
  for ( i=FF_ARRAY_ELEMS(fsHistory) - 1;i;i-- ) fsHistory[i]=fsHistory[i - 1];
  fsHistory[0]=gstrdup( subject );
 }
-/* ----------------------------------------------- */
+//-----------------------------------------------
 
-static void fs_fsFilterCombo_activate( GtkEntry * entry,
+static void fs_fsFilterCombo_activate( GtkEditable * editable,
                                        gpointer user_data )
 {
  fsFilter=gtk_entry_get_text( GTK_ENTRY( user_data ) );
@@ -449,7 +436,7 @@ static void fs_fsFilterCombo_changed( GtkEditable * editable,
  CheckDir( fsFNameList );
 }
 
-static void fs_fsPathCombo_activate( GtkEntry * entry,
+static void fs_fsPathCombo_activate( GtkEditable * editable,
                                      gpointer user_data )
 {
  const unsigned char * str;
@@ -485,7 +472,7 @@ static void fs_Up_released( GtkButton * button, gpointer user_data )
 static void fs_Ok_released( GtkButton * button, gpointer user_data )
 {
  GList         * item;
- int             i = 1, l;
+ int             i = 1;
  struct stat     fs;
 
  stat( fsSelectedFile,&fs );
@@ -495,7 +482,6 @@ static void fs_Ok_released( GtkButton * button, gpointer user_data )
    fsSelectedFile=fsThatDir;
    CheckDir( fsFNameList );
    gtk_entry_set_text( GTK_ENTRY( fsPathCombo ),(unsigned char *)get_current_dir_name_utf8() );
-   gtk_widget_grab_focus( fsFNameList );
    return;
   }
 
@@ -503,10 +489,11 @@ static void fs_Ok_released( GtkButton * button, gpointer user_data )
  switch ( fsType )
   {
    case fsVideoSelector:
-          for (l = 0; fsVideoFilterNames[l][0]; l++)
-            if (strcmp(fsVideoFilterNames[l][0], MSGTR_Filter_Playlists) == 0) break;
-          uiSetFileName( fsSelectedDirectory,fsSelectedFile, fsLastVideoFilterSelected == l ? STREAMTYPE_PLAYLIST : STREAMTYPE_FILE );
+          setddup( &guiInfo.Filename,fsSelectedDirectory,fsSelectedFile );
+          guiInfo.StreamType=STREAMTYPE_FILE;
           guiInfo.NewPlay=GUI_FILE_NEW; sub_fps=0;
+	  nfree( guiInfo.AudioFilename );
+	  nfree( guiInfo.SubtitleFilename );
           fs_PersistantHistory( get_current_dir_name_utf8() );      //totem, write into history
           break;
    case fsSubtitleSelector:
@@ -545,41 +532,32 @@ static void fs_Cancel_released( GtkButton * button,gpointer user_data )
  fs_PersistantHistory( get_current_dir_name_utf8() );      //totem, write into history file
 }
 
-static void fs_fsFNameList_select_row( GtkCList * clist, gint row, gint column,
-                                       GdkEvent * event, gpointer user_data)
+static void fs_fsFNameList_select_row( GtkWidget * widget, gint row, gint column,
+                                       GdkEventButton *bevent, gpointer user_data)
 {
- fsCurrFNameListSelected = row;
- gtk_clist_get_text( clist,row,1,&fsSelectedFile );
+ gtk_clist_get_text( GTK_CLIST(widget ),row,1,&fsSelectedFile );
  g_free( fsSelectedFileUtf8 );
  fsSelectedFileUtf8 = g_filename_from_utf8( fsSelectedFile, -1, NULL, NULL, NULL );
  if ( fsSelectedFileUtf8 ) fsSelectedFile = fsSelectedFileUtf8;
- if( event && event->type == GDK_BUTTON_PRESS )  gtk_button_released( GTK_BUTTON( fsOk ) );
+ if( bevent && bevent->type == GDK_BUTTON_PRESS )  gtk_button_released( GTK_BUTTON( fsOk ) );
 }
 
 static gboolean on_FileSelect_key_release_event( GtkWidget * widget,
-                                                 GdkEvent * event,
+                                                 GdkEventKey * event,
                                                  gpointer user_data )
 {
- if ( GTK_WIDGET_TYPE( widget ) == GTK_TYPE_BUTTON )
- {
-  if (event->key.keyval == GDK_Return) gtk_button_released( GTK_BUTTON( widget ) );
- }
- else
- {
-  switch ( event->key.keyval )
-   {
-    case GDK_Escape:
-         gtk_button_released( GTK_BUTTON( fsCancel ) );
-         break;
-    case GDK_Return:
-         gtk_button_released( GTK_BUTTON( fsOk ) );
-         break;
-    case GDK_BackSpace:
-         gtk_button_released( GTK_BUTTON( fsUp ) );
-         gtk_widget_grab_focus( fsFNameList );
-         break;
-   }
- }
+ switch ( event->keyval )
+  {
+   case GDK_Escape:
+        gtk_button_released( GTK_BUTTON( fsCancel ) );
+        break;
+   case GDK_Return:
+        gtk_button_released( GTK_BUTTON( fsOk ) );
+        break;
+   case GDK_BackSpace:
+        gtk_button_released( GTK_BUTTON( fsUp ) );
+        break;
+  }
  return FALSE;
 }
 
@@ -589,6 +567,8 @@ static gboolean fs_fsFNameList_event( GtkWidget * widget,
 {
   GdkEventButton *bevent;
   gint row, col;
+
+  (void) user_data;
 
   bevent = (GdkEventButton *) event;
 
@@ -716,7 +696,6 @@ GtkWidget * create_FileSelect( void )
  gtk_widget_set_name( fsFilterCombo,"fsFilterCombo" );
  gtk_widget_show( fsFilterCombo );
  gtk_entry_set_editable (GTK_ENTRY( fsFilterCombo ),FALSE );
- gtk_widget_set_usize( fsFilterCombo,-2,20 );
 
  AddHSeparator( vbox4 );
 
@@ -735,13 +714,12 @@ GtkWidget * create_FileSelect( void )
  gtk_signal_connect( GTK_OBJECT( fsPathCombo ),"changed",GTK_SIGNAL_FUNC( fs_fsPathCombo_changed ),fsPathCombo );
  gtk_signal_connect( GTK_OBJECT( fsPathCombo ),"activate",GTK_SIGNAL_FUNC( fs_fsPathCombo_activate ),fsPathCombo );
  gtk_signal_connect( GTK_OBJECT( fsUp ),"released",GTK_SIGNAL_FUNC( fs_Up_released ),fsFNameList );
- gtk_signal_connect( GTK_OBJECT( fsUp ),"key_release_event",GTK_SIGNAL_FUNC( on_FileSelect_key_release_event ),NULL );
  gtk_signal_connect( GTK_OBJECT( fsOk ),"released",GTK_SIGNAL_FUNC( fs_Ok_released ),fsCombo4 );
- gtk_signal_connect( GTK_OBJECT( fsOk ),"key_release_event",GTK_SIGNAL_FUNC( on_FileSelect_key_release_event ),NULL );
  gtk_signal_connect( GTK_OBJECT( fsCancel ),"released",GTK_SIGNAL_FUNC( fs_Cancel_released ),NULL );
- gtk_signal_connect( GTK_OBJECT( fsCancel ),"key_release_event",GTK_SIGNAL_FUNC( on_FileSelect_key_release_event ),NULL );
  gtk_signal_connect( GTK_OBJECT( fsFNameList ),"select_row",(GtkSignalFunc)fs_fsFNameList_select_row,NULL );
  gtk_signal_connect( GTK_OBJECT( fsFNameList ),"event", (GtkSignalFunc)fs_fsFNameList_event,NULL );
+
+ gtk_widget_grab_focus( fsFNameList );
 
  return fsFileSelect;
 }

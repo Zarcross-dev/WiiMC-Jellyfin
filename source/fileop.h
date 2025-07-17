@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * fileop.h
  *
@@ -73,9 +73,6 @@ extern bool isInserted[];
 extern u64 dvdLastUsed;
 extern int findLoadedFile;
 extern bool selectLoadedFile;
-extern bool foundArt;
 extern size_t loadOffset, loadSize;
-
-int ParseJPEG();
 
 #endif

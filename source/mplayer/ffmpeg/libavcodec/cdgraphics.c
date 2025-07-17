@@ -2,20 +2,20 @@
  * CD Graphics Video Decoder
  * Copyright (c) 2009 Michael Tison
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -126,7 +126,7 @@ static void cdg_load_palette(CDGraphicsContext *cc, uint8_t *data, int low)
         r = ((color >> 8) & 0x000F) * 17;
         g = ((color >> 4) & 0x000F) * 17;
         b = ((color     ) & 0x000F) * 17;
-        palette[i + array_offset] = 0xFF << 24 | r << 16 | g << 8 | b;
+        palette[i + array_offset] = r << 16 | g << 8 | b;
     }
     cc->frame.palette_has_changed = 1;
 }
@@ -280,10 +280,6 @@ static int cdg_decode_frame(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_ERROR, "buffer too small for decoder\n");
         return AVERROR(EINVAL);
     }
-    if (buf_size > CDG_HEADER_SIZE + CDG_DATA_SIZE) {
-        av_log(avctx, AV_LOG_ERROR, "buffer too big for decoder\n");
-        return AVERROR(EINVAL);
-    }
 
     ret = avctx->reget_buffer(avctx, &cc->frame);
     if (ret) {
@@ -380,5 +376,5 @@ AVCodec ff_cdgraphics_decoder = {
     .close          = cdg_decode_end,
     .decode         = cdg_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("CD Graphics video"),
+    .long_name = NULL_IF_CONFIG_SMALL("CD Graphics video"),
 };

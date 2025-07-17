@@ -1,22 +1,22 @@
 /*
  * DSP functions for Indeo Video Interactive codecs (Indeo4 and Indeo5)
  *
- * Copyright (c) 2009-2011 Maxim Poliakovski
+ * Copyright (c) 2009 Maxim Poliakovski
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -42,43 +42,6 @@
  */
 void ff_ivi_recompose53(const IVIPlaneDesc *plane, uint8_t *dst,
                         const int dst_pitch, const int num_bands);
-
-/**
- *  Haar wavelet recomposition filter for Indeo 4
- *
- *  @param[in]  plane        pointer to the descriptor of the plane being processed
- *  @param[out] dst          pointer to the destination buffer
- *  @param[in]  dst_pitch    pitch of the destination buffer
- *  @param[in]  num_bands    number of wavelet bands to be processed
- */
-void ff_ivi_recompose_haar(const IVIPlaneDesc *plane, uint8_t *dst,
-                           const int dst_pitch, const int num_bands);
-
-/**
- *  two-dimensional inverse Haar 8x8 transform for Indeo 4
- *
- *  @param[in]  in        pointer to the vector of transform coefficients
- *  @param[out] out       pointer to the output buffer (frame)
- *  @param[in]  pitch     pitch to move to the next y line
- *  @param[in]  flags     pointer to the array of column flags:
- *                        != 0 - non_empty column, 0 - empty one
- *                        (this array must be filled by caller)
- */
-void ff_ivi_inverse_haar_8x8(const int32_t *in, int16_t *out, uint32_t pitch,
-                             const uint8_t *flags);
-
-/**
- *  DC-only two-dimensional inverse Haar transform for Indeo 4.
- *  Performing the inverse transform in this case is equivalent to
- *  spreading DC_coeff >> 3 over the whole block.
- *
- *  @param[in]  in          pointer to the dc coefficient
- *  @param[out] out         pointer to the output buffer (frame)
- *  @param[in]  pitch       pitch to move to the next y line
- *  @param[in]  blk_size    transform block size
- */
-void ff_ivi_dc_haar_2d(const int32_t *in, int16_t *out, uint32_t pitch,
-                       int blk_size);
 
 /**
  *  two-dimensional inverse slant 8x8 transform

@@ -1,4 +1,5 @@
 /*
+ * idct_mmx.c
  * Copyright (C) 1999-2001 Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
  *
  * This file is part of mpeg2dec, a free MPEG-2 video stream decoder.
@@ -626,3 +627,4 @@ declare_idct (ff_mmxext_idct, mmxext_table,
 
 declare_idct (ff_mmx_idct, mmx_table,
               mmx_row_head, mmx_row, mmx_row_tail, mmx_row_mid)
+

@@ -3,20 +3,20 @@
  *
  * some optimization ideas from aes128.c by Reimar Doeffinger
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -33,7 +33,7 @@ typedef union {
 
 typedef struct AVAES {
     // Note: round_key[16] is accessed in the init code, but this only
-    // overwrites state, which does not matter (see also commit ba554c0).
+    // overwrites state, which does not matter (see also r7471).
     av_aes_block round_key[15];
     av_aes_block state[2];
     int rounds;
@@ -222,9 +222,11 @@ int av_aes_init(AVAES *a, const uint8_t *key, int key_bits, int decrypt)
     a->rounds = rounds;
 
     memcpy(tk, key, KC * 4);
-    memcpy(a->round_key[0].u8, key, KC * 4);
 
-    for (t = KC * 4; t < (rounds + 1) * 16; t += KC * 4) {
+    for (t = 0; t < (rounds + 1) * 16;) {
+        memcpy(a->round_key[0].u8 + t, tk, KC * 4);
+        t += KC * 4;
+
         for (i = 0; i < 4; i++)
             tk[0][i] ^= sbox[tk[KC - 1][(i + 1) & 3]];
         tk[0][0] ^= rcon[rconpointer++];
@@ -237,8 +239,6 @@ int av_aes_init(AVAES *a, const uint8_t *key, int key_bits, int decrypt)
                 for (i = 0; i < 4; i++)
                     tk[j][i] ^= sbox[tk[j - 1][i]];
         }
-
-        memcpy(a->round_key[0].u8 + t, tk, KC * 4);
     }
 
     if (decrypt) {
@@ -259,7 +259,6 @@ int av_aes_init(AVAES *a, const uint8_t *key, int key_bits, int decrypt)
 }
 
 #ifdef TEST
-// LCOV_EXCL_START
 #include <string.h>
 #include "lfg.h"
 #include "log.h"
@@ -332,5 +331,4 @@ int main(int argc, char **argv)
     }
     return err;
 }
-// LCOV_EXCL_STOP
 #endif

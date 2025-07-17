@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-/// \defgroup options Options
+/// \defgroup Options
 /// m_option allows to parse, print and copy data of various types.
 /// It is the base of the \ref OptionsStruct, \ref Config and
 /// \ref Properties APIs.
@@ -62,7 +62,6 @@ extern const m_option_type_t m_option_type_afmt;
 // Func-based types
 extern const m_option_type_t m_option_type_func_full;
 extern const m_option_type_t m_option_type_func_param;
-extern const m_option_type_t m_option_type_func_param_immediate;
 extern const m_option_type_t m_option_type_func;
 
 /// Callback used to reset func options.
@@ -178,7 +177,6 @@ extern const m_obj_params_t m_span_params_def;
 #define CONF_TYPE_STRING	(&m_option_type_string)
 #define CONF_TYPE_FUNC		(&m_option_type_func)
 #define CONF_TYPE_FUNC_PARAM	(&m_option_type_func_param)
-#define CONF_TYPE_FUNC_PARAM_IMMEDIATE (&m_option_type_func_param_immediate)
 #define CONF_TYPE_PRINT		(&m_option_type_print)
 #define CONF_TYPE_PRINT_INDIRECT (&m_option_type_print_indirect)
 #define CONF_TYPE_PRINT_FUNC	(&m_option_type_print_func)
@@ -306,12 +304,6 @@ struct m_option {
   void* priv;
 };
 
-
-/// \defgroup PrivFlags Private data
-/// @{
-/// Don't exit after printing a CONF_TYPE_PRINT option.
-#define PRIV_NO_EXIT (void *)-1
-///@}
 
 /// \defgroup OptionFlags Option flags
 ///@{
@@ -490,13 +482,13 @@ struct m_option {
 const m_option_t* m_option_list_find(const m_option_t* list,const char* name);
 
 /// Helper to parse options, see \ref m_option_type::parse.
-static inline int
+inline static int
 m_option_parse(const m_option_t* opt,const char *name, const char *param, void* dst, int src) {
   return opt->type->parse(opt,name,param,dst,src);
 }
 
 /// Helper to print options, see \ref m_option_type::print.
-static inline  char*
+inline static  char*
 m_option_print(const m_option_t* opt, const void* val_ptr) {
   if(opt->type->print)
     return opt->type->print(opt,val_ptr);
@@ -505,14 +497,14 @@ m_option_print(const m_option_t* opt, const void* val_ptr) {
 }
 
 /// Helper around \ref m_option_type::save.
-static inline  void
+inline static  void
 m_option_save(const m_option_t* opt,void* dst, const void* src) {
   if(opt->type->save)
     opt->type->save(opt,dst,src);
 }
 
 /// Helper around \ref m_option_type::set.
-static inline  void
+inline static  void
 m_option_set(const m_option_t* opt,void* dst, const void* src) {
   if(opt->type->set)
     opt->type->set(opt,dst,src);
@@ -528,7 +520,7 @@ m_option_copy(const m_option_t* opt,void* dst, const void* src) {
 }
 
 /// Helper around \ref m_option_type::free.
-static inline void
+inline static void
 m_option_free(const m_option_t* opt,void* dst) {
   if(opt->type->free)
     opt->type->free(dst);

@@ -2,25 +2,25 @@
 ;* 32 point SSE-optimized DCT transform
 ;* Copyright (c) 2010 Vitor Sessak
 ;*
-;* This file is part of FFmpeg.
+;* This file is part of Libav.
 ;*
-;* FFmpeg is free software; you can redistribute it and/or
+;* Libav is free software; you can redistribute it and/or
 ;* modify it under the terms of the GNU Lesser General Public
 ;* License as published by the Free Software Foundation; either
 ;* version 2.1 of the License, or (at your option) any later version.
 ;*
-;* FFmpeg is distributed in the hope that it will be useful,
+;* Libav is distributed in the hope that it will be useful,
 ;* but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;* Lesser General Public License for more details.
 ;*
 ;* You should have received a copy of the GNU Lesser General Public
-;* License along with FFmpeg; if not, write to the Free Software
+;* License along with Libav; if not, write to the Free Software
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;******************************************************************************
 
-%include "libavutil/x86/x86inc.asm"
-%include "libavutil/x86/x86util.asm"
+%include "x86inc.asm"
+%include "x86util.asm"
 
 SECTION_RODATA 32
 
@@ -211,7 +211,7 @@ ps_p1p1m1m1: dd 0, 0, 0x80000000, 0x80000000, 0, 0, 0x80000000, 0x80000000
 
 INIT_YMM
 SECTION_TEXT
-%if HAVE_AVX
+%ifdef HAVE_AVX
 ; void ff_dct32_float_avx(FFTSample *out, const FFTSample *in)
 cglobal dct32_float_avx, 2,3,8, out, in, tmp
     ; pass 1
@@ -289,7 +289,7 @@ INIT_XMM
 %define BUTTERFLY  BUTTERFLY_SSE
 %define BUTTERFLY0 BUTTERFLY0_SSE
 
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
 %define SPILL SWAP
 %define UNSPILL SWAP
 

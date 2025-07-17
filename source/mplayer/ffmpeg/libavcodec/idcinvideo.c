@@ -2,20 +2,20 @@
  * id Quake II CIN Video Decoder
  * Copyright (C) 2003 the ffmpeg project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -36,7 +36,7 @@
  * a little more compression by exploiting the fact that adjacent pixels
  * tend to be similar.
  *
- * Note that this decoder could use libavcodec's optimized VLC facilities
+ * Note that this decoder could use ffmpeg's optimized VLC facilities
  * rather than naive, tree-based Huffman decoding. However, there are 256
  * Huffman tables. Plus, the VLC bit coding order is right -> left instead
  * or left -> right, so all of the bits would have to be reversed. Further,
@@ -166,7 +166,6 @@ static av_cold int idcin_decode_init(AVCodecContext *avctx)
         huff_build_tree(s, i);
     }
 
-    avcodec_get_frame_defaults(&s->frame);
     s->frame.data[0] = NULL;
 
     return 0;
@@ -263,5 +262,6 @@ AVCodec ff_idcin_decoder = {
     .close          = idcin_decode_end,
     .decode         = idcin_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("id Quake II CIN video"),
+    .long_name = NULL_IF_CONFIG_SMALL("id Quake II CIN video"),
 };
+

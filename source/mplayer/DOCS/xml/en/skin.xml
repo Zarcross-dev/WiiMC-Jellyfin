@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 34749 $ -->
+<!-- $Revision: 33984 $ -->
 <appendix id="skin">
 <title><application>MPlayer</application> skin format</title>
 
@@ -20,7 +20,7 @@ for example), so it is up to you to create something great.
 <para>
 Currently there are four windows to be decorated: the
 <link linkend="skin-file-main">main window</link>, the
-<link linkend="skin-file-subwindow">video window</link>, the
+<link linkend="skin-file-subwindow">subwindow</link>, the
 <link linkend="skin-file-main">playbar</link>, and the
 <link linkend="skin-file-menu">skin menu</link>.
 
@@ -73,7 +73,7 @@ Currently there are four windows to be decorated: the
 </listitem>
 
 <listitem><para>
-  The <emphasis role="bold">video window</emphasis> is where the video appears. It
+  The <emphasis role="bold">subwindow</emphasis> is where the video appears. It
   can display a specified image if there is no movie loaded (it is quite boring
   to have an empty window :-)) <emphasis role="bold">Note:</emphasis>
   transparency is <emphasis role="bold">not allowed</emphasis> here.
@@ -142,7 +142,7 @@ You need the following files to build a skin:
   description files needed to draw labels).
 </para></listitem>
 <listitem><para>
-  The image to be displayed in the video window (optional).
+  The image to be displayed in the subwindow (optional).
 </para></listitem>
 <listitem><para>
   Two images for the skin menu (they are needed only if you want to create
@@ -206,7 +206,7 @@ where <replaceable>window name</replaceable> can be one of these strings:
   <emphasis role="bold">main</emphasis> - for the main window
 </para></listitem>
 <listitem><para>
-  <emphasis role="bold">video</emphasis> - for the video window
+  <emphasis role="bold">sub</emphasis> - for the subwindow
 </para></listitem>
 <listitem><para>
   <emphasis role="bold">playbar</emphasis> - for the playbar
@@ -218,8 +218,8 @@ where <replaceable>window name</replaceable> can be one of these strings:
 </para>
 
 <para>
-(The video, playbar and menu blocks are optional - you do not need to decorate
-the video window, have a playbar or create a menu. A default menu is always
+(The sub, playbar and menu blocks are optional - you do not need to decorate
+the subwindow, have a playbar or create a menu. A default menu is always
 available by a right mouse button click.)
 </para>
 
@@ -240,8 +240,8 @@ section = movieplayer
   ; ... items for main window ...
   end
 
-  window = video
-  ; ... items for video window ...
+  window = sub
+  ; ... items for subwindow ...
   end
 
   window = menu
@@ -266,7 +266,7 @@ and <literal>PNG</literal> are tried for <filename>&lt;ext&gt;</filename>
 </para>
 
 <para>
-Finally some words about positioning. The main window and the video window can be
+Finally some words about positioning. The main window and the subwindow can be
 placed in the different corners of the screen by giving <literal>X</literal>
 and <literal>Y</literal> coordinates. <literal>0</literal> is top or left,
 <literal>-1</literal> is center and <literal>-2</literal> is right or bottom, as
@@ -559,7 +559,7 @@ blocks.
   </row>
   <row>
     <entry>$t</entry>
-    <entry>track number (DVD, VCD, CD or playlist)</entry>
+    <entry>track number (DVD, VCD or playlist)</entry>
   </row>
   <row>
     <entry>$o</entry>
@@ -577,7 +577,7 @@ blocks.
     <entry>$T</entry>
     <entry>
     a character according to the stream type (file: <keycap>f</keycap>,
-    CD: <keycap>a</keycap>, Video CD: <keycap>v</keycap>, DVD: <keycap>d</keycap>,
+    Video CD: <keycap>v</keycap>, DVD: <keycap>d</keycap>,
     URL: <keycap>u</keycap>)
     </entry>
   </row>
@@ -625,11 +625,11 @@ blocks.
 <!-- ********** -->
 
 <sect2 id="skin-file-subwindow">
-<title>Video window</title>
+<title>Subwindow</title>
 
 <para>
 The following entries can be used in the
-'<literal>window = video</literal>' . . . '<literal>end</literal>' block.
+'<literal>window = sub</literal>' . . . '<literal>end</literal>' block.
 </para>
 
 <variablelist>
@@ -777,14 +777,13 @@ symbols (and thus require a different font).
   <row><entry>Character</entry><entry>Symbol</entry></row>
 </thead>
 <tbody>
-  <row><entry><keycap>p</keycap></entry><entry>play</entry></row>
+  <row><entry><keycap>l</keycap></entry><entry>play</entry></row>
   <row><entry><keycap>s</keycap></entry><entry>stop</entry></row>
   <row><entry><keycap>e</keycap></entry><entry>pause</entry></row>
   <row><entry><keycap>n</keycap></entry><entry>no sound</entry></row>
   <row><entry><keycap>m</keycap></entry><entry>mono sound</entry></row>
   <row><entry><keycap>t</keycap></entry><entry>stereo sound</entry></row>
   <row><entry><keycap>f</keycap></entry><entry>stream is a file</entry></row>
-  <row><entry><keycap>a</keycap></entry><entry>stream is a CD</entry></row>
   <row><entry><keycap>v</keycap></entry><entry>stream is a Video CD</entry></row>
   <row><entry><keycap>d</keycap></entry><entry>stream is a DVD</entry></row>
   <row><entry><keycap>u</keycap></entry><entry>stream is a URL</entry></row>
@@ -807,44 +806,7 @@ menu entries.
 </para>
 
 <variablelist>
-<varlistentry>
-  <term><emphasis role="bold">evNone</emphasis></term>
-  <listitem><para>
-  Empty message, it has no effect.
-  </para></listitem>
-</varlistentry>
-</variablelist>
-
-<variablelist>
 <title>Playback control:</title>
-<varlistentry>
-  <term><emphasis role="bold">evPlay</emphasis></term>
-  <listitem><para>
-  Start playing.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evStop</emphasis></term>
-  <listitem><para>
-  Stop playing.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evPause</emphasis></term>
-  <listitem><para>
-  Pause playing.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evPrev</emphasis></term>
-  <listitem><para>
-  Jump to previous track in the playlist.
-  </para></listitem>
-</varlistentry>
-
 <varlistentry>
   <term><emphasis role="bold">evNext</emphasis></term>
   <listitem><para>
@@ -853,73 +815,21 @@ menu entries.
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evLoad</emphasis></term>
+  <term><emphasis role="bold">evPause</emphasis></term>
   <listitem><para>
-  Load a file (by opening a file browser window, where you can choose a file).
+  Forms a switch together with <literal>evPlaySwitchToPause</literal>. They can
+  be used to have a common play/pause button. Both messages should be assigned
+  to buttons displayed at the very same position in the window. This message
+  pauses playing and the image for the <literal>evPlaySwitchToPause</literal>
+  button is displayed (to indicate that the button can be pressed to continue
+  playing).
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evLoadPlay</emphasis></term>
+  <term><emphasis role="bold">evPlay</emphasis></term>
   <listitem><para>
-  Does the same as <literal>evLoad</literal>, but it automatically starts
-  playing after the file is loaded.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evLoadAudioFile</emphasis></term>
-  <listitem><para>
-  Loads an audio file (with the file selector).
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evLoadSubtitle</emphasis></term>
-  <listitem><para>
-  Loads a subtitle file (with the file selector).
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evDropSubtitle</emphasis></term>
-  <listitem><para>
-  Disables the currently used subtitle.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evPlaylist</emphasis></term>
-  <listitem><para>
-  Open/close the playlist window.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evPlayCD</emphasis></term>
-  <listitem><para>
-  Tries to open the disc in the given CD-ROM drive.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evPlayVCD</emphasis></term>
-  <listitem><para>
-  Tries to open the disc in the given CD-ROM drive.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evPlayDVD</emphasis></term>
-  <listitem><para>
-  Tries to open the disc in the given DVD-ROM drive.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term><emphasis role="bold">evLoadURL</emphasis></term>
-  <listitem><para>
-  Displays the URL dialog window.
+  Start playing.
   </para></listitem>
 </varlistentry>
 
@@ -933,14 +843,16 @@ menu entries.
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evPauseSwitchToPlay</emphasis></term>
+  <term><emphasis role="bold">evPrev</emphasis></term>
   <listitem><para>
-  Forms a switch together with <literal>evPlaySwitchToPause</literal>. They can
-  be used to have a common play/pause button. Both messages should be assigned
-  to buttons displayed at the very same position in the window. This message
-  pauses playing and the image for the <literal>evPlaySwitchToPause</literal>
-  button is displayed (to indicate that the button can be pressed to continue
-  playing).
+  Jump to previous track in the playlist.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evStop</emphasis></term>
+  <listitem><para>
+  Stop playing.
   </para></listitem>
 </varlistentry>
 </variablelist>
@@ -1024,16 +936,24 @@ menu entries.
   Set the video window to its normal size.
   </para></listitem>
 </varlistentry>
-<varlistentry>
-  <term><emphasis role="bold">evSetAspect</emphasis></term>
-  <listitem><para>
-  Set the video window to its original aspect ratio.
-  </para></listitem>
-</varlistentry>
 </variablelist>
 
 <variablelist>
 <title>Audio control:</title>
+<varlistentry>
+  <term><emphasis role="bold">evDecAudioBufDelay</emphasis></term>
+  <listitem><para>
+  Decrease audio buffer delay.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evDecBalance</emphasis></term>
+  <listitem><para>
+  Decrease balance.
+  </para></listitem>
+</varlistentry>
+
 <varlistentry>
   <term><emphasis role="bold">evDecVolume</emphasis></term>
   <listitem><para>
@@ -1042,17 +962,23 @@ menu entries.
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evIncVolume</emphasis></term>
+  <term><emphasis role="bold">evIncAudioBufDelay</emphasis></term>
   <listitem><para>
-  Increase volume.
+  Increase audio buffer delay.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evSetVolume</emphasis></term>
+  <term><emphasis role="bold">evIncBalance</emphasis></term>
   <listitem><para>
-  Set volume (can be used by a potmeter; the relative
-  value (0-100%) of the potmeter is used).
+  Increase balance.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evIncVolume</emphasis></term>
+  <listitem><para>
+  Increase volume.
   </para></listitem>
 </varlistentry>
 
@@ -1072,9 +998,10 @@ menu entries.
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evEqualizer</emphasis></term>
+  <term><emphasis role="bold">evSetVolume</emphasis></term>
   <listitem><para>
-  Turn the equalizer on/off.
+  Set volume (can be used by a potmeter; the relative
+  value (0-100%) of the potmeter is used).
   </para></listitem>
 </varlistentry>
 </variablelist>
@@ -1089,23 +1016,23 @@ menu entries.
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evPreferences</emphasis></term>
+  <term><emphasis role="bold">evDropSubtitle</emphasis></term>
   <listitem><para>
-  Open the preferences window.
+  Disables the currently used subtitle.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evSkinBrowser</emphasis></term>
+  <term><emphasis role="bold">evEqualizer</emphasis></term>
   <listitem><para>
-  Open the skin browser window.
+  Turn the equalizer on/off.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evMenu</emphasis></term>
+  <term><emphasis role="bold">evExit</emphasis></term>
   <listitem><para>
-  Open the (default) menu.
+  Quit the program.
   </para></listitem>
 </varlistentry>
 
@@ -1117,9 +1044,87 @@ menu entries.
 </varlistentry>
 
 <varlistentry>
-  <term><emphasis role="bold">evExit</emphasis></term>
+  <term><emphasis role="bold">evLoad</emphasis></term>
   <listitem><para>
-  Quit the program.
+  Load a file (by opening a file browser window, where you can choose a file).
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evLoadPlay</emphasis></term>
+  <listitem><para>
+  Does the same as <literal>evLoad</literal>, but it automatically starts
+  playing after the file is loaded.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evLoadSubtitle</emphasis></term>
+  <listitem><para>
+  Loads a subtitle file (with the file selector).
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evLoadAudioFile</emphasis></term>
+  <listitem><para>
+  Loads an audio file (with the file selector).
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evNone</emphasis></term>
+  <listitem><para>
+  Empty message, it has no effect.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evPlaylist</emphasis></term>
+  <listitem><para>
+  Open/close the playlist window.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evPlayDVD</emphasis></term>
+  <listitem><para>
+  Tries to open the disc in the given DVD-ROM drive.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evPlayVCD</emphasis></term>
+  <listitem><para>
+  Tries to open the disc in the given CD-ROM drive.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evPreferences</emphasis></term>
+  <listitem><para>
+  Open the preferences window.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evSetAspect</emphasis></term>
+  <listitem><para>
+  Sets displayed image aspect.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evSetURL</emphasis></term>
+  <listitem><para>
+  Displays the URL dialog window.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term><emphasis role="bold">evSkinBrowser</emphasis></term>
+  <listitem><para>
+  Open the skin browser window.
   </para></listitem>
 </varlistentry>
 </variablelist>

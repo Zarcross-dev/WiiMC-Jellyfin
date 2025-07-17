@@ -170,7 +170,7 @@ int mpae_init_lavc(audio_encoder_t *encoder)
 	}
 	if(lavc_param_atag == 0)
 	{
-		lavc_param_atag = mp_codec_id2tag(lavc_acodec->id, 0, 1);
+		lavc_param_atag = av_codec_get_tag(mp_wav_taglists, lavc_acodec->id);
 		if(!lavc_param_atag)
 		{
 			mp_msg(MSGT_MENCODER, MSGL_FATAL, "Couldn't find wav tag for specified codec, exit\n");
@@ -178,13 +178,14 @@ int mpae_init_lavc(audio_encoder_t *encoder)
 		}
 	}
 
-	lavc_actx = avcodec_alloc_context3(lavc_acodec);
+	lavc_actx = avcodec_alloc_context();
 	if(lavc_actx == NULL)
 	{
 		mp_msg(MSGT_MENCODER, MSGL_FATAL, MSGTR_CouldntAllocateLavcContext);
 		return 0;
 	}
 
+	lavc_actx->codec_type = AVMEDIA_TYPE_AUDIO;
 	lavc_actx->codec_id = lavc_acodec->id;
 	// put sample parameters
 	lavc_actx->sample_fmt = AV_SAMPLE_FMT_S16;
@@ -237,7 +238,7 @@ int mpae_init_lavc(audio_encoder_t *encoder)
                 lavc_actx->flags2 |= CODEC_FLAG2_LOCAL_HEADER;
         }
 
-	if(avcodec_open2(lavc_actx, lavc_acodec, NULL) < 0)
+	if(avcodec_open(lavc_actx, lavc_acodec) < 0)
 	{
 		mp_msg(MSGT_MENCODER, MSGL_FATAL, MSGTR_CouldntOpenCodec, lavc_param_acodec, lavc_param_abitrate);
 		return 0;

@@ -1,27 +1,25 @@
 /*
  * Copyright (c) 2000, 2001, 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef AVUTIL_CPU_H
 #define AVUTIL_CPU_H
-
-#include "attributes.h"
 
 #define AV_CPU_FLAG_FORCE    0x80000000 /* force usage of selected flags (OR) */
 
@@ -40,55 +38,13 @@
 #define AV_CPU_FLAG_SSE4         0x0100 ///< Penryn SSE4.1 functions
 #define AV_CPU_FLAG_SSE42        0x0200 ///< Nehalem SSE4.2 functions
 #define AV_CPU_FLAG_AVX          0x4000 ///< AVX functions: requires OS support even if YMM registers aren't used
-#define AV_CPU_FLAG_CMOV      0x1000000 ///< supports cmov instruction
-#define AV_CPU_FLAG_XOP          0x0400 ///< Bulldozer XOP functions
-#define AV_CPU_FLAG_FMA4         0x0800 ///< Bulldozer FMA4 functions
+#define AV_CPU_FLAG_IWMMXT       0x0100 ///< XScale IWMMXT
 #define AV_CPU_FLAG_ALTIVEC      0x0001 ///< standard
-
-#define AV_CPU_FLAG_ARMV5TE      (1 << 0)
-#define AV_CPU_FLAG_ARMV6        (1 << 1)
-#define AV_CPU_FLAG_ARMV6T2      (1 << 2)
-#define AV_CPU_FLAG_VFP          (1 << 3)
-#define AV_CPU_FLAG_VFPV3        (1 << 4)
-#define AV_CPU_FLAG_NEON         (1 << 5)
 
 /**
  * Return the flags which specify extensions supported by the CPU.
  */
 int av_get_cpu_flags(void);
-
-/**
- * Disables cpu detection and forces the specified flags.
- * -1 is a special case that disables forcing of specific flags.
- */
-void av_force_cpu_flags(int flags);
-
-/**
- * Set a mask on flags returned by av_get_cpu_flags().
- * This function is mainly useful for testing.
- * Please use av_force_cpu_flags() and av_get_cpu_flags() instead which are more flexible
- *
- * @warning this function is not thread safe.
- */
-attribute_deprecated void av_set_cpu_flags_mask(int mask);
-
-/**
- * Parse CPU flags from a string.
- *
- * The returned flags contain the specified flags as well as related unspecified flags.
- *
- * This function exists only for compatibility with libav.
- * Please use av_parse_cpu_caps() when possible.
- * @return a combination of AV_CPU_* flags, negative on error.
- */
-int av_parse_cpu_flags(const char *s);
-
-/**
- * Parse CPU caps from a string and update the given AV_CPU_* flags based on that.
- *
- * @return negative on error.
- */
-int av_parse_cpu_caps(unsigned *flags, const char *s);
 
 /* The following CPU-specific functions shall not be called directly. */
 int ff_get_cpu_flags_arm(void);

@@ -2,20 +2,20 @@
  * Creative Voice File demuxer.
  * Copyright (c) 2006  Aurelien Jacobs <aurel@gnuage.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -38,7 +38,7 @@ static int voc_probe(AVProbeData *p)
     return AVPROBE_SCORE_MAX;
 }
 
-static int voc_read_header(AVFormatContext *s)
+static int voc_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     VocDecContext *voc = s->priv_data;
     AVIOContext *pb = s->pb;
@@ -52,7 +52,7 @@ static int voc_read_header(AVFormatContext *s)
         return AVERROR(ENOSYS);
     }
     avio_skip(pb, header_size);
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -62,7 +62,7 @@ static int voc_read_header(AVFormatContext *s)
 }
 
 int
-ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
+voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
 {
     VocDecContext *voc = s->priv_data;
     AVCodecContext *dec = st->codec;
@@ -86,13 +86,9 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
 
         switch (type) {
         case VOC_TYPE_VOICE_DATA:
-            if (!dec->sample_rate) {
-                dec->sample_rate = 1000000 / (256 - avio_r8(pb));
-                if (sample_rate)
-                    dec->sample_rate = sample_rate;
-                avpriv_set_pts_info(st, 64, 1, dec->sample_rate);
-            } else
-                avio_skip(pb, 1);
+            dec->sample_rate = 1000000 / (256 - avio_r8(pb));
+            if (sample_rate)
+                dec->sample_rate = sample_rate;
             dec->channels = channels;
             tmp_codec = avio_r8(pb);
             dec->bits_per_coded_sample = av_get_bits_per_sample(dec->codec_id);
@@ -114,11 +110,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
             break;
 
         case VOC_TYPE_NEW_VOICE_DATA:
-            if (!dec->sample_rate) {
-                dec->sample_rate = avio_rl32(pb);
-                avpriv_set_pts_info(st, 64, 1, dec->sample_rate);
-            } else
-                avio_skip(pb, 4);
+            dec->sample_rate = avio_rl32(pb);
             dec->bits_per_coded_sample = avio_r8(pb);
             dec->channels = avio_r8(pb);
             tmp_codec = avio_rl16(pb);
@@ -150,7 +142,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
         }
     }
 
-    dec->bit_rate = dec->sample_rate * dec->channels * dec->bits_per_coded_sample;
+    dec->bit_rate = dec->sample_rate * dec->bits_per_coded_sample;
 
     if (max_size <= 0)
         max_size = 2048;
@@ -161,7 +153,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
 
 static int voc_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    return ff_voc_get_packet(s, pkt, s->streams[0], 0);
+    return voc_get_packet(s, pkt, s->streams[0], 0);
 }
 
 AVInputFormat ff_voc_demuxer = {
@@ -171,5 +163,5 @@ AVInputFormat ff_voc_demuxer = {
     .read_probe     = voc_probe,
     .read_header    = voc_read_header,
     .read_packet    = voc_read_packet,
-    .codec_tag      = (const AVCodecTag* const []){ ff_voc_codec_tags, 0 },
+    .codec_tag=(const AVCodecTag* const []){ff_voc_codec_tags, 0},
 };

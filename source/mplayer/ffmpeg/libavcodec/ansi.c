@@ -2,20 +2,20 @@
  * ASCII/ANSI art decoder
  * Copyright (c) 2010 Peter Ross <pross@xvid.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -81,7 +81,6 @@ static av_cold int decode_init(AVCodecContext *avctx)
     s->fg          = DEFAULT_FG_COLOR;
     s->bg          = DEFAULT_BG_COLOR;
 
-    avcodec_get_frame_defaults(&s->frame);
     if (!avctx->width || !avctx->height)
         avcodec_set_dimensions(avctx, 80<<3, 25<<4);
 
@@ -182,8 +181,6 @@ static int execute_code(AVCodecContext * avctx, int c)
     case 'l': //reset screen mode
         if (s->nb_args < 2)
             s->args[0] = DEFAULT_SCREEN_MODE;
-        width = avctx->width;
-        height = avctx->height;
         switch(s->args[0]) {
         case 0: case 1: case 4: case 5: case 13: case 19: //320x200 (25 rows)
             s->font = ff_cga_font;

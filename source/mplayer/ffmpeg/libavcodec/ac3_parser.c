@@ -3,20 +3,20 @@
  * Copyright (c) 2003 Fabrice Bellard
  * Copyright (c) 2003 Michael Niedermayer
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -34,20 +34,8 @@ static const uint8_t eac3_blocks[4] = {
     1, 2, 3, 6
 };
 
-/**
- * Table for center mix levels
- * reference: Section 5.4.2.4 cmixlev
- */
-static const uint8_t center_levels[4] = { 4, 5, 6, 5 };
 
-/**
- * Table for surround mix levels
- * reference: Section 5.4.2.5 surmixlev
- */
-static const uint8_t surround_levels[4] = { 4, 6, 7, 6 };
-
-
-int avpriv_ac3_parse_header(GetBitContext *gbc, AC3HeaderInfo *hdr)
+int ff_ac3_parse_header(GetBitContext *gbc, AC3HeaderInfo *hdr)
 {
     int frame_size_code;
 
@@ -65,8 +53,8 @@ int avpriv_ac3_parse_header(GetBitContext *gbc, AC3HeaderInfo *hdr)
     hdr->num_blocks = 6;
 
     /* set default mix levels */
-    hdr->center_mix_level   = 5;  // -4.5dB
-    hdr->surround_mix_level = 6;  // -6.0dB
+    hdr->center_mix_level   = 1;  // -4.5dB
+    hdr->surround_mix_level = 1;  // -6.0dB
 
     if(hdr->bitstream_id <= 10) {
         /* Normal AC-3 */
@@ -88,9 +76,9 @@ int avpriv_ac3_parse_header(GetBitContext *gbc, AC3HeaderInfo *hdr)
             skip_bits(gbc, 2); // skip dsurmod
         } else {
             if((hdr->channel_mode & 1) && hdr->channel_mode != AC3_CHMODE_MONO)
-                hdr->  center_mix_level =   center_levels[get_bits(gbc, 2)];
+                hdr->center_mix_level = get_bits(gbc, 2);
             if(hdr->channel_mode & 4)
-                hdr->surround_mix_level = surround_levels[get_bits(gbc, 2)];
+                hdr->surround_mix_level = get_bits(gbc, 2);
         }
         hdr->lfe_on = get_bits1(gbc);
 
@@ -134,7 +122,7 @@ int avpriv_ac3_parse_header(GetBitContext *gbc, AC3HeaderInfo *hdr)
                         (hdr->num_blocks * 256.0));
         hdr->channels = ff_ac3_channels_tab[hdr->channel_mode] + hdr->lfe_on;
     }
-    hdr->channel_layout = avpriv_ac3_channel_layout_tab[hdr->channel_mode];
+    hdr->channel_layout = ff_ac3_channel_layout_tab[hdr->channel_mode];
     if (hdr->lfe_on)
         hdr->channel_layout |= AV_CH_LOW_FREQUENCY;
 
@@ -153,7 +141,7 @@ static int ac3_sync(uint64_t state, AACAC3ParseContext *hdr_info,
     GetBitContext gbc;
 
     init_get_bits(&gbc, tmp.u8+8-AC3_HEADER_SIZE, 54);
-    err = avpriv_ac3_parse_header(&gbc, &hdr);
+    err = ff_ac3_parse_header(&gbc, &hdr);
 
     if(err < 0)
         return 0;
@@ -186,9 +174,9 @@ static av_cold int ac3_parse_init(AVCodecParserContext *s1)
 
 
 AVCodecParser ff_ac3_parser = {
-    .codec_ids      = { CODEC_ID_AC3, CODEC_ID_EAC3 },
-    .priv_data_size = sizeof(AACAC3ParseContext),
-    .parser_init    = ac3_parse_init,
-    .parser_parse   = ff_aac_ac3_parse,
-    .parser_close   = ff_parse_close,
+    { CODEC_ID_AC3, CODEC_ID_EAC3 },
+    sizeof(AACAC3ParseContext),
+    ac3_parse_init,
+    ff_aac_ac3_parse,
+    ff_parse_close,
 };

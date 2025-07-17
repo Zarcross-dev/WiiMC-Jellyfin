@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * fileop.cpp
  * File operations
@@ -15,16 +15,9 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>
-
-#ifdef WANT_NTFS
 #include <ntfs.h>
-#endif
-
-#ifdef WANT_EXT2
-#include <ext2.h>
-#endif
-
 #include <fat.h>
+#include <ext2.h>
 #include <di/di.h>
 #include <iso9660.h>
 #include <sdcard/wiisd_io.h>
@@ -76,7 +69,6 @@ static DIR *dirHandle = NULL;
 static bool ParseDirEntries();
 int findLoadedFile = 0;
 bool selectLoadedFile = false;
-bool foundArt = false;
 
 // device thread
 static lwp_t devicethread = LWP_THREAD_NULL;
@@ -204,7 +196,7 @@ static void * devicecallback (void *arg)
 			usleep(THREAD_SLEEP);
 			devsleep -= THREAD_SLEEP;
 		}
-		
+		UpdateCheck();
 	}
 	return NULL;
 }
@@ -355,12 +347,8 @@ void StopParseThread()
 
 #define T_FAT		1
 #define T_NTFS		2
-#ifdef WANT_EXT2
 #define T_EXT2		3
 #define T_ISO9660	4
-#else
-#define T_ISO9660	3
-#endif
 
 static const char FAT_SIG[3] = {'F', 'A', 'T'};
 
@@ -471,13 +459,12 @@ static void AddPartition(sec_t sector, int device, int type, int *devnum)
 	switch(type)
 	{
 		case T_FAT:
-			if(!fatMount(mount, disc, sector, 2, 64))
+			if(!fatMount(mount, disc, sector, 2, 128))
 				return;
 			fatGetVolumeLabel(mount, part[device][*devnum].name);
 			break;
-#ifdef WANT_NTFS
 		case T_NTFS:
-			if(!ntfsMount(mount, disc, sector, 2, 64, NTFS_DEFAULT | NTFS_RECOVER))
+			if(!ntfsMount(mount, disc, sector, 2, 128, NTFS_DEFAULT | NTFS_RECOVER))
 				return;
 
 			name = (char *)ntfsGetVolumeName(mount);
@@ -487,10 +474,8 @@ static void AddPartition(sec_t sector, int device, int type, int *devnum)
 			else
 				part[device][*devnum].name[0] = 0;
 			break;
-#endif
-#ifdef WANT_EXT2
 		case T_EXT2:
-			if(!ext2Mount(mount, disc, sector, 2, 128, EXT2_FLAG_DEFAULT))
+			if(!ext2Mount(mount, disc, sector, 2, 128, EXT2_FLAG_64BITS | EXT2_FLAG_JOURNAL_DEV_OK))
 				return;
 
 			name = (char *)ext2GetVolumeName(mount);
@@ -500,7 +485,6 @@ static void AddPartition(sec_t sector, int device, int type, int *devnum)
 			else
 				part[device][*devnum].name[0] = 0;
 			break;
-#endif
 		case T_ISO9660:
 		    if (device == DEVICE_USB)
 		    {
@@ -655,7 +639,7 @@ static int FindPartitions(int device)
 												sector.ebr.partition.lba_start);
 								next_erb_lba = le32_to_cpu(
 										sector.ebr.next_ebr.lba_start);
-#ifdef WANT_EXT2
+
 								if(sector.ebr.partition.type==PARTITION_TYPE_LINUX)
 								{
 									debug_printf("Partition : type ext2/3/4 found\n");
@@ -663,9 +647,6 @@ static int FindPartitions(int device)
 								}
 								// Check if this partition has a valid NTFS boot record
 								else if (interface->readSectors(part_lba, 1, &sector))
-#else
-								if (interface->readSectors(part_lba, 1, &sector))
-#endif
 								{
 									if (sector.boot.oem_id == NTFS_OEM_ID)
 									{
@@ -703,7 +684,6 @@ static int FindPartitions(int device)
 					} while (next_erb_lba);
 					break;
 				}
-#ifdef WANT_EXT2
 				case PARTITION_TYPE_LINUX:
 				{
 					debug_printf("Partition %i: Claims to be LINUX\n", i + 1);
@@ -712,7 +692,6 @@ static int FindPartitions(int device)
 					AddPartition(part_lba, device, T_EXT2, &devnum);
 					break;
 				}
-#endif
 				// Ignore empty partitions
 				case PARTITION_TYPE_EMPTY:
 					debug_printf("Partition %i: Claims to be empty\n", i + 1);
@@ -743,13 +722,11 @@ static int FindPartitions(int device)
 							debug_printf("Partition : Valid FAT boot sector found\n");
 							AddPartition(part_lba, device, T_FAT, &devnum);
 						}
-#ifdef WANT_EXT2
 						else
 						{
 							debug_printf("Trying : ext partition\n");
 							AddPartition(part_lba, device, T_EXT2, &devnum);
 						}
-#endif
 					}
 					break;
 				}
@@ -779,13 +756,11 @@ static int FindPartitions(int device)
 					AddPartition(i, device, T_FAT, &devnum);
 					break;
 				}
-#ifdef WANT_EXT2
 				else
 				{
 					debug_printf("Trying : ext partition\n");
 					AddPartition(part_lba, device, T_EXT2, &devnum);
 				}
-#endif
 			}
 		}
 	}
@@ -805,18 +780,14 @@ static void UnmountPartitions(int device)
 				sprintf(mount, "%s:", part[device][i].mount);
 				fatUnmount(mount);
 				break;
-#ifdef WANT_NTFS
 			case T_NTFS:
 				part[device][i].type = 0;
 				ntfsUnmount(part[device][i].mount, false);
 				break;
-#endif
-#ifdef WANT_EXT2
 			case T_EXT2:
 				part[device][i].type = 0;
 				ext2Unmount(part[device][i].mount);
 				break;
-#endif
 			case T_ISO9660:
 				part[device][i].type = 0;
 				sprintf(mount, "%s:", part[device][i].mount);
@@ -838,8 +809,7 @@ static void UnmountPartitions(int device)
 void UnmountAllDevices()
 {
 	UnmountPartitions(DEVICE_SD);
-	if(appPath[0] == 'u') // avoid unmounting usb, if sd is used.
-		UnmountPartitions(DEVICE_USB);
+	UnmountPartitions(DEVICE_USB);
 }
 
 /****************************************************************************
@@ -993,16 +963,16 @@ static bool MountDVD(bool silent)
 	if(__di_check_ahbprot() != 1)
 	{
 		if(!silent)
-			ErrorPrompt("WiiMC does not have DVD access.");
+			ErrorPrompt("WiiMC does not have DVD access - AHBPROT is not enabled.");
 		return false;
 	}
 	
-	if(!DI_CheckDVDSupport())
+	/*if(!DI_CheckDVDSupport())
 	{
 		if(!silent)
 			ErrorPrompt("DVD playback is not supported on this Wii.");
 		return false;
-	}
+	}*/
 
 	SuspendDeviceThread();
 
@@ -1070,7 +1040,7 @@ bool WakeupUSB()
 	if(USBStorage_IsDVD())
 		return true;
 
-	char buf[BYTES_PER_SECTOR];
+	char buf[2048];  // 512 should be enough if USBStorage_IsDVD works
 	return usb->readSectors(0, 1, buf);
 }
 }
@@ -1379,6 +1349,7 @@ bool ChangeInterface(char * filepath, bool silent)
 
 	if(!FindDevice(filepath, &device, &devnum))
 		return false;
+
 	return ChangeInterface(device, devnum, silent);
 }
 
@@ -1444,20 +1415,14 @@ void GetExt(char *file, char *ext)
 	file_ext++;
 	int i = 0;
 
-	while(i < 6 && file_ext[i] != 0)
+	while(i < 6 && file_ext[i] != '?' && file_ext[i] != 0)
 	{
-		if(!isalnum(file_ext[i]))
-		{
-			ext[0] = 0;
-			return;
-		}
-		
 		ext[i] = file_ext[i];
 		i++;
 	}
 
 	// extension is too long
-	if(i == 6 && file_ext[i] != 0)
+	if(i == 6 && file_ext[i] != '?' && file_ext[i] != 0)
 	{
 		ext[0] = 0;
 		return;
@@ -1561,6 +1526,8 @@ bool IsAllowedExt(char *ext)
 		if(IsVideoExt(ext)) return true;
 	if(menuCurrent == MENU_BROWSE_MUSIC || menuCurrent == MENU_BROWSE_ONLINEMEDIA)
 		if(IsAudioExt(ext)) return true;
+	if(menuCurrent == MENU_BROWSE_PICTURES)
+		if(IsImageExt(ext)) return true;
 
 	return false;
 }
@@ -1648,9 +1615,7 @@ void FindDirectory()
 
 void FindFile()
 {
-	// browser.dir[0] == 0 is causing a glitch preventing the selector to update correctly,
-	// only affects online media section. So, I'm adding an exception here.
-	if(loadedFile[0] == 0 || (browser.dir[0] == 0 && menuCurrent != MENU_BROWSE_ONLINEMEDIA) || (menuCurrent != MENU_BROWSE_VIDEOS && menuCurrent != MENU_BROWSE_MUSIC && menuCurrent != MENU_BROWSE_ONLINEMEDIA))
+	if(loadedFile[0] == 0 || browser.dir[0] == 0 || (menuCurrent != MENU_BROWSE_VIDEOS && menuCurrent != MENU_BROWSE_MUSIC && menuCurrent != MENU_BROWSE_ONLINEMEDIA))
 	{
 		findLoadedFile = 0;
 		return;
@@ -1676,12 +1641,9 @@ void FindFile()
 	if(indexFound > 0)
 	{
 		entry->icon = ICON_PLAY;
-		foundArt = true;
 
 		if(!selectLoadedFile) // only move to the file when first returning from the video
 			return;
-		//else if(selectLoadedFile && findLoadedFile != 3 && menuCurrent == MENU_BROWSE_ONLINEMEDIA)
-			//return;
 
 		int pagesize = 11;
 
@@ -1701,11 +1663,9 @@ void FindFile()
 				newIndex = 0;
 
 			browser.pageIndex = newIndex;
-		} else
-			browser.pageIndex = 0; // fixes music going back.
+		}
 		browser.selIndex = entry;
 		findLoadedFile = 2;
-		foundArt = true;
 	}
 	selectLoadedFile = false; // only try to select loaded file once
 }
@@ -1717,31 +1677,6 @@ bool ParseDone()
 
 	return false;
 }
-
-int ParseJPEG()
-{
-	// Count how many JPEG files are found in the banner folder
-	u32 count = 0;
-	DIR *dir;
-	struct dirent *entry = NULL;
-	dir = opendir(WiiSettings.bannerFolder);
-	if (dir != NULL) {
-		while ((entry = readdir(dir)))
-		{
-			size_t length = strlen(entry->d_name);
-			if (length > 4 && stricmp(entry->d_name+length-4, ".JPG") == 0)
-			{
-				count++;
-				if(count > 9000)
-					break;
-			}
-		}
-	}
-	return count;
-}
-
-//int tesy_num = 0;
-//char tesy_cha[50] = { 0 };
 
 static bool ParseDirEntries()
 {
@@ -1762,40 +1697,57 @@ static bool ParseDirEntries()
 		if(entry == NULL)
 			break;
 
-		if(strcmp(entry->d_name, "..") == 0 || entry->d_name[0] == '.' || entry->d_name[0] == '$')
+		if(strcmp(entry->d_name, "..") == 0)
 		{
-			continue;
-		}
-		
-		#ifdef _DIRENT_HAVE_D_TYPE
-		if(entry->d_type==DT_DIR)
-			filestat.st_mode = S_IFDIR;
-		else
-			filestat.st_mode = S_IFREG;
-
-		#endif
-
-		// skip this file if it's not an allowed extension 
-		if(!S_ISDIR(filestat.st_mode))
-		{
-			GetExt(entry->d_name, ext);
-
-			if(menuCurrent == MENU_BROWSE_VIDEOS && IsSubtitleExt(ext))
-			{
-				BROWSERENTRY *s_entry = AddEntrySubs();
-				if(s_entry)
-					s_entry->file = mem2_strdup(entry->d_name, MEM2_BROWSER);
-				if(!s_entry->file) // no mem
-				{
-					DeleteEntrySubs(s_entry);						
-					InfoPrompt("Warning", "This directory contains more entries than the maximum allowed. Not all entries will be visible.");
-					entry = NULL;
-					break;						
-				}	
-			}
-
-			if(!IsAllowedExt(ext) && (!IsPlaylistExt(ext)))
+			if(IsDeviceRoot(browser.dir))
 				continue;
+
+			filestat.st_mode = _IFDIR;
+		}
+		else
+		{
+			if(entry->d_name[0] == '.' || entry->d_name[0] == '$')
+				continue;
+
+			#ifdef _DIRENT_HAVE_D_TYPE
+			if(entry->d_type==DT_DIR)
+				filestat.st_mode = S_IFDIR;
+			else
+				filestat.st_mode = S_IFREG;
+
+			if(menuCurrent == MENU_BROWSE_PICTURES)
+			{
+			#endif
+				snprintf(path, MAXPATHLEN, "%s%s", browser.dir, entry->d_name);
+	
+				if(stat(path, &filestat) < 0)
+					continue;
+			#ifdef _DIRENT_HAVE_D_TYPE
+			}
+			#endif
+
+			// skip this file if it's not an allowed extension 
+			if(!S_ISDIR(filestat.st_mode))
+			{
+				GetExt(entry->d_name, ext);
+
+				if(menuCurrent == MENU_BROWSE_VIDEOS && IsSubtitleExt(ext))
+				{
+					BROWSERENTRY *s_entry = AddEntrySubs();
+					if(s_entry)
+						s_entry->file = mem2_strdup(entry->d_name, MEM2_BROWSER);
+					if(!s_entry->file) // no mem
+					{
+						DeleteEntrySubs(s_entry);						
+						InfoPrompt("Warning", "This directory contains more entries than the maximum allowed. Not all entries will be visible.");
+						entry = NULL;
+						break;						
+					}	
+				}
+
+				if(!IsAllowedExt(ext) && (!IsPlaylistExt(ext) || menuCurrent == MENU_BROWSE_PICTURES))
+					continue;
+			}
 		}
 
 		// add the entry
@@ -1810,33 +1762,12 @@ static bool ParseDirEntries()
 			}
 			f_entry->length = filestat.st_size;
 
-			/* Video mode thumbnails */
-			if(f_entry && WiiSettings.artwork && (menuCurrent == MENU_BROWSE_VIDEOS || menuCurrent == MENU_BROWSE_MUSIC)) {
-				GetFullPath(f_entry, entry->d_name);
-			//	sprintf(art_disp, entry->d_name); // Copy display name
-			//	GetDisplay(f_entry, art_disp, 256);
-				/* Remove the extension. */
-				StripExt(entry->d_name);
-				//NOTE: A folder will be assumed to have an extension if a period is detected.
-				//An exception could be made, but more stuff in menu.cpp would need to be changed
-				//so for now it's best to adjust folder names to avoid this issue.
-
-				/* Add .thumb extension */
-				strcat(entry->d_name, ".jpg");
-
-				f_entry->xml = mem2_strdup(entry->d_name, MEM2_BROWSER);
-				f_entry->image = mem2_strdup(entry->d_name, MEM2_BROWSER);
-				//memset(locate_paths,0,strlen(locate_paths));
-				//memset(actual_path,0,strlen(actual_path));
-				//memset(art_disp,0,strlen(art_disp));
-			}
-
 			if(S_ISDIR(filestat.st_mode)) 
 			{
 				f_entry->type = TYPE_FOLDER;
 
 				if(strcmp(entry->d_name, "..") == 0)
-					sprintf(tmp, "%s (%s)", gettext(" .."), GetParentDir());
+					sprintf(tmp, "%s (%s)", gettext("Up One Level"), GetParentDir());
 				else
 					snprintf(tmp, MAXJOLIET, "%s", f_entry->file);
 
@@ -1885,7 +1816,7 @@ nomemParseDirEntries:
 
 	// Sort the file list
 	if(i > 0)
-		SortBrowser(&browser, FileSortCallback);
+		SortBrower(&browser, FileSortCallback);
 
 	if(entry == NULL || parseHalt)
 	{
@@ -1969,29 +1900,30 @@ ParseDirectory(bool waitParse)
 	if(dirHandle == NULL)
 		return -1;
 
-	// add Up One Level
-	BROWSERENTRY *f_entry = AddEntryFiles();
-	
-	if(!f_entry)
-		return 0;
+	if(IsDeviceRoot(browser.dir))
+	{
+		BROWSERENTRY *f_entry = AddEntryFiles();
+		
+		if(!f_entry)
+			return 0;
 
-	f_entry->file = mem2_strdup("..", MEM2_BROWSER);
-	if(!f_entry->file) // no mem
-	{
-		DeleteEntryFiles(f_entry);
-		return 0;
+		f_entry->file = mem2_strdup("..", MEM2_BROWSER);
+		if(!f_entry->file) // no mem
+		{
+			DeleteEntryFiles(f_entry);
+			return 0;
+		}
+		f_entry->display = mem2_strdup(gettext("Up One Level"), MEM2_BROWSER);
+		if(!f_entry->display) // no mem
+		{
+			DeleteEntryFiles(f_entry);
+			return 0;
+		}
+		f_entry->length = 0;
+		f_entry->type = TYPE_FOLDER; // flag this as a dir
+		f_entry->icon = ICON_FOLDER;
 	}
-	f_entry->display = mem2_strdup(gettext(" .."), MEM2_BROWSER);
-	if(!f_entry->display) // no mem
-	{
-		DeleteEntryFiles(f_entry);
-		return 0;
-	}
-	f_entry->length = 0;
-	f_entry->type = TYPE_FOLDER; // flag this as a dir
-	f_entry->icon = ICON_FOLDER;
-	
-	// start parsing
+
 	parseHalt = 0;
 	findLoadedFile = 1;
 	ParseDirEntries(); // index first 20 entries
@@ -2002,6 +1934,24 @@ ParseDirectory(bool waitParse)
 		ShowAction("Loading...");
 		while(!LWP_ThreadIsSuspended(parsethread)) usleep(THREAD_SLEEP);
 		CancelAction();
+
+		if(menuCurrent == MENU_BROWSE_PICTURES)
+		{
+			// check if any pictures were > max size and display a warning
+			
+			BROWSERENTRY *i;
+			i = browser.first;
+			while(i)
+			{
+				if(i->type == TYPE_FILE && i->length > MAX_PICTURE_SIZE)
+				{
+					InfoPrompt("Warning", "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable.");
+					break;
+				}
+				
+				i=i->next;
+			}
+		}
 	}
 
 	return browser.numEntries;
@@ -2013,14 +1963,10 @@ typedef struct
 	char name[MAXJOLIET + 1];
 	char url[MAXPATHLEN + 1];
 	char thumb[MAXJOLIET + 1];
-	char xml[MAXJOLIET + 1];
-	char tunein[MAXJOLIET + 1];
 	char processor[MAXPATHLEN + 1];
 } PLXENTRY;
 
 #define MAX_PLX_SIZE (512*1024)
-
-int find_iss = 0;
 
 static int ParsePLXPlaylist()
 {
@@ -2036,7 +1982,7 @@ static int ParsePLXPlaylist()
 		size = http_request(browser.dir, NULL, buffer, MAX_PLX_SIZE, SILENT);
 	else
 		size = LoadFile(buffer, MAX_PLX_SIZE, browser.dir, SILENT);
-	
+
 	if(size == 0)
 	{
 		mem2_free(buffer, MEM2_OTHER);
@@ -2071,6 +2017,7 @@ static int ParsePLXPlaylist()
 			}
 			c++;
 		}
+
 		// line too long or we've run out of new lines
 		if(c == 4096 || lineptr+c > size) 
 			break; // discard anything remaining
@@ -2130,14 +2077,6 @@ static int ParsePLXPlaylist()
 			{
 				snprintf(newEntry.thumb, MAXJOLIET, "%s", value);
 			}
-			else if(strncmp(attribute, "xml", 3) == 0)
-			{
-				snprintf(newEntry.xml, MAXJOLIET, "%s", value);
-			}
-			else if(strncmp(attribute, "tunein", 3) == 0)
-			{
-				snprintf(newEntry.tunein, MAXJOLIET, "%s", value);
-			}
 			else if(strncmp(attribute, "processor", 9) == 0)
 			{
 				snprintf(newEntry.processor, MAXPATHLEN, "%s", value);
@@ -2188,7 +2127,7 @@ static int ParsePLXPlaylist()
 		mem2_free(buffer, MEM2_OTHER);
 		return -1;
 	}	
-	f_entry->display = mem2_strdup(gettext(" .."), MEM2_BROWSER);
+	f_entry->display = mem2_strdup(gettext("Up One Level"), MEM2_BROWSER);
 	if(!f_entry->display) // no mem
 	{
 		DeleteEntryFiles(f_entry);
@@ -2249,31 +2188,7 @@ static int ParsePLXPlaylist()
 				return -1;
 			}
 		}	
-
-		if(list[i].xml)
-		{
-			f_entry->xml = mem2_strdup(list[i].xml, MEM2_BROWSER);
-			if(!f_entry->xml) // no mem
-			{
-				DeleteEntryFiles(f_entry);
-				free(list);
-				mem2_free(buffer, MEM2_OTHER);
-				return -1;
-			}
-		}
 		
-		if(list[i].tunein)
-		{
-			f_entry->tunein = mem2_strdup(list[i].tunein, MEM2_BROWSER);
-			if(!f_entry->tunein) // no mem
-			{
-				DeleteEntryFiles(f_entry);
-				free(list);
-				mem2_free(buffer, MEM2_OTHER);
-				return -1;
-			}
-		}
-
 		if(list[i].type == 2)
 			f_entry->type = TYPE_PLAYLIST;
 		else if(list[i].type == 3)
@@ -2412,7 +2327,7 @@ int ParsePlaylistFile()
 				f_entry->type = TYPE_FOLDER;
 			}
 
-			f_entry->display = mem2_strdup(gettext(" .."), MEM2_BROWSER);
+			f_entry->display = mem2_strdup(gettext("Up One Level"), MEM2_BROWSER);
 			if(!f_entry->display) // no mem
 			{
 				DeleteEntryFiles(f_entry);
@@ -2453,10 +2368,6 @@ nomemParsePlaylistFile:
 					DeleteEntryFiles(f_entry);
 					goto nomemParsePlaylistFile;
 				}
-				/* M3U thumbnails */
-				//printf("thumb title: %s", i->params[n].image);
-				f_entry->image = mem2_strdup(i->params[n].image, MEM2_BROWSER);
-			//	f_entry->xml = mem2_strdup("sd1:/apps/wiimc/The Road to El Dorado.xml", MEM2_BROWSER);
 				break;
 			}
 		}
@@ -2541,7 +2452,7 @@ int ParseOnlineMedia()
 			DeleteEntryFiles(f_entry);
 			return 0;
 		}
-		f_entry->display = mem2_strdup(gettext(" .."), MEM2_BROWSER);
+		f_entry->display = mem2_strdup(gettext("Up One Level"), MEM2_BROWSER);
 		if(!f_entry->display) // no mem
 		{
 			DeleteEntryFiles(f_entry);
@@ -2612,16 +2523,6 @@ int ParseOnlineMedia()
 					break;
 				}
 			}
-			// For dynamic artwork from tunein
-			if(om_entry->tunein)
-			{
-			f_entry->tunein = mem2_strdup(om_entry->tunein, MEM2_BROWSER);
-				if(f_entry->tunein == NULL) //no mem
-				{
-					DeleteEntryFiles(f_entry);
-					break;
-				}
-			}
 			f_entry->length = 0;
 			f_entry->type = om_entry->type;
 			f_entry->icon = ICON_NONE;
@@ -2676,7 +2577,7 @@ int ParseOnlineMedia()
 	}
 
 	// Sort the file list
-	SortBrowser(&browser, FileSortCallback);
+	SortBrower(&browser, FileSortCallback);
 
 	if(browser.lastdir[0] != 0)
 		FindDirectory(); // try to find and select the last directory
@@ -2817,6 +2718,7 @@ size_t SaveFile (char * buffer, char *filepath, size_t datasize, bool silent)
 			retry = ErrorPromptRetry("Error creating file!");
 			continue;
 		}
+
 		while(written < datasize)
 		{
 			if(datasize - written > 4096) nextwrite=4096;

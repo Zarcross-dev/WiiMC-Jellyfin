@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2001 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -85,19 +85,14 @@
 
 #endif
 
-static inline void FUNC(idctRowCondDC)(DCTELEM *row, int extra_shift)
+static inline void FUNC(idctRowCondDC)(DCTELEM *row)
 {
     int a0, a1, a2, a3, b0, b1, b2, b3;
 
 #if HAVE_FAST_64BIT
 #define ROW0_MASK (0xffffLL << 48 * HAVE_BIGENDIAN)
     if (((((uint64_t *)row)[0] & ~ROW0_MASK) | ((uint64_t *)row)[1]) == 0) {
-        uint64_t temp;
-        if (DC_SHIFT - extra_shift > 0) {
-            temp = (row[0] << (DC_SHIFT - extra_shift)) & 0xffff;
-        } else {
-            temp = (row[0] >> (extra_shift - DC_SHIFT)) & 0xffff;
-        }
+        uint64_t temp = (row[0] << DC_SHIFT) & 0xffff;
         temp += temp << 16;
         temp += temp << 32;
         ((uint64_t *)row)[0] = temp;
@@ -109,12 +104,7 @@ static inline void FUNC(idctRowCondDC)(DCTELEM *row, int extra_shift)
           ((uint32_t*)row)[2] |
           ((uint32_t*)row)[3] |
           row[1])) {
-        uint32_t temp;
-        if (DC_SHIFT - extra_shift > 0) {
-            temp = (row[0] << (DC_SHIFT - extra_shift)) & 0xffff;
-        } else {
-            temp = (row[0] >> (extra_shift - DC_SHIFT)) & 0xffff;
-        }
+        uint32_t temp = (row[0] << DC_SHIFT) & 0xffff;
         temp += temp << 16;
         ((uint32_t*)row)[0]=((uint32_t*)row)[1] =
             ((uint32_t*)row)[2]=((uint32_t*)row)[3] = temp;
@@ -160,14 +150,14 @@ static inline void FUNC(idctRowCondDC)(DCTELEM *row, int extra_shift)
         MAC(b3, -W1, row[7]);
     }
 
-    row[0] = (a0 + b0) >> (ROW_SHIFT + extra_shift);
-    row[7] = (a0 - b0) >> (ROW_SHIFT + extra_shift);
-    row[1] = (a1 + b1) >> (ROW_SHIFT + extra_shift);
-    row[6] = (a1 - b1) >> (ROW_SHIFT + extra_shift);
-    row[2] = (a2 + b2) >> (ROW_SHIFT + extra_shift);
-    row[5] = (a2 - b2) >> (ROW_SHIFT + extra_shift);
-    row[3] = (a3 + b3) >> (ROW_SHIFT + extra_shift);
-    row[4] = (a3 - b3) >> (ROW_SHIFT + extra_shift);
+    row[0] = (a0 + b0) >> ROW_SHIFT;
+    row[7] = (a0 - b0) >> ROW_SHIFT;
+    row[1] = (a1 + b1) >> ROW_SHIFT;
+    row[6] = (a1 - b1) >> ROW_SHIFT;
+    row[2] = (a2 + b2) >> ROW_SHIFT;
+    row[5] = (a2 - b2) >> ROW_SHIFT;
+    row[3] = (a3 + b3) >> ROW_SHIFT;
+    row[4] = (a3 - b3) >> ROW_SHIFT;
 }
 
 #define IDCT_COLS do {                                  \
@@ -224,48 +214,50 @@ static inline void FUNC(idctSparseColPut)(pixel *dest, int line_size,
                                           DCTELEM *col)
 {
     int a0, a1, a2, a3, b0, b1, b2, b3;
+    INIT_CLIP;
 
     IDCT_COLS;
 
-    dest[0] = av_clip_pixel((a0 + b0) >> COL_SHIFT);
+    dest[0] = CLIP((a0 + b0) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a1 + b1) >> COL_SHIFT);
+    dest[0] = CLIP((a1 + b1) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a2 + b2) >> COL_SHIFT);
+    dest[0] = CLIP((a2 + b2) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a3 + b3) >> COL_SHIFT);
+    dest[0] = CLIP((a3 + b3) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a3 - b3) >> COL_SHIFT);
+    dest[0] = CLIP((a3 - b3) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a2 - b2) >> COL_SHIFT);
+    dest[0] = CLIP((a2 - b2) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a1 - b1) >> COL_SHIFT);
+    dest[0] = CLIP((a1 - b1) >> COL_SHIFT);
     dest += line_size;
-    dest[0] = av_clip_pixel((a0 - b0) >> COL_SHIFT);
+    dest[0] = CLIP((a0 - b0) >> COL_SHIFT);
 }
 
 static inline void FUNC(idctSparseColAdd)(pixel *dest, int line_size,
                                           DCTELEM *col)
 {
     int a0, a1, a2, a3, b0, b1, b2, b3;
+    INIT_CLIP;
 
     IDCT_COLS;
 
-    dest[0] = av_clip_pixel(dest[0] + ((a0 + b0) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a0 + b0) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a1 + b1) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a1 + b1) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a2 + b2) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a2 + b2) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a3 + b3) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a3 + b3) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a3 - b3) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a3 - b3) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a2 - b2) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a2 - b2) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a1 - b1) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a1 - b1) >> COL_SHIFT));
     dest += line_size;
-    dest[0] = av_clip_pixel(dest[0] + ((a0 - b0) >> COL_SHIFT));
+    dest[0] = CLIP(dest[0] + ((a0 - b0) >> COL_SHIFT));
 }
 
 static inline void FUNC(idctSparseCol)(DCTELEM *col)
@@ -292,7 +284,7 @@ void FUNC(ff_simple_idct_put)(uint8_t *dest_, int line_size, DCTELEM *block)
     line_size /= sizeof(pixel);
 
     for (i = 0; i < 8; i++)
-        FUNC(idctRowCondDC)(block + i*8, 0);
+        FUNC(idctRowCondDC)(block + i*8);
 
     for (i = 0; i < 8; i++)
         FUNC(idctSparseColPut)(dest + i, line_size, block + i);
@@ -306,7 +298,7 @@ void FUNC(ff_simple_idct_add)(uint8_t *dest_, int line_size, DCTELEM *block)
     line_size /= sizeof(pixel);
 
     for (i = 0; i < 8; i++)
-        FUNC(idctRowCondDC)(block + i*8, 0);
+        FUNC(idctRowCondDC)(block + i*8);
 
     for (i = 0; i < 8; i++)
         FUNC(idctSparseColAdd)(dest + i, line_size, block + i);
@@ -317,7 +309,7 @@ void FUNC(ff_simple_idct)(DCTELEM *block)
     int i;
 
     for (i = 0; i < 8; i++)
-        FUNC(idctRowCondDC)(block + i*8, 0);
+        FUNC(idctRowCondDC)(block + i*8);
 
     for (i = 0; i < 8; i++)
         FUNC(idctSparseCol)(block + i);

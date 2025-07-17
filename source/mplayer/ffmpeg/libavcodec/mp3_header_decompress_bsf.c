@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -50,10 +50,10 @@ static int mp3_header_decompress(AVBitStreamFilterContext *bsfc, AVCodecContext 
     lsf     = sample_rate < (24000+32000)/2;
     mpeg25  = sample_rate < (12000+16000)/2;
     sample_rate_index= (header>>10)&3;
-    sample_rate= avpriv_mpa_freq_tab[sample_rate_index] >> (lsf + mpeg25); //in case sample rate is a little off
+    sample_rate= ff_mpa_freq_tab[sample_rate_index] >> (lsf + mpeg25); //in case sample rate is a little off
 
     for(bitrate_index=2; bitrate_index<30; bitrate_index++){
-        frame_size = avpriv_mpa_bitrate_tab[lsf][2][bitrate_index>>1];
+        frame_size = ff_mpa_bitrate_tab[lsf][2][bitrate_index>>1];
         frame_size = (frame_size * 144000) / (sample_rate << lsf) + (bitrate_index&1);
         if(frame_size == buf_size + 4)
             break;

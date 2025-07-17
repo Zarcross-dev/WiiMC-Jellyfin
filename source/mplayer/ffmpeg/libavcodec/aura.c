@@ -1,20 +1,20 @@
 /*
  * Aura 2 decoder
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -39,7 +39,6 @@ static av_cold int aura_decode_init(AVCodecContext *avctx)
     if (avctx->width & 0x3)
         return -1;
     avctx->pix_fmt = PIX_FMT_YUV422P;
-    avcodec_get_frame_defaults(&s->frame);
 
     return 0;
 }
@@ -132,5 +131,6 @@ AVCodec ff_aura2_decoder = {
     .close          = aura_decode_end,
     .decode         = aura_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Auravision Aura 2"),
+    .long_name = NULL_IF_CONFIG_SMALL("Auravision Aura 2"),
 };
+

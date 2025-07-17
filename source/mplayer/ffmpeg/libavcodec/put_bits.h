@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2004 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -33,7 +33,6 @@
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
-#include "libavutil/avassert.h"
 #include "mathops.h"
 #include "config.h"
 
@@ -79,8 +78,7 @@ static inline int put_bits_count(PutBitContext *s)
 static inline void flush_put_bits(PutBitContext *s)
 {
 #ifndef BITSTREAM_WRITER_LE
-    if (s->bit_left < 32)
-        s->bit_buf<<= s->bit_left;
+    s->bit_buf<<= s->bit_left;
 #endif
     while (s->bit_left < 32) {
         /* XXX: should test end of buffer */
@@ -98,14 +96,14 @@ static inline void flush_put_bits(PutBitContext *s)
 }
 
 #ifdef BITSTREAM_WRITER_LE
-#define avpriv_align_put_bits align_put_bits_unsupported_here
+#define align_put_bits align_put_bits_unsupported_here
 #define ff_put_string ff_put_string_unsupported_here
-#define avpriv_copy_bits avpriv_copy_bits_unsupported_here
+#define ff_copy_bits ff_copy_bits_unsupported_here
 #else
 /**
  * Pad the bitstream with zeros up to the next byte boundary.
  */
-void avpriv_align_put_bits(PutBitContext *s);
+void align_put_bits(PutBitContext *s);
 
 /**
  * Put the string string in the bitstream.
@@ -119,7 +117,7 @@ void ff_put_string(PutBitContext *pb, const char *string, int terminate_string);
  *
  * @param length the number of bits of src to copy
  */
-void avpriv_copy_bits(PutBitContext *pb, const uint8_t *src, int length);
+void ff_copy_bits(PutBitContext *pb, const uint8_t *src, int length);
 #endif
 
 /**
@@ -132,7 +130,7 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
     int bit_left;
 
     //    printf("put_bits=%d %x\n", n, value);
-    av_assert2(n <= 31 && value < (1U << n));
+    assert(n <= 31 && value < (1U << n));
 
     bit_buf = s->bit_buf;
     bit_left = s->bit_left;
@@ -142,7 +140,6 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
 #ifdef BITSTREAM_WRITER_LE
     bit_buf |= value << (32 - bit_left);
     if (n >= bit_left) {
-        av_assert2(s->buf_ptr+3<s->buf_end);
         AV_WL32(s->buf_ptr, bit_buf);
         s->buf_ptr+=4;
         bit_buf = (bit_left==32)?0:value >> bit_left;
@@ -156,7 +153,6 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
     } else {
         bit_buf<<=bit_left;
         bit_buf |= value >> (n - bit_left);
-        av_assert2(s->buf_ptr+3<s->buf_end);
         AV_WB32(s->buf_ptr, bit_buf);
         //printf("bitbuf = %08x\n", bit_buf);
         s->buf_ptr+=4;

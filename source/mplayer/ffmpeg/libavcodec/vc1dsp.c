@@ -2,20 +2,20 @@
  * VC-1 and WMV3 decoder - DSP functions
  * Copyright (c) 2006 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -139,6 +139,8 @@ static void vc1_h_s_overlap_c(DCTELEM *left, DCTELEM *right)
  * @see 8.6
  */
 static av_always_inline int vc1_filter_line(uint8_t* src, int stride, int pq){
+    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
+
     int a0 = (2*(src[-2*stride] - src[ 1*stride]) - 5*(src[-1*stride] - src[ 0*stride]) + 4) >> 3;
     int a0_sign = a0 >> 31;        /* Store sign */
     a0 = (a0 ^ a0_sign) - a0_sign; /* a0 = FFABS(a0); */
@@ -161,8 +163,8 @@ static av_always_inline int vc1_filter_line(uint8_t* src, int stride, int pq){
                 else{
                     d = FFMIN(d, clip);
                     d = (d ^ d_sign) - d_sign;          /* Restore sign */
-                    src[-1*stride] = av_clip_uint8(src[-1*stride] - d);
-                    src[ 0*stride] = av_clip_uint8(src[ 0*stride] + d);
+                    src[-1*stride] = cm[src[-1*stride] - d];
+                    src[ 0*stride] = cm[src[ 0*stride] + d];
                 }
                 return 1;
             }
@@ -232,17 +234,19 @@ static void vc1_inv_trans_8x8_dc_c(uint8_t *dest, int linesize, DCTELEM *block)
 {
     int i;
     int dc = block[0];
+    const uint8_t *cm;
     dc = (3 * dc +  1) >> 1;
     dc = (3 * dc + 16) >> 5;
+    cm = ff_cropTbl + MAX_NEG_CROP + dc;
     for(i = 0; i < 8; i++){
-        dest[0] = av_clip_uint8(dest[0] + dc);
-        dest[1] = av_clip_uint8(dest[1] + dc);
-        dest[2] = av_clip_uint8(dest[2] + dc);
-        dest[3] = av_clip_uint8(dest[3] + dc);
-        dest[4] = av_clip_uint8(dest[4] + dc);
-        dest[5] = av_clip_uint8(dest[5] + dc);
-        dest[6] = av_clip_uint8(dest[6] + dc);
-        dest[7] = av_clip_uint8(dest[7] + dc);
+        dest[0] = cm[dest[0]];
+        dest[1] = cm[dest[1]];
+        dest[2] = cm[dest[2]];
+        dest[3] = cm[dest[3]];
+        dest[4] = cm[dest[4]];
+        dest[5] = cm[dest[5]];
+        dest[6] = cm[dest[6]];
+        dest[7] = cm[dest[7]];
         dest += linesize;
     }
 }
@@ -322,17 +326,19 @@ static void vc1_inv_trans_8x4_dc_c(uint8_t *dest, int linesize, DCTELEM *block)
 {
     int i;
     int dc = block[0];
+    const uint8_t *cm;
     dc = ( 3 * dc +  1) >> 1;
     dc = (17 * dc + 64) >> 7;
+    cm = ff_cropTbl + MAX_NEG_CROP + dc;
     for(i = 0; i < 4; i++){
-        dest[0] = av_clip_uint8(dest[0] + dc);
-        dest[1] = av_clip_uint8(dest[1] + dc);
-        dest[2] = av_clip_uint8(dest[2] + dc);
-        dest[3] = av_clip_uint8(dest[3] + dc);
-        dest[4] = av_clip_uint8(dest[4] + dc);
-        dest[5] = av_clip_uint8(dest[5] + dc);
-        dest[6] = av_clip_uint8(dest[6] + dc);
-        dest[7] = av_clip_uint8(dest[7] + dc);
+        dest[0] = cm[dest[0]];
+        dest[1] = cm[dest[1]];
+        dest[2] = cm[dest[2]];
+        dest[3] = cm[dest[3]];
+        dest[4] = cm[dest[4]];
+        dest[5] = cm[dest[5]];
+        dest[6] = cm[dest[6]];
+        dest[7] = cm[dest[7]];
         dest += linesize;
     }
 }
@@ -342,6 +348,7 @@ static void vc1_inv_trans_8x4_c(uint8_t *dest, int linesize, DCTELEM *block)
     int i;
     register int t1,t2,t3,t4,t5,t6,t7,t8;
     DCTELEM *src, *dst;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
 
     src = block;
     dst = block;
@@ -381,10 +388,10 @@ static void vc1_inv_trans_8x4_c(uint8_t *dest, int linesize, DCTELEM *block)
         t3 = 22 * src[ 8] + 10 * src[24];
         t4 = 22 * src[24] - 10 * src[ 8];
 
-        dest[0*linesize] = av_clip_uint8(dest[0*linesize] + ((t1 + t3) >> 7));
-        dest[1*linesize] = av_clip_uint8(dest[1*linesize] + ((t2 - t4) >> 7));
-        dest[2*linesize] = av_clip_uint8(dest[2*linesize] + ((t2 + t4) >> 7));
-        dest[3*linesize] = av_clip_uint8(dest[3*linesize] + ((t1 - t3) >> 7));
+        dest[0*linesize] = cm[dest[0*linesize] + ((t1 + t3) >> 7)];
+        dest[1*linesize] = cm[dest[1*linesize] + ((t2 - t4) >> 7)];
+        dest[2*linesize] = cm[dest[2*linesize] + ((t2 + t4) >> 7)];
+        dest[3*linesize] = cm[dest[3*linesize] + ((t1 - t3) >> 7)];
 
         src ++;
         dest++;
@@ -397,13 +404,15 @@ static void vc1_inv_trans_4x8_dc_c(uint8_t *dest, int linesize, DCTELEM *block)
 {
     int i;
     int dc = block[0];
+    const uint8_t *cm;
     dc = (17 * dc +  4) >> 3;
     dc = (12 * dc + 64) >> 7;
+    cm = ff_cropTbl + MAX_NEG_CROP + dc;
     for(i = 0; i < 8; i++){
-        dest[0] = av_clip_uint8(dest[0] + dc);
-        dest[1] = av_clip_uint8(dest[1] + dc);
-        dest[2] = av_clip_uint8(dest[2] + dc);
-        dest[3] = av_clip_uint8(dest[3] + dc);
+        dest[0] = cm[dest[0]];
+        dest[1] = cm[dest[1]];
+        dest[2] = cm[dest[2]];
+        dest[3] = cm[dest[3]];
         dest += linesize;
     }
 }
@@ -413,6 +422,7 @@ static void vc1_inv_trans_4x8_c(uint8_t *dest, int linesize, DCTELEM *block)
     int i;
     register int t1,t2,t3,t4,t5,t6,t7,t8;
     DCTELEM *src, *dst;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
 
     src = block;
     dst = block;
@@ -448,14 +458,14 @@ static void vc1_inv_trans_4x8_c(uint8_t *dest, int linesize, DCTELEM *block)
         t3 =  9 * src[ 8] - 16 * src[24] +  4 * src[40] + 15 * src[56];
         t4 =  4 * src[ 8] -  9 * src[24] + 15 * src[40] - 16 * src[56];
 
-        dest[0*linesize] = av_clip_uint8(dest[0*linesize] + ((t5 + t1) >> 7));
-        dest[1*linesize] = av_clip_uint8(dest[1*linesize] + ((t6 + t2) >> 7));
-        dest[2*linesize] = av_clip_uint8(dest[2*linesize] + ((t7 + t3) >> 7));
-        dest[3*linesize] = av_clip_uint8(dest[3*linesize] + ((t8 + t4) >> 7));
-        dest[4*linesize] = av_clip_uint8(dest[4*linesize] + ((t8 - t4 + 1) >> 7));
-        dest[5*linesize] = av_clip_uint8(dest[5*linesize] + ((t7 - t3 + 1) >> 7));
-        dest[6*linesize] = av_clip_uint8(dest[6*linesize] + ((t6 - t2 + 1) >> 7));
-        dest[7*linesize] = av_clip_uint8(dest[7*linesize] + ((t5 - t1 + 1) >> 7));
+        dest[0*linesize] = cm[dest[0*linesize] + ((t5 + t1) >> 7)];
+        dest[1*linesize] = cm[dest[1*linesize] + ((t6 + t2) >> 7)];
+        dest[2*linesize] = cm[dest[2*linesize] + ((t7 + t3) >> 7)];
+        dest[3*linesize] = cm[dest[3*linesize] + ((t8 + t4) >> 7)];
+        dest[4*linesize] = cm[dest[4*linesize] + ((t8 - t4 + 1) >> 7)];
+        dest[5*linesize] = cm[dest[5*linesize] + ((t7 - t3 + 1) >> 7)];
+        dest[6*linesize] = cm[dest[6*linesize] + ((t6 - t2 + 1) >> 7)];
+        dest[7*linesize] = cm[dest[7*linesize] + ((t5 - t1 + 1) >> 7)];
 
         src ++;
         dest++;
@@ -468,13 +478,15 @@ static void vc1_inv_trans_4x4_dc_c(uint8_t *dest, int linesize, DCTELEM *block)
 {
     int i;
     int dc = block[0];
+    const uint8_t *cm;
     dc = (17 * dc +  4) >> 3;
     dc = (17 * dc + 64) >> 7;
+    cm = ff_cropTbl + MAX_NEG_CROP + dc;
     for(i = 0; i < 4; i++){
-        dest[0] = av_clip_uint8(dest[0] + dc);
-        dest[1] = av_clip_uint8(dest[1] + dc);
-        dest[2] = av_clip_uint8(dest[2] + dc);
-        dest[3] = av_clip_uint8(dest[3] + dc);
+        dest[0] = cm[dest[0]];
+        dest[1] = cm[dest[1]];
+        dest[2] = cm[dest[2]];
+        dest[3] = cm[dest[3]];
         dest += linesize;
     }
 }
@@ -484,6 +496,7 @@ static void vc1_inv_trans_4x4_c(uint8_t *dest, int linesize, DCTELEM *block)
     int i;
     register int t1,t2,t3,t4;
     DCTELEM *src, *dst;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
 
     src = block;
     dst = block;
@@ -509,10 +522,10 @@ static void vc1_inv_trans_4x4_c(uint8_t *dest, int linesize, DCTELEM *block)
         t3 = 22 * src[ 8] + 10 * src[24];
         t4 = 22 * src[24] - 10 * src[ 8];
 
-        dest[0*linesize] = av_clip_uint8(dest[0*linesize] + ((t1 + t3) >> 7));
-        dest[1*linesize] = av_clip_uint8(dest[1*linesize] + ((t2 - t4) >> 7));
-        dest[2*linesize] = av_clip_uint8(dest[2*linesize] + ((t2 + t4) >> 7));
-        dest[3*linesize] = av_clip_uint8(dest[3*linesize] + ((t1 - t3) >> 7));
+        dest[0*linesize] = cm[dest[0*linesize] + ((t1 + t3) >> 7)];
+        dest[1*linesize] = cm[dest[1*linesize] + ((t2 - t4) >> 7)];
+        dest[2*linesize] = cm[dest[2*linesize] + ((t2 + t4) >> 7)];
+        dest[3*linesize] = cm[dest[3*linesize] + ((t1 - t3) >> 7)];
 
         src ++;
         dest++;
@@ -537,8 +550,8 @@ static av_always_inline int vc1_mspel_ ## DIR ## _filter_16bits(const TYPE *src,
     return 0; /* should not occur */                                    \
 }
 
-VC1_MSPEL_FILTER_16B(ver, uint8_t)
-VC1_MSPEL_FILTER_16B(hor, int16_t)
+VC1_MSPEL_FILTER_16B(ver, uint8_t);
+VC1_MSPEL_FILTER_16B(hor, int16_t);
 
 
 /** Filter used to interpolate fractional pel values
@@ -675,26 +688,6 @@ static void put_no_rnd_vc1_chroma_mc8_c(uint8_t *dst/*align 8*/, uint8_t *src/*a
     }
 }
 
-static void put_no_rnd_vc1_chroma_mc4_c(uint8_t *dst, uint8_t *src, int stride, int h, int x, int y){
-    const int A=(8-x)*(8-y);
-    const int B=(  x)*(8-y);
-    const int C=(8-x)*(  y);
-    const int D=(  x)*(  y);
-    int i;
-
-    assert(x<8 && y<8 && x>=0 && y>=0);
-
-    for(i=0; i<h; i++)
-    {
-        dst[0] = (A*src[0] + B*src[1] + C*src[stride+0] + D*src[stride+1] + 32 - 4) >> 6;
-        dst[1] = (A*src[1] + B*src[2] + C*src[stride+1] + D*src[stride+2] + 32 - 4) >> 6;
-        dst[2] = (A*src[2] + B*src[3] + C*src[stride+2] + D*src[stride+3] + 32 - 4) >> 6;
-        dst[3] = (A*src[3] + B*src[4] + C*src[stride+3] + D*src[stride+4] + 32 - 4) >> 6;
-        dst+= stride;
-        src+= stride;
-    }
-}
-
 #define avg2(a,b) ((a+b+1)>>1)
 static void avg_no_rnd_vc1_chroma_mc8_c(uint8_t *dst/*align 8*/, uint8_t *src/*align 1*/, int stride, int h, int x, int y){
     const int A=(8-x)*(8-y);
@@ -719,66 +712,6 @@ static void avg_no_rnd_vc1_chroma_mc8_c(uint8_t *dst/*align 8*/, uint8_t *src/*a
         src+= stride;
     }
 }
-
-#if CONFIG_WMV3IMAGE_DECODER || CONFIG_VC1IMAGE_DECODER
-
-static void sprite_h_c(uint8_t *dst, const uint8_t *src, int offset, int advance, int count)
-{
-    while (count--) {
-        int a = src[(offset >> 16)    ];
-        int b = src[(offset >> 16) + 1];
-        *dst++ = a + ((b - a) * (offset&0xFFFF) >> 16);
-        offset += advance;
-    }
-}
-
-static av_always_inline void sprite_v_template(uint8_t *dst, const uint8_t *src1a, const uint8_t *src1b, int offset1,
-                                            int two_sprites, const uint8_t *src2a, const uint8_t *src2b, int offset2,
-                                            int alpha, int scaled, int width)
-{
-    int a1, b1, a2, b2;
-    while (width--) {
-        a1 = *src1a++;
-        if (scaled) {
-            b1 = *src1b++;
-            a1 = a1 + ((b1 - a1) * offset1 >> 16);
-        }
-        if (two_sprites) {
-            a2 = *src2a++;
-            if (scaled > 1) {
-                b2 = *src2b++;
-                a2 = a2 + ((b2 - a2) * offset2 >> 16);
-            }
-            a1 = a1 + ((a2 - a1) * alpha >> 16);
-        }
-        *dst++ = a1;
-    }
-}
-
-static void sprite_v_single_c(uint8_t *dst, const uint8_t *src1a, const uint8_t *src1b, int offset, int width)
-{
-    sprite_v_template(dst, src1a, src1b, offset, 0, NULL, NULL, 0, 0, 1, width);
-}
-
-static void sprite_v_double_noscale_c(uint8_t *dst, const uint8_t *src1a, const uint8_t *src2a, int alpha, int width)
-{
-    sprite_v_template(dst, src1a, NULL, 0, 1, src2a, NULL, 0, alpha, 0, width);
-}
-
-static void sprite_v_double_onescale_c(uint8_t *dst, const uint8_t *src1a, const uint8_t *src1b, int offset1,
-                                                     const uint8_t *src2a, int alpha, int width)
-{
-    sprite_v_template(dst, src1a, src1b, offset1, 1, src2a, NULL, 0, alpha, 1, width);
-}
-
-static void sprite_v_double_twoscale_c(uint8_t *dst, const uint8_t *src1a, const uint8_t *src1b, int offset1,
-                                                     const uint8_t *src2a, const uint8_t *src2b, int offset2,
-                                       int alpha, int width)
-{
-    sprite_v_template(dst, src1a, src1b, offset1, 1, src2a, src2b, offset2, alpha, 2, width);
-}
-
-#endif
 
 av_cold void ff_vc1dsp_init(VC1DSPContext* dsp) {
     dsp->vc1_inv_trans_8x8 = vc1_inv_trans_8x8_c;
@@ -836,15 +769,6 @@ av_cold void ff_vc1dsp_init(VC1DSPContext* dsp) {
 
     dsp->put_no_rnd_vc1_chroma_pixels_tab[0]= put_no_rnd_vc1_chroma_mc8_c;
     dsp->avg_no_rnd_vc1_chroma_pixels_tab[0]= avg_no_rnd_vc1_chroma_mc8_c;
-    dsp->put_no_rnd_vc1_chroma_pixels_tab[1] = put_no_rnd_vc1_chroma_mc4_c;
-
-#if CONFIG_WMV3IMAGE_DECODER || CONFIG_VC1IMAGE_DECODER
-    dsp->sprite_h = sprite_h_c;
-    dsp->sprite_v_single = sprite_v_single_c;
-    dsp->sprite_v_double_noscale = sprite_v_double_noscale_c;
-    dsp->sprite_v_double_onescale = sprite_v_double_onescale_c;
-    dsp->sprite_v_double_twoscale = sprite_v_double_twoscale_c;
-#endif
 
     if (HAVE_ALTIVEC)
         ff_vc1dsp_init_altivec(dsp);

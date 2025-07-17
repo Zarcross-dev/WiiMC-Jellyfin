@@ -2,26 +2,27 @@
  * RTSP demuxer
  * Copyright (c) 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavutil/avstring.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/opt.h"
 #include "avformat.h"
 
 #include "internal.h"
@@ -52,8 +53,6 @@ static int rtsp_read_play(AVFormatContext *s)
                 rtpctx->last_rtcp_ntp_time  = AV_NOPTS_VALUE;
                 rtpctx->first_rtcp_ntp_time = AV_NOPTS_VALUE;
                 rtpctx->base_timestamp      = 0;
-                rtpctx->timestamp           = 0;
-                rtpctx->unwrapped_timestamp = 0;
                 rtpctx->rtcp_ts_offset      = 0;
             }
         }
@@ -150,7 +149,8 @@ static int rtsp_probe(AVProbeData *p)
     return 0;
 }
 
-static int rtsp_read_header(AVFormatContext *s)
+static int rtsp_read_header(AVFormatContext *s,
+                            AVFormatParameters *ap)
 {
     RTSPState *rt = s->priv_data;
     int ret;
@@ -159,9 +159,8 @@ static int rtsp_read_header(AVFormatContext *s)
     if (ret)
         return ret;
 
-    rt->real_setup_cache = !s->nb_streams ? NULL :
-                           av_mallocz(2 * s->nb_streams * sizeof(*rt->real_setup_cache));
-    if (!rt->real_setup_cache && s->nb_streams)
+    rt->real_setup_cache = av_mallocz(2 * s->nb_streams * sizeof(*rt->real_setup_cache));
+    if (!rt->real_setup_cache)
         return AVERROR(ENOMEM);
     rt->real_setup = rt->real_setup_cache + s->nb_streams;
 
@@ -205,7 +204,7 @@ redo:
     id  = buf[0];
     len = AV_RB16(buf + 1);
     av_dlog(s, "id=%d len=%d\n", id, len);
-    if (len > buf_size || len < 8)
+    if (len > buf_size || len < 12)
         goto redo;
     /* get the data */
     ret = ffurl_read_complete(rt->rtsp_hd, buf, len);
@@ -336,8 +335,7 @@ retry:
     rt->packets++;
 
     /* send dummy request to keep TCP connection alive */
-    if ((av_gettime() - rt->last_cmd_time) / 1000000 >= rt->timeout / 2 ||
-         rt->auth_state.stale) {
+    if ((av_gettime() - rt->last_cmd_time) / 1000000 >= rt->timeout / 2) {
         if (rt->server_type == RTSP_SERVER_WMS ||
            (rt->server_type != RTSP_SERVER_REAL &&
             rt->get_parameter_supported)) {
@@ -345,10 +343,6 @@ retry:
         } else {
             ff_rtsp_send_cmd_async(s, "OPTIONS", "*", NULL);
         }
-        /* The stale flag should be reset when creating the auth response in
-         * ff_rtsp_send_cmd_async, but reset it here just in case we never
-         * called the auth code (if we didn't have any credentials set). */
-        rt->auth_state.stale = 0;
     }
 
     return 0;
@@ -394,10 +388,15 @@ static int rtsp_read_close(AVFormatContext *s)
     return 0;
 }
 
-static const AVClass rtsp_demuxer_class = {
+static const AVOption options[] = {
+    { "initial_pause",  "Don't start playing the stream immediately", offsetof(RTSPState, initial_pause),  FF_OPT_TYPE_INT, {.dbl = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
+    { NULL },
+};
+
+const AVClass rtsp_demuxer_class = {
     .class_name     = "RTSP demuxer",
     .item_name      = av_default_item_name,
-    .option         = ff_rtsp_options,
+    .option         = options,
     .version        = LIBAVUTIL_VERSION_INT,
 };
 
@@ -410,8 +409,8 @@ AVInputFormat ff_rtsp_demuxer = {
     .read_packet    = rtsp_read_packet,
     .read_close     = rtsp_read_close,
     .read_seek      = rtsp_read_seek,
-    .flags          = AVFMT_NOFILE,
-    .read_play      = rtsp_read_play,
-    .read_pause     = rtsp_read_pause,
-    .priv_class     = &rtsp_demuxer_class,
+    .flags = AVFMT_NOFILE,
+    .read_play = rtsp_read_play,
+    .read_pause = rtsp_read_pause,
+    .priv_class = &rtsp_demuxer_class,
 };

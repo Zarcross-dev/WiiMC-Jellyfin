@@ -3,20 +3,20 @@
  * AltiVec-enabled
  * Copyright (c) 2003 Romain Dolbeau <romain@dolbeau.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -29,7 +29,7 @@
   altivec-enhanced gmc1. ATM this code assume stride is a multiple of 8,
   to preserve proper dst alignment.
 */
-void ff_gmc1_altivec(uint8_t *dst /* align 8 */, uint8_t *src /* align1 */, int stride, int h, int x16, int y16, int rounder)
+void gmc1_altivec(uint8_t *dst /* align 8 */, uint8_t *src /* align1 */, int stride, int h, int x16, int y16, int rounder)
 {
     const DECLARE_ALIGNED(16, unsigned short, rounder_a) = rounder;
     const DECLARE_ALIGNED(16, unsigned short, ABCD)[8] =
@@ -48,7 +48,7 @@ void ff_gmc1_altivec(uint8_t *dst /* align 8 */, uint8_t *src /* align1 */, int 
     unsigned long dst_odd = (unsigned long)dst & 0x0000000F;
     unsigned long src_really_odd = (unsigned long)src & 0x0000000F;
 
-    tempA = vec_ld(0, (const unsigned short*)ABCD);
+    tempA = vec_ld(0, (unsigned short*)ABCD);
     Av = vec_splat(tempA, 0);
     Bv = vec_splat(tempA, 1);
     Cv = vec_splat(tempA, 2);

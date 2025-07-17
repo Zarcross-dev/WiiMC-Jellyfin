@@ -2,20 +2,20 @@
  * Apple MJPEG-B decoder
  * Copyright (c) 2002 Alex Beregszaszi
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -52,16 +52,12 @@ static int mjpegb_decode_frame(AVCodecContext *avctx,
 
     buf_ptr = buf;
     buf_end = buf + buf_size;
-    s->got_picture = 0;
 
 read_header:
     /* reset on every SOI */
     s->restart_interval = 0;
     s->restart_count = 0;
     s->mjpb_skiptosod = 0;
-
-    if (buf_end - buf_ptr >= 1 << 28)
-        return AVERROR_INVALIDDATA;
 
     init_get_bits(&hgb, buf_ptr, /*buf_size*/(buf_end - buf_ptr)*8);
 
@@ -70,7 +66,7 @@ read_header:
     if (get_bits_long(&hgb, 32) != MKBETAG('m','j','p','g'))
     {
         av_log(avctx, AV_LOG_WARNING, "not mjpeg-b (bad fourcc)\n");
-        return AVERROR_INVALIDDATA;
+        return 0;
     }
 
     field_size = get_bits_long(&hgb, 32); /* field size */
@@ -86,7 +82,7 @@ read_header:
         init_get_bits(&s->gb, buf_ptr+dqt_offs, (buf_end - (buf_ptr+dqt_offs))*8);
         s->start_code = DQT;
         if (ff_mjpeg_decode_dqt(s) < 0 &&
-            (avctx->err_recognition & AV_EF_EXPLODE))
+            avctx->error_recognition >= FF_ER_EXPLODE)
           return AVERROR_INVALIDDATA;
     }
 
@@ -115,12 +111,12 @@ read_header:
     av_log(avctx, AV_LOG_DEBUG, "sod offs: 0x%x\n", sod_offs);
     if (sos_offs)
     {
-        init_get_bits(&s->gb, buf_ptr + sos_offs,
-                      8 * FFMIN(field_size, buf_end - buf_ptr - sos_offs));
+//        init_get_bits(&s->gb, buf+sos_offs, (buf_end - (buf+sos_offs))*8);
+        init_get_bits(&s->gb, buf_ptr+sos_offs, field_size*8);
         s->mjpb_skiptosod = (sod_offs - sos_offs - show_bits(&s->gb, 16));
         s->start_code = SOS;
         if (ff_mjpeg_decode_sos(s, NULL, NULL) < 0 &&
-            (avctx->err_recognition & AV_EF_EXPLODE))
+            avctx->error_recognition >= FF_ER_EXPLODE)
           return AVERROR_INVALIDDATA;
     }
 
@@ -130,6 +126,7 @@ read_header:
         if (s->bottom_field != s->interlace_polarity && second_field_offs)
         {
             buf_ptr = buf + second_field_offs;
+            second_field_offs = 0;
             goto read_header;
             }
     }
@@ -149,7 +146,7 @@ read_header:
         picture->quality*= FF_QP2LAMBDA;
     }
 
-    return buf_size;
+    return buf_ptr - buf;
 }
 
 AVCodec ff_mjpegb_decoder = {
@@ -161,6 +158,6 @@ AVCodec ff_mjpegb_decoder = {
     .close          = ff_mjpeg_decode_end,
     .decode         = mjpegb_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .max_lowres     = 3,
-    .long_name      = NULL_IF_CONFIG_SMALL("Apple MJPEG-B"),
+    .max_lowres = 3,
+    .long_name = NULL_IF_CONFIG_SMALL("Apple MJPEG-B"),
 };

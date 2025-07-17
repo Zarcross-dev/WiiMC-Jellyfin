@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2001-2003 Michael Niedermayer (michaelni@gmx.at)
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or modify
+ * Libav is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FFmpeg; if not, write to the Free Software
+ * along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -29,11 +29,9 @@
 
 #include "libavutil/avutil.h"
 
-#ifndef LIBPOSTPROC_VERSION_MAJOR
 #define LIBPOSTPROC_VERSION_MAJOR 52
 #define LIBPOSTPROC_VERSION_MINOR  0
-#define LIBPOSTPROC_VERSION_MICRO 100
-#endif
+#define LIBPOSTPROC_VERSION_MICRO  0
 
 #define LIBPOSTPROC_VERSION_INT AV_VERSION_INT(LIBPOSTPROC_VERSION_MAJOR, \
                                                LIBPOSTPROC_VERSION_MINOR, \
@@ -69,13 +67,7 @@ const char *postproc_license(void);
 typedef void pp_context;
 typedef void pp_mode;
 
-#if LIBPOSTPROC_VERSION_INT < (52<<16)
-typedef pp_context pp_context_t;
-typedef pp_mode pp_mode_t;
-//extern const char *const pp_help; ///< a simple help text
-#else
-//extern const char pp_help[]; ///< a simple help text
-#endif
+extern const char pp_help[]; ///< a simple help text
 
 void  pp_postprocess(const uint8_t * src[3], const int srcStride[3],
                      uint8_t * dst[3], const int dstStride[3],
@@ -85,10 +77,9 @@ void  pp_postprocess(const uint8_t * src[3], const int srcStride[3],
 
 
 /**
- * Return a pp_mode or NULL if an error occurred.
- *
- * @param name    the string after "-pp" on the command line
- * @param quality a number from 0 to PP_QUALITY_MAX
+ * returns a pp_mode or NULL if an error occurred
+ * name is the string after "-pp" on the command line
+ * quality is a number from 0 to PP_QUALITY_MAX
  */
 pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality);
 void pp_free_mode(pp_mode *mode);

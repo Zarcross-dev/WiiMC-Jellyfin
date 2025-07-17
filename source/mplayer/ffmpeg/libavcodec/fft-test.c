@@ -1,20 +1,20 @@
 /*
  * (c) 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -23,7 +23,6 @@
  * FFT and MDCT tests.
  */
 
-#include "libavutil/cpu.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/lfg.h"
 #include "libavutil/log.h"
@@ -37,6 +36,8 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
+
+#undef exit
 
 /* reference fft */
 
@@ -146,7 +147,7 @@ static void mdct_ref(FFTSample *output, FFTSample *input, int nbits)
 }
 
 #if CONFIG_FFT_FLOAT
-static void idct_ref(FFTSample *output, FFTSample *input, int nbits)
+static void idct_ref(float *output, float *input, int nbits)
 {
     int n = 1<<nbits;
     int k, i;
@@ -162,7 +163,7 @@ static void idct_ref(FFTSample *output, FFTSample *input, int nbits)
         output[i] = 2 * s / n;
     }
 }
-static void dct_ref(FFTSample *output, FFTSample *input, int nbits)
+static void dct_ref(float *output, float *input, int nbits)
 {
     int n = 1<<nbits;
     int k, i;
@@ -227,6 +228,7 @@ static void help(void)
            "-n b   set the transform size to 2^b\n"
            "-f x   set scale factor for output data of (I)MDCT to x\n"
            );
+    exit(1);
 }
 
 enum tf_transform {
@@ -241,7 +243,6 @@ int main(int argc, char **argv)
     FFTComplex *tab, *tab1, *tab_ref;
     FFTSample *tab2;
     int it, i, c;
-    int cpuflags;
     int do_speed = 0;
     int err = 1;
     enum tf_transform transform = TRANSFORM_FFT;
@@ -260,13 +261,13 @@ int main(int argc, char **argv)
 
     fft_nbits = 9;
     for(;;) {
-        c = getopt(argc, argv, "hsimrdn:f:c:");
+        c = getopt(argc, argv, "hsimrdn:f:");
         if (c == -1)
             break;
         switch(c) {
         case 'h':
             help();
-            return 1;
+            break;
         case 's':
             do_speed = 1;
             break;
@@ -287,12 +288,6 @@ int main(int argc, char **argv)
             break;
         case 'f':
             scale = atof(optarg);
-            break;
-        case 'c':
-            cpuflags = av_parse_cpu_flags(optarg);
-            if (cpuflags < 0)
-                return 1;
-            av_set_cpu_flags_mask(cpuflags);
             break;
         }
     }
@@ -409,11 +404,11 @@ int main(int argc, char **argv)
         break;
     case TRANSFORM_DCT:
         memcpy(tab, tab1, fft_size * sizeof(FFTComplex));
-        d->dct_calc(d, (FFTSample *)tab);
+        d->dct_calc(d, tab);
         if (do_inverse) {
-            idct_ref((FFTSample*)tab_ref, (FFTSample *)tab1, fft_nbits);
+            idct_ref(tab_ref, tab1, fft_nbits);
         } else {
-            dct_ref((FFTSample*)tab_ref, (FFTSample *)tab1, fft_nbits);
+            dct_ref(tab_ref, tab1, fft_nbits);
         }
         err = check_diff((float *)tab_ref, (float *)tab, fft_size, 1.0);
         break;

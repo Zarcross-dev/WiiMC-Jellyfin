@@ -5,26 +5,25 @@
  * Due to a lack of sample files, only files with one channel are supported.
  * u-law and ADPCM audio are unsupported for the same reason.
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
-#include "internal.h"
 
 #define LMLM4_I_FRAME   0x00
 #define LMLM4_P_FRAME   0x01
@@ -58,17 +57,17 @@ static int lmlm4_probe(AVProbeData * pd) {
     return 0;
 }
 
-static int lmlm4_read_header(AVFormatContext *s) {
+static int lmlm4_read_header(AVFormatContext *s, AVFormatParameters *ap) {
     AVStream *st;
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = av_new_stream(s, 0)))
         return AVERROR(ENOMEM);
     st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codec->codec_id   = CODEC_ID_MPEG4;
     st->need_parsing      = AVSTREAM_PARSE_HEADERS;
-    avpriv_set_pts_info(st, 64, 1001, 30000);
+    av_set_pts_info(st, 64, 1001, 30000);
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = av_new_stream(s, 1)))
         return AVERROR(ENOMEM);
     st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codec->codec_id   = CODEC_ID_MP2;

@@ -2,20 +2,20 @@
  * RTP AMR Depacketizer, RFC 3267
  * Copyright (c) 2010 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -169,9 +169,6 @@ static int amr_parse_sdp_line(AVFormatContext *s, int st_index,
     const char *p;
     int ret;
 
-    if (st_index < 0)
-        return 0;
-
     /* Parse an fmtp line this one:
      * a=fmtp:97 octet-align=1; interleaving=0
      * That is, a normal fmtp: line followed by semicolon & space
@@ -208,3 +205,4 @@ RTPDynamicProtocolHandler ff_amr_wb_dynamic_handler = {
     .free             = amr_free_context,
     .parse_packet     = amr_handle_packet,
 };
+

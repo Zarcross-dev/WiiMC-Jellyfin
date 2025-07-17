@@ -28,7 +28,6 @@
 #include "libmpdemux/demuxer.h"
 #include "libmpdemux/stheader.h"
 #include "codec-cfg.h"
-#include "mp_msg.h"
 #include "mplayer.h"
 #include "sub/sub.h"
 #include "m_option.h"
@@ -219,7 +218,7 @@ static void log_sub(void)
 }
 
 
-/// \defgroup properties Properties
+/// \defgroup Properties
 ///@{
 
 /// \defgroup GeneralProperties General properties
@@ -517,17 +516,6 @@ static int mp_property_chapter(m_option_t *prop, int action, void *arg,
                     MSGTR_OSDChapter, 0, MSGTR_Unknown);
     free(chapter_name);
     return M_PROPERTY_OK;
-}
-
-/// Number of titles in file
-static int mp_property_titles(m_option_t *prop, int action, void *arg,
-                              MPContext *mpctx)
-{
-    if (!mpctx->demuxer)
-        return M_PROPERTY_UNAVAILABLE;
-    if (mpctx->demuxer->num_titles == 0)
-        stream_control(mpctx->demuxer->stream, STREAM_CTRL_GET_NUM_TITLES, &mpctx->demuxer->num_titles);
-    return m_property_int_ro(prop, action, arg, mpctx->demuxer->num_titles);
 }
 
 /// Number of chapters in file
@@ -914,7 +902,30 @@ static int mp_property_audio(m_option_t *prop, int action, void *arg,
             *(char **) arg = strdup(MSGTR_Disabled);
         else {
             char lang[40] = MSGTR_Unknown;
-            demuxer_audio_lang(mpctx->demuxer, current_id, lang, sizeof(lang));
+            sh_audio_t* sh = mpctx->sh_audio;
+            if (sh && sh->lang)
+                av_strlcpy(lang, sh->lang, 40);
+            // TODO: use a proper STREAM_CTRL instead of this mess
+            else if (sh && mpctx->stream->type == STREAMTYPE_BD) {
+                const char *l = bd_lang_from_id(mpctx->stream, audio_id);
+                if (l)
+                    av_strlcpy(lang, l, sizeof(lang));
+            }
+#ifdef CONFIG_DVDREAD
+            else if (mpctx->stream->type == STREAMTYPE_DVD) {
+                int code = dvd_lang_from_aid(mpctx->stream, current_id);
+                if (code) {
+                    lang[0] = code >> 8;
+                    lang[1] = code;
+                    lang[2] = 0;
+                }
+            }
+#endif
+
+#ifdef CONFIG_DVDNAV
+            else if (mpctx->stream->type == STREAMTYPE_DVDNAV)
+                mp_dvdnav_lang_from_aid(mpctx->stream, current_id, lang);
+#endif
             *(char **) arg = malloc(64);
             snprintf(*(char **) arg, 64, "(%d) %s", audio_id, lang);
         }
@@ -1478,6 +1489,36 @@ static int mp_property_sub(m_option_t *prop, int action, void *arg,
                      strlen(tmp) < 20 ? tmp : tmp + strlen(tmp) - 19);
             return M_PROPERTY_OK;
         }
+#ifdef CONFIG_DVDNAV
+        if (mpctx->stream->type == STREAMTYPE_DVDNAV) {
+            if (vo_spudec && dvdsub_id >= 0) {
+                unsigned char lang[3];
+                if (mp_dvdnav_lang_from_sid(mpctx->stream, dvdsub_id, lang)) {
+                    snprintf(*(char **) arg, 63, "(%d) %s", dvdsub_id, lang);
+                    return M_PROPERTY_OK;
+                }
+            }
+        }
+#endif
+
+        if (mpctx->stream->type == STREAMTYPE_BD
+            && d_sub && d_sub->sh && dvdsub_id >= 0) {
+            const char *lang = bd_lang_from_id(mpctx->stream, ((sh_sub_t*)d_sub->sh)->sid);
+            if (!lang) lang = MSGTR_Unknown;
+            snprintf(*(char **) arg, 63, "(%d) %s", dvdsub_id, lang);
+            return M_PROPERTY_OK;
+        }
+
+        if ((mpctx->demuxer->type == DEMUXER_TYPE_MATROSKA
+             || mpctx->demuxer->type == DEMUXER_TYPE_LAVF
+             || mpctx->demuxer->type == DEMUXER_TYPE_LAVF_PREFERRED
+             || mpctx->demuxer->type == DEMUXER_TYPE_OGG)
+             && d_sub && d_sub->sh && dvdsub_id >= 0) {
+            const char* lang = ((sh_sub_t*)d_sub->sh)->lang;
+            if (!lang) lang = MSGTR_Unknown;
+            snprintf(*(char **) arg, 63, "(%d) %s", dvdsub_id, lang);
+            return M_PROPERTY_OK;
+        }
 
         if (vo_vobsub && vobsub_id >= 0) {
             const char *language = MSGTR_Unknown;
@@ -1486,10 +1527,20 @@ static int mp_property_sub(m_option_t *prop, int action, void *arg,
                      vobsub_id, language ? language : MSGTR_Unknown);
             return M_PROPERTY_OK;
         }
-        if (dvdsub_id >= 0) {
-            char lang[40] = MSGTR_Unknown;
-            demuxer_sub_lang(mpctx->demuxer, dvdsub_id, lang, sizeof(lang));
+#ifdef CONFIG_DVDREAD
+        if (vo_spudec && mpctx->stream->type == STREAMTYPE_DVD
+            && dvdsub_id >= 0) {
+            char lang[3];
+            int code = dvd_lang_from_sid(mpctx->stream, dvdsub_id);
+            lang[0] = code >> 8;
+            lang[1] = code;
+            lang[2] = 0;
             snprintf(*(char **) arg, 63, "(%d) %s", dvdsub_id, lang);
+            return M_PROPERTY_OK;
+        }
+#endif
+        if (dvdsub_id >= 0) {
+            snprintf(*(char **) arg, 63, "(%d) %s", dvdsub_id, MSGTR_Unknown);
             return M_PROPERTY_OK;
         }
         snprintf(*(char **) arg, 63, MSGTR_Disabled);
@@ -2094,8 +2145,6 @@ static const m_option_t mp_properties[] = {
      M_OPT_MIN, 0, 0, NULL },
     { "chapter", mp_property_chapter, CONF_TYPE_INT,
      M_OPT_MIN, 0, 0, NULL },
-    { "titles", mp_property_titles, CONF_TYPE_INT,
-     0, 0, 0, NULL },
     { "chapters", mp_property_chapters, CONF_TYPE_INT,
      0, 0, 0, NULL },
     { "angle", mp_property_angle, CONF_TYPE_INT,
@@ -2450,7 +2499,6 @@ static const char *property_error_string(int error_value)
     }
     return "UNKNOWN";
 }
-///@}
 
 static void remove_subtitle_range(MPContext *mpctx, int start, int count)
 {
@@ -3472,11 +3520,6 @@ int run_command(MPContext *mpctx, mp_cmd_t *cmd)
         break;
 
         default:
-#ifdef CONFIG_GUI
-                if (use_gui && cmd->id == MP_CMD_GUI)
-                    gui(GUI_RUN_MESSAGE, cmd->args[0].v.s);
-                else
-#endif
                 mp_msg(MSGT_CPLAYER, MSGL_V,
                        "Received unknown cmd %s\n", cmd->name);
         }

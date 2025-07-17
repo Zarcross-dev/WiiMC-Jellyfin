@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2001-2002 Michael Niedermayer (michaelni@gmx.at)
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or modify
+ * Libav is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FFmpeg; if not, write to the Free Software
+ * along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -67,7 +67,6 @@
 
 #define TEMP_NOISE_FILTER               0x100000
 #define FORCE_QUANT                     0x200000
-#define BITEXACT                        0x1000000
 
 //use if you want a faster postprocessing code
 //cannot differentiate between chroma & luma filters (both on or both off)
@@ -101,7 +100,7 @@ typedef struct PPMode{
 
     int minAllowedY;                ///< for brigtness correction
     int maxAllowedY;                ///< for brihtness correction
-    float maxClippedThreshold;      ///< amount of "black" you are willing to lose to get a brightness-corrected picture
+    float maxClippedThreshold;      ///< amount of "black" u r willing to loose to get a brightness corrected picture
 
     int maxTmpNoise[3];             ///< for Temporal Noise Reducing filter (Maximal sum of abs differences)
 

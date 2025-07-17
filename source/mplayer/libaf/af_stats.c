@@ -23,7 +23,6 @@
 #include <inttypes.h>
 #include <math.h>
 
-#include "mp_msg.h"
 #include "af.h"
 
 #define MAX_DB  80

@@ -2,20 +2,20 @@
  * AAC coefficients encoder
  * Copyright (C) 2008-2009 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -33,7 +33,6 @@
 #include "libavutil/libm.h" // brought forward to work around cygwin header breakage
 
 #include <float.h>
-#include "libavutil/mathematics.h"
 #include "avcodec.h"
 #include "put_bits.h"
 #include "aac.h"
@@ -110,15 +109,14 @@ static av_always_inline float quantize_and_encode_band_cost_template(
                                 int *bits, int BT_ZERO, int BT_UNSIGNED,
                                 int BT_PAIR, int BT_ESC)
 {
-    const int q_idx = POW_SF2_ZERO - scale_idx + SCALE_ONE_POS - SCALE_DIV_512;
-    const float Q   = ff_aac_pow2sf_tab [q_idx];
-    const float Q34 = ff_aac_pow34sf_tab[q_idx];
-    const float IQ  = ff_aac_pow2sf_tab [POW_SF2_ZERO + scale_idx - SCALE_ONE_POS + SCALE_DIV_512];
+    const float IQ = ff_aac_pow2sf_tab[POW_SF2_ZERO + scale_idx - SCALE_ONE_POS + SCALE_DIV_512];
+    const float  Q = ff_aac_pow2sf_tab[POW_SF2_ZERO - scale_idx + SCALE_ONE_POS - SCALE_DIV_512];
     const float CLIPPED_ESCAPE = 165140.0f*IQ;
     int i, j;
     float cost = 0;
     const int dim = BT_PAIR ? 2 : 4;
     int resbits = 0;
+    const float  Q34 = sqrtf(Q * sqrtf(Q));
     const int range  = aac_cb_range[cb];
     const int maxval = aac_cb_maxval[cb];
     int off;
@@ -421,7 +419,7 @@ static void codebook_trellis_rate(AACEncContext *s, SingleChannelElement *sce,
     const int run_esc  = (1 << run_bits) - 1;
     int idx, ppos, count;
     int stackrun[120], stackcb[120], stack_len;
-    float next_minbits = INFINITY;
+    float next_minrd = INFINITY;
     int next_mincb = 0;
 
     abs_pow34_v(s->scoefs, sce->coeffs, 1024);
@@ -435,7 +433,7 @@ static void codebook_trellis_rate(AACEncContext *s, SingleChannelElement *sce,
         size = sce->ics.swb_sizes[swb];
         if (sce->zeroes[win*16 + swb]) {
             float cost_stay_here = path[swb][0].cost;
-            float cost_get_here  = next_minbits + run_bits + 4;
+            float cost_get_here  = next_minrd + run_bits + 4;
             if (   run_value_bits[sce->ics.num_windows == 8][path[swb][0].run]
                 != run_value_bits[sce->ics.num_windows == 8][path[swb][0].run+1])
                 cost_stay_here += run_bits;
@@ -448,7 +446,7 @@ static void codebook_trellis_rate(AACEncContext *s, SingleChannelElement *sce,
                 path[swb+1][0].cost     = cost_stay_here;
                 path[swb+1][0].run      = path[swb][0].run + 1;
             }
-            next_minbits = path[swb+1][0].cost;
+            next_minrd = path[swb+1][0].cost;
             next_mincb = 0;
             for (cb = 1; cb < 12; cb++) {
                 path[swb+1][cb].cost = 61450;
@@ -456,10 +454,10 @@ static void codebook_trellis_rate(AACEncContext *s, SingleChannelElement *sce,
                 path[swb+1][cb].run = 0;
             }
         } else {
-            float minbits = next_minbits;
+            float minrd = next_minrd;
             int mincb = next_mincb;
             int startcb = sce->band_type[win*16+swb];
-            next_minbits = INFINITY;
+            next_minrd = INFINITY;
             next_mincb = 0;
             for (cb = 0; cb < startcb; cb++) {
                 path[swb+1][cb].cost = 61450;
@@ -468,15 +466,15 @@ static void codebook_trellis_rate(AACEncContext *s, SingleChannelElement *sce,
             }
             for (cb = startcb; cb < 12; cb++) {
                 float cost_stay_here, cost_get_here;
-                float bits = 0.0f;
+                float rd = 0.0f;
                 for (w = 0; w < group_len; w++) {
-                    bits += quantize_band_cost(s, sce->coeffs + start + w*128,
-                                               s->scoefs + start + w*128, size,
-                                               sce->sf_idx[(win+w)*16+swb], cb,
-                                               0, INFINITY, NULL);
+                    rd += quantize_band_cost(s, sce->coeffs + start + w*128,
+                                             s->scoefs + start + w*128, size,
+                                             sce->sf_idx[(win+w)*16+swb], cb,
+                                             0, INFINITY, NULL);
                 }
-                cost_stay_here = path[swb][cb].cost + bits;
-                cost_get_here  = minbits            + bits + run_bits + 4;
+                cost_stay_here = path[swb][cb].cost + rd;
+                cost_get_here  = minrd              + rd + run_bits + 4;
                 if (   run_value_bits[sce->ics.num_windows == 8][path[swb][cb].run]
                     != run_value_bits[sce->ics.num_windows == 8][path[swb][cb].run+1])
                     cost_stay_here += run_bits;
@@ -489,8 +487,8 @@ static void codebook_trellis_rate(AACEncContext *s, SingleChannelElement *sce,
                     path[swb+1][cb].cost     = cost_stay_here;
                     path[swb+1][cb].run      = path[swb][cb].run + 1;
                 }
-                if (path[swb+1][cb].cost < next_minbits) {
-                    next_minbits = path[swb+1][cb].cost;
+                if (path[swb+1][cb].cost < next_minrd) {
+                    next_minrd = path[swb+1][cb].cost;
                     next_mincb = cb;
                 }
             }
@@ -714,17 +712,15 @@ static void search_for_quantizers_twoloop(AVCodecContext *avctx,
 {
     int start = 0, i, w, w2, g;
     int destbits = avctx->bit_rate * 1024.0 / avctx->sample_rate / avctx->channels;
-    float dists[128] = { 0 }, uplims[128];
+    float dists[128], uplims[128];
     float maxvals[128];
     int fflag, minscaler;
     int its  = 0;
     int allz = 0;
     float minthr = INFINITY;
 
-    // for values above this the decoder might end up in an endless loop
-    // due to always having more bits than what can be encoded.
-    destbits = FFMIN(destbits, 5800);
     //XXX: some heuristic to determine initial quantizers will reduce search time
+    memset(dists, 0, sizeof(dists));
     //determine zero bands and upper limits
     for (w = 0; w < sce->ics.num_windows; w += sce->ics.group_len[w]) {
         for (g = 0;  g < sce->ics.num_swb; g++) {
@@ -1115,7 +1111,7 @@ static void search_for_ms(AACEncContext *s, ChannelElement *cpe,
     }
 }
 
-AACCoefficientsEncoder ff_aac_coders[AAC_CODER_NB] = {
+AACCoefficientsEncoder ff_aac_coders[] = {
     {
         search_for_quantizers_faac,
         encode_window_bands_info,

@@ -1,9 +1,9 @@
 /*
  * X11 video grab interface
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg integration:
+ * Libav integration:
  * Copyright (C) 2006 Clemens Fruhwirth <clemens@endorphin.org>
  *                    Edouard Gomez <ed.gomez@free.fr>
  *
@@ -14,30 +14,29 @@
  * Copyright (C) 1997-1998 Rasca, Berlin
  *               2003-2004 Karl H. Beckers, Frankfurt
  *
- * FFmpeg is free software; you can redistribute it and/or modify
+ * Libav is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FFmpeg; if not, write to the Free Software
+ * along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
  * @file
- * X11 frame device demuxer
- * @author Clemens Fruhwirth <clemens@endorphin.org>
- * @author Edouard Gomez <ed.gomez@free.fr>
+ * X11 frame device demuxer by Clemens Fruhwirth <clemens@endorphin.org>
+ * and Edouard Gomez <ed.gomez@free.fr>.
  */
 
 #include "config.h"
-#include "libavformat/internal.h"
+#include "libavformat/avformat.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
@@ -51,7 +50,6 @@
 #include <X11/extensions/shape.h>
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/Xfixes.h>
-#include "avdevice.h"
 
 /**
  * X11 Device Demuxer context
@@ -63,8 +61,9 @@ struct x11_grab
     AVRational time_base;    /**< Time base */
     int64_t time_frame;      /**< Current time */
 
-    int width;               /**< Width of the grab frame */
+    char *video_size;        /**< String describing video size, set by a private option. */
     int height;              /**< Height of the grab frame */
+    int width;               /**< Width of the grab frame */
     int x_off;               /**< Horizontal top-left corner coordinate */
     int y_off;               /**< Vertical top-left corner coordinate */
 
@@ -145,6 +144,7 @@ x11grab_region_win_init(struct x11_grab *s)
  * Initialize the x11 grab device demuxer (public device demuxer API).
  *
  * @param s1 Context from avformat core
+ * @param ap Parameters from avformat core
  * @return <ul>
  *          <li>AVERROR(ENOMEM) no memory left</li>
  *          <li>AVERROR(EIO) other failure case</li>
@@ -152,7 +152,7 @@ x11grab_region_win_init(struct x11_grab *s)
  *         </ul>
  */
 static int
-x11grab_read_header(AVFormatContext *s1)
+x11grab_read_header(AVFormatContext *s1, AVFormatParameters *ap)
 {
     struct x11_grab *x11grab = s1->priv_data;
     Display *dpy;
@@ -163,42 +163,42 @@ x11grab_read_header(AVFormatContext *s1)
     int y_off = 0;
     int screen;
     int use_shm;
-    char *dpyname, *offset;
+    char *param, *offset;
     int ret = 0;
     AVRational framerate;
 
-    dpyname = av_strdup(s1->filename);
-    if (!dpyname)
-        goto out;
-
-    offset = strchr(dpyname, '+');
+    param = av_strdup(s1->filename);
+    offset = strchr(param, '+');
     if (offset) {
         sscanf(offset, "%d,%d", &x_off, &y_off);
         x11grab->draw_mouse = !strstr(offset, "nomouse");
         *offset= 0;
     }
 
+    if ((ret = av_parse_video_size(&x11grab->width, &x11grab->height, x11grab->video_size)) < 0) {
+        av_log(s1, AV_LOG_ERROR, "Couldn't parse video size.\n");
+        goto out;
+    }
     if ((ret = av_parse_video_rate(&framerate, x11grab->framerate)) < 0) {
         av_log(s1, AV_LOG_ERROR, "Could not parse framerate: %s.\n", x11grab->framerate);
         goto out;
     }
     av_log(s1, AV_LOG_INFO, "device: %s -> display: %s x: %d y: %d width: %d height: %d\n",
-           s1->filename, dpyname, x_off, y_off, x11grab->width, x11grab->height);
+           s1->filename, param, x_off, y_off, x11grab->width, x11grab->height);
 
-    dpy = XOpenDisplay(dpyname);
-    av_freep(&dpyname);
+    dpy = XOpenDisplay(param);
     if(!dpy) {
         av_log(s1, AV_LOG_ERROR, "Could not open X display.\n");
         ret = AVERROR(EIO);
         goto out;
     }
 
-    st = avformat_new_stream(s1, NULL);
+    st = av_new_stream(s1, 0);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto out;
     }
-    avpriv_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in us */
+    av_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in us */
 
     screen = DefaultScreen(dpy);
 
@@ -217,7 +217,7 @@ x11grab_read_header(AVFormatContext *s1)
     }
 
     use_shm = XShmQueryExtension(dpy);
-    av_log(s1, AV_LOG_INFO, "shared memory extension%s found\n", use_shm ? "" : " not");
+    av_log(s1, AV_LOG_INFO, "shared memory extension %s found\n", use_shm ? "" : "not");
 
     if(use_shm) {
         int scr = XDefaultScreen(dpy);
@@ -292,7 +292,7 @@ x11grab_read_header(AVFormatContext *s1)
         }
         break;
     case 32:
-        input_pixfmt = PIX_FMT_0RGB32;
+        input_pixfmt = PIX_FMT_RGB32;
         break;
     default:
         av_log(s1, AV_LOG_ERROR, "image depth %i not supported ... aborting\n", image->bits_per_pixel);
@@ -318,7 +318,6 @@ x11grab_read_header(AVFormatContext *s1)
     st->codec->bit_rate = x11grab->frame_size * 1/av_q2d(x11grab->time_base) * 8;
 
 out:
-    av_free(dpyname);
     return ret;
 }
 
@@ -581,13 +580,13 @@ x11grab_read_close(AVFormatContext *s1)
 #define OFFSET(x) offsetof(struct x11_grab, x)
 #define DEC AV_OPT_FLAG_DECODING_PARAM
 static const AVOption options[] = {
-    { "video_size", "A string describing frame size, such as 640x480 or hd720.", OFFSET(width), AV_OPT_TYPE_IMAGE_SIZE, {.str = "vga"}, 0, 0, DEC },
-    { "framerate", "", OFFSET(framerate), AV_OPT_TYPE_STRING, {.str = "ntsc"}, 0, 0, DEC },
-    { "draw_mouse", "Draw the mouse pointer.", OFFSET(draw_mouse), AV_OPT_TYPE_INT, { 1 }, 0, 1, DEC },
+    { "video_size", "A string describing frame size, such as 640x480 or hd720.", OFFSET(video_size), FF_OPT_TYPE_STRING, {.str = "vga"}, 0, 0, DEC },
+    { "framerate", "", OFFSET(framerate), FF_OPT_TYPE_STRING, {.str = "ntsc"}, 0, 0, DEC },
+    { "draw_mouse", "Draw the mouse pointer.", OFFSET(draw_mouse), FF_OPT_TYPE_INT, { 1 }, 0, 1, DEC },
     { "follow_mouse", "Move the grabbing region when the mouse pointer reaches within specified amount of pixels to the edge of region.",
-      OFFSET(follow_mouse), AV_OPT_TYPE_INT, { 0 }, -1, INT_MAX, DEC, "follow_mouse" },
-    { "centered", "Keep the mouse pointer at the center of grabbing region when following.", 0, AV_OPT_TYPE_CONST, { -1 }, INT_MIN, INT_MAX, DEC, "follow_mouse" },
-    { "show_region", "Show the grabbing region.", OFFSET(show_region), AV_OPT_TYPE_INT, { 0 }, 0, 1, DEC },
+      OFFSET(follow_mouse), FF_OPT_TYPE_INT, { 0 }, -1, INT_MAX, DEC, "follow_mouse" },
+    { "centered", "Keep the mouse pointer at the center of grabbing region when following.", 0, FF_OPT_TYPE_CONST, { -1 }, INT_MIN, INT_MAX, DEC, "follow_mouse" },
+    { "show_region", "Show the grabbing region.", OFFSET(show_region), FF_OPT_TYPE_INT, { 0 }, 0, 1, DEC },
     { NULL },
 };
 
@@ -599,13 +598,15 @@ static const AVClass x11_class = {
 };
 
 /** x11 grabber device demuxer declaration */
-AVInputFormat ff_x11_grab_device_demuxer = {
-    .name           = "x11grab",
-    .long_name      = NULL_IF_CONFIG_SMALL("X11grab"),
-    .priv_data_size = sizeof(struct x11_grab),
-    .read_header    = x11grab_read_header,
-    .read_packet    = x11grab_read_packet,
-    .read_close     = x11grab_read_close,
-    .flags          = AVFMT_NOFILE,
-    .priv_class     = &x11_class,
+AVInputFormat ff_x11_grab_device_demuxer =
+{
+    "x11grab",
+    NULL_IF_CONFIG_SMALL("X11grab"),
+    sizeof(struct x11_grab),
+    NULL,
+    x11grab_read_header,
+    x11grab_read_packet,
+    x11grab_read_close,
+    .flags = AVFMT_NOFILE,
+    .priv_class = &x11_class,
 };

@@ -32,6 +32,7 @@
 #include "libmpdemux/demux_viv.h"
 #include "libmpdemux/demuxer.h"
 #include "libmpdemux/mf.h"
+#include "libpostproc/postprocess.h"
 #include "sub/sub.h"
 #include "sub/unrar_exec.h"
 #include "osdep/priority.h"
@@ -49,9 +50,7 @@
 #include "m_option.h"
 #include "mp_msg.h"
 #include "mpcommon.h"
-#ifdef CONFIG_POSTPROC
-#include "libpostproc/postprocess.h"
-#endif
+
 
 
 #ifdef CONFIG_RADIO
@@ -306,7 +305,7 @@ const m_option_t common_opts[] = {
 #ifdef CONFIG_ICONV
     {"msgcharset", &mp_msg_charset, CONF_TYPE_STRING, CONF_GLOBAL, 0, 0, NULL},
 #endif
-    {"include", cfg_include, CONF_TYPE_FUNC_PARAM_IMMEDIATE, CONF_NOSAVE, 0, 0, NULL},
+    {"include", cfg_include, CONF_TYPE_FUNC_PARAM, CONF_NOSAVE, 0, 0, NULL},
 #ifdef CONFIG_PRIORITY
     {"priority", &proc_priority, CONF_TYPE_STRING, 0, 0, 0, NULL},
 #endif
@@ -316,7 +315,7 @@ const m_option_t common_opts[] = {
 // ------------------------- stream options --------------------
 
 #ifdef CONFIG_STREAM_CACHE
-    {"cache", &stream_cache_size, CONF_TYPE_INT, CONF_RANGE, 32, 0x7fffffff, NULL},
+    {"cache", &stream_cache_size, CONF_TYPE_INT, CONF_RANGE, 32, 1048576, NULL},
     {"nocache", &stream_cache_size, CONF_TYPE_FLAG, 0, 1, 0, NULL},
     {"cache-min", &stream_cache_min_percent, CONF_TYPE_FLOAT, CONF_RANGE, 0, 99, NULL},
     {"cache-seek-min", &stream_cache_seek_min_percent, CONF_TYPE_FLOAT, CONF_RANGE, 0, 99, NULL},
@@ -528,9 +527,9 @@ const m_option_t common_opts[] = {
     {"vc", &video_codec_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
 
     // postprocessing:
-#ifdef CONFIG_POSTPROC
+#ifdef CONFIG_FFMPEG
     {"pp", &divx_quality, CONF_TYPE_INT, 0, 0, 0, NULL},
-    {"pphelp", pp_help, CONF_TYPE_PRINT, CONF_NOCFG, 0, 0, NULL},
+    {"pphelp", &pp_help, CONF_TYPE_PRINT_INDIRECT, CONF_NOCFG, 0, 0, NULL},
 #endif
 
     // scaling:

@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -47,8 +47,6 @@
 #define RSHIFT(a,b) ((a) > 0 ? ((a) + ((1<<(b))>>1))>>(b) : ((a) + ((1<<(b))>>1)-1)>>(b))
 /* assume b>0 */
 #define ROUNDED_DIV(a,b) (((a)>0 ? (a) + ((b)>>1) : (a) - ((b)>>1))/(b))
-#define FFUDIV(a,b) (((a)>0 ?(a):(a)-(b)+1) / (b))
-#define FFUMOD(a,b) ((a)-(b)*FFUDIV(a,b))
 #define FFABS(a) ((a) >= 0 ? (a) : (-(a)))
 #define FFSIGN(a) ((a) > 0 ? 1 : -1)
 
@@ -64,9 +62,6 @@
 /* misc math functions */
 extern const uint8_t ff_log2_tab[256];
 
-/**
- * Reverse the order of the bits of an 8-bits unsigned integer.
- */
 extern const uint8_t av_reverse[256];
 
 static av_always_inline av_const int av_log2_c(unsigned int v)
@@ -171,7 +166,7 @@ static av_always_inline av_const int16_t av_clip_int16_c(int a)
 static av_always_inline av_const int32_t av_clipl_int32_c(int64_t a)
 {
     if ((a+0x80000000u) & ~UINT64_C(0xFFFFFFFF)) return (a>>63) ^ 0x7FFFFFFF;
-    else                                         return (int32_t)a;
+    else                                         return a;
 }
 
 /**
@@ -223,18 +218,8 @@ static av_always_inline av_const int av_popcount_c(uint32_t x)
     return (x + (x >> 16)) & 0x3F;
 }
 
-/**
- * Count number of bits set to one in x
- * @param x value to count bits of
- * @return the number of bits set to one in x
- */
-static av_always_inline av_const int av_popcount64_c(uint64_t x)
-{
-    return av_popcount((uint32_t)x) + av_popcount(x >> 32);
-}
-
-#define MKTAG(a,b,c,d) ((a) | ((b) << 8) | ((c) << 16) | ((unsigned)(d) << 24))
-#define MKBETAG(a,b,c,d) ((d) | ((c) << 8) | ((b) << 16) | ((unsigned)(a) << 24))
+#define MKTAG(a,b,c,d) ((a) | ((b) << 8) | ((c) << 16) | ((d) << 24))
+#define MKBETAG(a,b,c,d) ((d) | ((c) << 8) | ((b) << 16) | ((a) << 24))
 
 /**
  * Convert a UTF-8 character (up to 4 bytes) to its 32-bit UCS-4 encoded form.
@@ -397,7 +382,4 @@ static av_always_inline av_const int av_popcount64_c(uint64_t x)
 #endif
 #ifndef av_popcount
 #   define av_popcount      av_popcount_c
-#endif
-#ifndef av_popcount64
-#   define av_popcount64    av_popcount64_c
 #endif

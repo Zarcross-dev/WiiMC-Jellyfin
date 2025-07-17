@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2006 Paul Richards <paul.richards@gmail.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -30,12 +30,11 @@
  * and o_ prefixes on variables which are libogg types.
  */
 
-/* FFmpeg includes */
+/* Libav includes */
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
 #include "libavutil/base64.h"
 #include "avcodec.h"
-#include "internal.h"
 
 /* libtheora includes */
 #include <theora/theoraenc.h>
@@ -242,7 +241,7 @@ static av_cold int encode_init(AVCodecContext* avc_context)
         header, comment, and tables.
 
         Each one is prefixed with a 16bit size, then they
-        are concatenated together into libavcodec's extradata.
+        are concatenated together into ffmpeg's extradata.
     */
     offset = 0;
 
@@ -261,13 +260,14 @@ static av_cold int encode_init(AVCodecContext* avc_context)
     return 0;
 }
 
-static int encode_frame(AVCodecContext* avc_context, AVPacket *pkt,
-                        const AVFrame *frame, int *got_packet)
+static int encode_frame(AVCodecContext* avc_context, uint8_t *outbuf,
+                        int buf_size, void *data)
 {
     th_ycbcr_buffer t_yuv_buffer;
     TheoraContext *h = avc_context->priv_data;
+    AVFrame *frame = data;
     ogg_packet o_packet;
-    int result, i, ret;
+    int result, i;
 
     // EOS, finish and get 1st pass stats if applicable
     if (!frame) {
@@ -328,19 +328,18 @@ static int encode_frame(AVCodecContext* avc_context, AVPacket *pkt,
     }
 
     /* Copy ogg_packet content out to buffer */
-    if ((ret = ff_alloc_packet2(avc_context, pkt, o_packet.bytes)) < 0)
-        return ret;
-    memcpy(pkt->data, o_packet.packet, o_packet.bytes);
+    if (buf_size < o_packet.bytes) {
+        av_log(avc_context, AV_LOG_ERROR, "encoded frame too large\n");
+        return -1;
+    }
+    memcpy(outbuf, o_packet.packet, o_packet.bytes);
 
     // HACK: assumes no encoder delay, this is true until libtheora becomes
     // multithreaded (which will be disabled unless explictly requested)
-    pkt->pts = pkt->dts = frame->pts;
+    avc_context->coded_frame->pts = frame->pts;
     avc_context->coded_frame->key_frame = !(o_packet.granulepos & h->keyframe_mask);
-    if (avc_context->coded_frame->key_frame)
-        pkt->flags |= AV_PKT_FLAG_KEY;
-    *got_packet = 1;
 
-    return 0;
+    return o_packet.bytes;
 }
 
 static av_cold int encode_close(AVCodecContext* avc_context)
@@ -359,16 +358,14 @@ static av_cold int encode_close(AVCodecContext* avc_context)
 
 /** AVCodec struct exposed to libavcodec */
 AVCodec ff_libtheora_encoder = {
-    .name           = "libtheora",
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_THEORA,
+    .name = "libtheora",
+    .type = AVMEDIA_TYPE_VIDEO,
+    .id = CODEC_ID_THEORA,
     .priv_data_size = sizeof(TheoraContext),
-    .init           = encode_init,
-    .close          = encode_close,
-    .encode2        = encode_frame,
-    .capabilities   = CODEC_CAP_DELAY, // needed to get the statsfile summary
-    .pix_fmts       = (const enum PixelFormat[]){
-        PIX_FMT_YUV420P, PIX_FMT_YUV422P, PIX_FMT_YUV444P, PIX_FMT_NONE
-    },
-    .long_name      = NULL_IF_CONFIG_SMALL("libtheora Theora"),
+    .init = encode_init,
+    .close = encode_close,
+    .encode = encode_frame,
+    .capabilities = CODEC_CAP_DELAY, // needed to get the statsfile summary
+    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, PIX_FMT_YUV422P, PIX_FMT_YUV444P, PIX_FMT_NONE},
+    .long_name = NULL_IF_CONFIG_SMALL("libtheora Theora"),
 };

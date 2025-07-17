@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2009 Maxim Poliakovski
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -34,8 +34,6 @@
 #include <stdint.h>
 
 #define IVI_VLC_BITS 13 ///< max number of bits of the ivi's huffman codes
-#define IVI4_STREAM_ANALYSER    0
-#define IVI5_IS_PROTECTED       0x20
 
 /**
  *  huffman codebook descriptor
@@ -53,7 +51,7 @@ typedef struct {
                             /// or "7" for custom one
     VLC         *tab;       /// pointer to the table associated with tab_sel
 
-    /// the following are used only when tab_sel == 7
+    //! the following are used only when tab_sel == 7
     IVIHuffDesc cust_desc;  /// custom Huffman codebook descriptor
     VLC         cust_tab;   /// vlc table for custom codebook
 } IVIHuffTab;
@@ -118,7 +116,6 @@ typedef struct {
     int         ypos;
     int         width;
     int         height;
-    int         mb_size;
     int         is_empty;  ///< = 1 if this tile doesn't contain any data
     int         data_size; ///< size of the data in bytes
     int         num_MBs;   ///< number of macroblocks in this tile
@@ -135,7 +132,6 @@ typedef struct {
     int             band_num;       ///< band number
     int             width;
     int             height;
-    int             aheight;        ///< aligned band height
     const uint8_t   *data_ptr;      ///< ptr to the first byte of the band data
     int             data_size;      ///< size of the band data
     int16_t         *buf;           ///< pointer to the output buffer for this band
@@ -164,7 +160,6 @@ typedef struct {
     InvTransformPtr *inv_transform;
     DCTransformPtr  *dc_transform;
     int             is_2d_trans;    ///< 1 indicates that the two-dimensional inverse transform is used
-    int             transform_size; ///< block size of the transform
     int32_t         checksum;       ///< for debug purposes
     int             checksum_present;
     int             bufsize;        ///< band buffer size in bytes
@@ -197,70 +192,13 @@ typedef struct {
     uint8_t     chroma_bands;
 } IVIPicConfig;
 
-typedef struct IVI45DecContext {
-    GetBitContext   gb;
-    AVFrame         frame;
-    RVMapDesc       rvmap_tabs[9];   ///< local corrected copy of the static rvmap tables
-
-    uint32_t        frame_num;
-    int             frame_type;
-    int             prev_frame_type; ///< frame type of the previous frame
-    uint32_t        data_size;       ///< size of the frame data in bytes from picture header
-    int             is_scalable;
-    int             transp_status;   ///< transparency mode status: 1 - enabled
-    const uint8_t   *frame_data;     ///< input frame data pointer
-    int             inter_scal;      ///< signals a sequence of scalable inter frames
-    uint32_t        frame_size;      ///< frame size in bytes
-    uint32_t        pic_hdr_size;    ///< picture header size in bytes
-    uint8_t         frame_flags;
-    uint16_t        checksum;        ///< frame checksum
-
-    IVIPicConfig    pic_conf;
-    IVIPlaneDesc    planes[3];       ///< color planes
-
-    int             buf_switch;      ///< used to switch between three buffers
-    int             dst_buf;         ///< buffer index for the currently decoded frame
-    int             ref_buf;         ///< inter frame reference buffer index
-    int             ref2_buf;        ///< temporal storage for switching buffers
-
-    IVIHuffTab      mb_vlc;          ///< current macroblock table descriptor
-    IVIHuffTab      blk_vlc;         ///< current block table descriptor
-
-    uint8_t         rvmap_sel;
-    uint8_t         in_imf;
-    uint8_t         in_q;            ///< flag for explicitly stored quantiser delta
-    uint8_t         pic_glob_quant;
-    uint8_t         unknown1;
-
-    uint16_t        gop_hdr_size;
-    uint8_t         gop_flags;
-    uint32_t        lock_word;
-
-#if IVI4_STREAM_ANALYSER
-    uint8_t         has_b_frames;
-    uint8_t         has_transp;
-    uint8_t         uses_tiling;
-    uint8_t         uses_haar;
-    uint8_t         uses_fullpel;
-#endif
-
-    int             (*decode_pic_hdr)  (struct IVI45DecContext *ctx, AVCodecContext *avctx);
-    int             (*decode_band_hdr) (struct IVI45DecContext *ctx, IVIBandDesc *band, AVCodecContext *avctx);
-    int             (*decode_mb_info)  (struct IVI45DecContext *ctx, IVIBandDesc *band, IVITile *tile, AVCodecContext *avctx);
-    void            (*switch_buffers)  (struct IVI45DecContext *ctx);
-    int             (*is_nonnull_frame)(struct IVI45DecContext *ctx);
-
-    int gop_invalid;
-    int buf_invalid[3];
-} IVI45DecContext;
-
 /** compare some properties of two pictures */
 static inline int ivi_pic_config_cmp(IVIPicConfig *str1, IVIPicConfig *str2)
 {
-    return str1->pic_width    != str2->pic_width    || str1->pic_height    != str2->pic_height    ||
-           str1->chroma_width != str2->chroma_width || str1->chroma_height != str2->chroma_height ||
-           str1->tile_width   != str2->tile_width   || str1->tile_height   != str2->tile_height   ||
-           str1->luma_bands   != str2->luma_bands   || str1->chroma_bands  != str2->chroma_bands;
+    return (str1->pic_width    != str2->pic_width    || str1->pic_height    != str2->pic_height    ||
+            str1->chroma_width != str2->chroma_width || str1->chroma_height != str2->chroma_height ||
+            str1->tile_width   != str2->tile_width   || str1->tile_height   != str2->tile_height   ||
+            str1->luma_bands   != str2->luma_bands   || str1->chroma_bands  != str2->chroma_bands);
 }
 
 /** calculate number of tiles in a stride */
@@ -281,7 +219,7 @@ static inline int ivi_scale_mv(int mv, int mv_scale)
 
 /**
  *  Generate a huffman codebook from the given descriptor
- *  and convert it into the FFmpeg VLC table.
+ *  and convert it into the Libav VLC table.
  *
  *  @param[in]   cb    pointer to codebook descriptor
  *  @param[out]  vlc   where to place the generated VLC table
@@ -400,8 +338,14 @@ void ff_ivi_process_empty_tile(AVCodecContext *avctx, IVIBandDesc *band,
  */
 void ff_ivi_output_plane(IVIPlaneDesc *plane, uint8_t *dst, int dst_pitch);
 
-int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
-                        AVPacket *avpkt);
-av_cold int ff_ivi_decode_close(AVCodecContext *avctx);
+/**
+ *  Calculate band checksum from band data.
+ */
+uint16_t ivi_calc_band_checksum (IVIBandDesc *band);
+
+/**
+ *  Verify that band data lies in range.
+ */
+int ivi_check_band (IVIBandDesc *band, const uint8_t *ref, int pitch);
 
 #endif /* AVCODEC_IVI_COMMON_H */

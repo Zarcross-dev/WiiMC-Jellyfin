@@ -3,20 +3,20 @@
  * H263+ support
  * copyright (c) 2002-2004 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -211,7 +211,7 @@ static const int8_t inter_rvlc_level[169]={
  1,  1,
 };
 
-RLTable ff_rvlc_rl_inter = {
+RLTable rvlc_rl_inter = {
     169,
     103,
     inter_rvlc,
@@ -315,7 +315,7 @@ static const int8_t intra_rvlc_level[169]={
  1,  1,
 };
 
-RLTable ff_rvlc_rl_intra = {
+RLTable rvlc_rl_intra = {
     169,
     103,
     intra_rvlc,
@@ -323,13 +323,13 @@ RLTable ff_rvlc_rl_intra = {
     intra_rvlc_level,
 };
 
-const uint16_t ff_sprite_trajectory_tab[15][2] = {
+const uint16_t sprite_trajectory_tab[15][2] = {
  {0x00, 2}, {0x02, 3},  {0x03, 3},  {0x04, 3}, {0x05, 3}, {0x06, 3},
  {0x0E, 4}, {0x1E, 5},  {0x3E, 6},  {0x7E, 7}, {0xFE, 8},
  {0x1FE, 9},{0x3FE, 10},{0x7FE, 11},{0xFFE, 12},
 };
 
-const uint8_t ff_mb_type_b_tab[4][2] = {
+const uint8_t mb_type_b_tab[4][2] = {
  {1, 1}, {1, 2}, {1, 3}, {1, 4},
 };
 
@@ -369,7 +369,7 @@ const uint16_t ff_mpeg4_resync_prefix[8]={
     0x7F00, 0x7E00, 0x7C00, 0x7800, 0x7000, 0x6000, 0x4000, 0x0000
 };
 
-const uint8_t ff_mpeg4_dc_threshold[8]={
+const uint8_t mpeg4_dc_threshold[8]={
     99, 13, 15, 17, 19, 21, 23, 0
 };
 

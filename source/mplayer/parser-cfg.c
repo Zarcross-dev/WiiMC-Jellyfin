@@ -50,10 +50,9 @@ static int recursion_depth = 0;
 /// Setup the \ref Config from a config file.
 /** \param config The config object.
  *  \param conffile Path to the config file.
- *  \param silent print message when failing to open file only at verbose level
  *  \return 1 on sucess, -1 on error.
  */
-int m_config_parse_config_file(m_config_t* config, const char *conffile, int silent)
+int m_config_parse_config_file(m_config_t* config, const char *conffile)
 {
 #define PRINT_LINENUM	mp_msg(MSGT_CFGPARSER,MSGL_V,"%s(%d): ", conffile, line_num)
 #define MAX_LINE_LEN	10000
@@ -80,7 +79,7 @@ int m_config_parse_config_file(m_config_t* config, const char *conffile, int sil
 #endif
 	mp_msg(MSGT_CFGPARSER,MSGL_V,"Reading config file %s", conffile);
 
-	if (++recursion_depth > MAX_RECURSION_DEPTH) {
+	if (recursion_depth > MAX_RECURSION_DEPTH) {
 		mp_msg(MSGT_CFGPARSER,MSGL_ERR,": too deep 'include'. check your configfiles\n");
 		ret = -1;
 		goto out;
@@ -97,9 +96,9 @@ int m_config_parse_config_file(m_config_t* config, const char *conffile, int sil
 	mp_msg(MSGT_CFGPARSER,MSGL_V,"\n");
 
 	if ((fp = fopen(conffile, "r")) == NULL) {
-	  mp_msg(MSGT_CFGPARSER,silent?MSGL_V:MSGL_ERR,"Failed to read %s: %s\n", conffile, strerror(errno));
+	  mp_msg(MSGT_CFGPARSER,MSGL_V,": %s\n", strerror(errno));
 		free(line);
-		ret = silent ? 0 : -1;
+		ret = 0;
 		goto out;
 	}
 

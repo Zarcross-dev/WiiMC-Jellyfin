@@ -3,20 +3,20 @@
  * Copyright (c) 2009 Nathan Caldwell <saintdev (at) gmail.com>
  * Copyright (c) 2009 David Conrad
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -51,7 +51,7 @@ typedef struct lag_rac {
     uint8_t  range_hash[256];   /**< Hash table mapping upper byte to approximate symbol. */
 } lag_rac;
 
-void ff_lag_rac_init(lag_rac *l, GetBitContext *gb, int length);
+void lag_rac_init(lag_rac *l, GetBitContext *gb, int length);
 
 /* TODO: Optimize */
 static inline void lag_rac_refill(lag_rac *l)

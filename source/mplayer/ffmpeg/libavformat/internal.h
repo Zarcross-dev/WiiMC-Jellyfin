@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2001 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -37,10 +37,7 @@ typedef struct AVCodecTag {
     unsigned int tag;
 } AVCodecTag;
 
-typedef struct CodecMime{
-    char str[32];
-    enum CodecID id;
-} CodecMime;
+void ff_dynarray_add(intptr_t **tab_ptr, int *nb_ptr, intptr_t elem);
 
 #ifdef __GNUC__
 #define dynarray_add(tab, nb_ptr, elem)\
@@ -48,16 +45,16 @@ do {\
     __typeof__(tab) _tab = (tab);\
     __typeof__(elem) _elem = (elem);\
     (void)sizeof(**_tab == _elem); /* check that types are compatible */\
-    av_dynarray_add(_tab, nb_ptr, _elem);\
+    ff_dynarray_add((intptr_t **)_tab, nb_ptr, (intptr_t)_elem);\
 } while(0)
 #else
 #define dynarray_add(tab, nb_ptr, elem)\
 do {\
-    av_dynarray_add((tab), nb_ptr, (elem));\
+    ff_dynarray_add((intptr_t **)(tab), nb_ptr, (intptr_t)(elem));\
 } while(0)
 #endif
 
-struct tm *ff_brktimegm(time_t secs, struct tm *tm);
+struct tm *brktimegm(time_t secs, struct tm *tm);
 
 char *ff_data_to_hex(char *buf, const uint8_t *src, int size, int lowercase);
 
@@ -76,9 +73,8 @@ void ff_program_add_stream_index(AVFormatContext *ac, int progid, unsigned int i
 /**
  * Add packet to AVFormatContext->packet_buffer list, determining its
  * interleaved position using compare() function argument.
- * @return 0, or < 0 on error
  */
-int ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
+void ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
                               int (*compare)(AVFormatContext *, AVPacket *, AVPacket *));
 
 void ff_read_frame_flush(AVFormatContext *s);
@@ -229,8 +225,8 @@ int ff_add_index_entry(AVIndexEntry **index_entries,
  *
  * @return AVChapter or NULL on error
  */
-AVChapter *avpriv_new_chapter(AVFormatContext *s, int id, AVRational time_base,
-                              int64_t start, int64_t end, const char *title);
+AVChapter *ff_new_chapter(AVFormatContext *s, int id, AVRational time_base,
+                          int64_t start, int64_t end, const char *title);
 
 /**
  * Ensure the index uses less memory than the maximum specified in
@@ -256,92 +252,5 @@ enum CodecID ff_guess_image2_codec(const char *filename);
  * Convert a date string in ISO8601 format to Unix timestamp.
  */
 int64_t ff_iso8601_to_unix_time(const char *datestr);
-
-/**
- * Perform a binary search using av_index_search_timestamp() and
- * AVInputFormat.read_timestamp().
- *
- * @param target_ts target timestamp in the time base of the given stream
- * @param stream_index stream number
- */
-int ff_seek_frame_binary(AVFormatContext *s, int stream_index,
-                         int64_t target_ts, int flags);
-
-/**
- * Update cur_dts of all streams based on the given timestamp and AVStream.
- *
- * Stream ref_st unchanged, others set cur_dts in their native time base.
- * Only needed for timestamp wrapping or if (dts not set and pts!=dts).
- * @param timestamp new dts expressed in time_base of param ref_st
- * @param ref_st reference stream giving time_base of param timestamp
- */
-void ff_update_cur_dts(AVFormatContext *s, AVStream *ref_st, int64_t timestamp);
-
-/**
- * Perform a binary search using read_timestamp().
- *
- * @param target_ts target timestamp in the time base of the given stream
- * @param stream_index stream number
- */
-int64_t ff_gen_search(AVFormatContext *s, int stream_index,
-                      int64_t target_ts, int64_t pos_min,
-                      int64_t pos_max, int64_t pos_limit,
-                      int64_t ts_min, int64_t ts_max,
-                      int flags, int64_t *ts_ret,
-                      int64_t (*read_timestamp)(struct AVFormatContext *, int , int64_t *, int64_t ));
-
-/**
- * Set the pts for a given stream. If the new values would be invalid
- * (<= 0), it leaves the AVStream unchanged.
- *
- * @param s stream
- * @param pts_wrap_bits number of bits effectively used by the pts
- *        (used for wrap control, 33 is the value for MPEG)
- * @param pts_num numerator to convert to seconds (MPEG: 1)
- * @param pts_den denominator to convert to seconds (MPEG: 90000)
- */
-void avpriv_set_pts_info(AVStream *s, int pts_wrap_bits,
-                         unsigned int pts_num, unsigned int pts_den);
-
-/**
- * Add side data to a packet for changing parameters to the given values.
- * Parameters set to 0 aren't included in the change.
- */
-int ff_add_param_change(AVPacket *pkt, int32_t channels,
-                        uint64_t channel_layout, int32_t sample_rate,
-                        int32_t width, int32_t height);
-
-/**
- * Set the timebase for each stream from the corresponding codec timebase and
- * print it.
- */
-int ff_framehash_write_header(AVFormatContext *s);
-
-/**
- * Read a transport packet from a media file.
- *
- * @param s media file handle
- * @param pkt is filled
- * @return 0 if OK, AVERROR_xxx on error
- */
-int ff_read_packet(AVFormatContext *s, AVPacket *pkt);
-
-/**
- * Interleave a packet per dts in an output media file.
- *
- * Packets with pkt->destruct == av_destruct_packet will be freed inside this
- * function, so they cannot be used after it. Note that calling av_free_packet()
- * on them is still safe.
- *
- * @param s media file handle
- * @param out the interleaved packet will be output here
- * @param pkt the input packet
- * @param flush 1 if no further packets are available as input and all
- *              remaining packets should be output
- * @return 1 if a packet was output, 0 if no packet could be output,
- *         < 0 if an error occurred
- */
-int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
-                                 AVPacket *pkt, int flush);
 
 #endif /* AVFORMAT_INTERNAL_H */

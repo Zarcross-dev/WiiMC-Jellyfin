@@ -25,7 +25,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "mp_msg.h"
 #include "af.h"
 
 #define L 65536

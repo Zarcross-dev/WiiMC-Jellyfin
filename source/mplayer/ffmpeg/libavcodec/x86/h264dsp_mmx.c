@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2004-2005 Michael Niedermayer, Loren Merritt
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -298,53 +298,63 @@ LF_IFUNC(v,  luma_intra,      10, mmxext)
 /***********************************/
 /* weighted prediction */
 
-#define H264_WEIGHT(W, OPT) \
-void ff_h264_weight_ ## W ## _ ## OPT(uint8_t *dst, \
-    int stride, int height, int log2_denom, int weight, int offset);
+#define H264_WEIGHT(W, H, OPT) \
+void ff_h264_weight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \
+    int stride, int log2_denom, int weight, int offset);
 
-#define H264_BIWEIGHT(W, OPT) \
-void ff_h264_biweight_ ## W ## _ ## OPT(uint8_t *dst, \
-    uint8_t *src, int stride, int height, int log2_denom, int weightd, \
+#define H264_BIWEIGHT(W, H, OPT) \
+void ff_h264_biweight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \
+    uint8_t *src, int stride, int log2_denom, int weightd, \
     int weights, int offset);
 
-#define H264_BIWEIGHT_MMX(W) \
-H264_WEIGHT  (W, mmx2) \
-H264_BIWEIGHT(W, mmx2)
+#define H264_BIWEIGHT_MMX(W,H) \
+H264_WEIGHT  (W, H, mmx2) \
+H264_BIWEIGHT(W, H, mmx2)
 
-#define H264_BIWEIGHT_MMX_SSE(W) \
-H264_BIWEIGHT_MMX(W) \
-H264_WEIGHT      (W, sse2) \
-H264_BIWEIGHT    (W, sse2) \
-H264_BIWEIGHT    (W, ssse3)
+#define H264_BIWEIGHT_MMX_SSE(W,H) \
+H264_BIWEIGHT_MMX(W, H) \
+H264_WEIGHT      (W, H, sse2) \
+H264_BIWEIGHT    (W, H, sse2) \
+H264_BIWEIGHT    (W, H, ssse3)
 
-H264_BIWEIGHT_MMX_SSE(16)
-H264_BIWEIGHT_MMX_SSE( 8)
-H264_BIWEIGHT_MMX    ( 4)
+H264_BIWEIGHT_MMX_SSE(16, 16)
+H264_BIWEIGHT_MMX_SSE(16,  8)
+H264_BIWEIGHT_MMX_SSE( 8, 16)
+H264_BIWEIGHT_MMX_SSE( 8,  8)
+H264_BIWEIGHT_MMX_SSE( 8,  4)
+H264_BIWEIGHT_MMX    ( 4,  8)
+H264_BIWEIGHT_MMX    ( 4,  4)
+H264_BIWEIGHT_MMX    ( 4,  2)
 
-#define H264_WEIGHT_10(W, DEPTH, OPT) \
-void ff_h264_weight_ ## W ## _ ## DEPTH ## _ ## OPT(uint8_t *dst, \
-    int stride, int height, int log2_denom, int weight, int offset);
+#define H264_WEIGHT_10(W, H, DEPTH, OPT) \
+void ff_h264_weight_ ## W ## x ## H ## _ ## DEPTH ## _ ## OPT(uint8_t *dst, \
+    int stride, int log2_denom, int weight, int offset);
 
-#define H264_BIWEIGHT_10(W, DEPTH, OPT) \
-void ff_h264_biweight_ ## W ## _ ## DEPTH ## _ ## OPT \
-    (uint8_t *dst, uint8_t *src, int stride, int height, int log2_denom, \
+#define H264_BIWEIGHT_10(W, H, DEPTH, OPT) \
+void ff_h264_biweight_ ## W ## x ## H ## _ ## DEPTH ## _ ## OPT \
+    (uint8_t *dst, uint8_t *src, int stride, int log2_denom, \
      int weightd, int weights, int offset);
 
-#define H264_BIWEIGHT_10_SSE(W, DEPTH) \
-H264_WEIGHT_10  (W, DEPTH, sse2) \
-H264_WEIGHT_10  (W, DEPTH, sse4) \
-H264_BIWEIGHT_10(W, DEPTH, sse2) \
-H264_BIWEIGHT_10(W, DEPTH, sse4)
+#define H264_BIWEIGHT_10_SSE(W, H, DEPTH) \
+H264_WEIGHT_10  (W, H, DEPTH, sse2) \
+H264_WEIGHT_10  (W, H, DEPTH, sse4) \
+H264_BIWEIGHT_10(W, H, DEPTH, sse2) \
+H264_BIWEIGHT_10(W, H, DEPTH, sse4)
 
-H264_BIWEIGHT_10_SSE(16, 10)
-H264_BIWEIGHT_10_SSE( 8, 10)
-H264_BIWEIGHT_10_SSE( 4, 10)
+H264_BIWEIGHT_10_SSE(16, 16, 10)
+H264_BIWEIGHT_10_SSE(16,  8, 10)
+H264_BIWEIGHT_10_SSE( 8, 16, 10)
+H264_BIWEIGHT_10_SSE( 8,  8, 10)
+H264_BIWEIGHT_10_SSE( 8,  4, 10)
+H264_BIWEIGHT_10_SSE( 4,  8, 10)
+H264_BIWEIGHT_10_SSE( 4,  4, 10)
+H264_BIWEIGHT_10_SSE( 4,  2, 10)
 
-void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chroma_format_idc)
+void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth)
 {
     int mm_flags = av_get_cpu_flags();
 
-    if (chroma_format_idc == 1 && mm_flags & AV_CPU_FLAG_MMX2) {
+    if (mm_flags & AV_CPU_FLAG_MMX2) {
         c->h264_loop_filter_strength= h264_loop_filter_strength_mmx2;
     }
 
@@ -358,56 +368,66 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chrom
 
         c->h264_idct_add16          = ff_h264_idct_add16_8_mmx;
         c->h264_idct8_add4          = ff_h264_idct8_add4_8_mmx;
-        if (chroma_format_idc == 1)
-            c->h264_idct_add8       = ff_h264_idct_add8_8_mmx;
+        c->h264_idct_add8           = ff_h264_idct_add8_8_mmx;
         c->h264_idct_add16intra     = ff_h264_idct_add16intra_8_mmx;
-        if (mm_flags & AV_CPU_FLAG_CMOV)
-            c->h264_luma_dc_dequant_idct= ff_h264_luma_dc_dequant_idct_mmx;
+        c->h264_luma_dc_dequant_idct= ff_h264_luma_dc_dequant_idct_mmx;
 
         if (mm_flags & AV_CPU_FLAG_MMX2) {
             c->h264_idct_dc_add    = ff_h264_idct_dc_add_8_mmx2;
             c->h264_idct8_dc_add   = ff_h264_idct8_dc_add_8_mmx2;
             c->h264_idct_add16     = ff_h264_idct_add16_8_mmx2;
             c->h264_idct8_add4     = ff_h264_idct8_add4_8_mmx2;
-            if (chroma_format_idc == 1)
-                c->h264_idct_add8  = ff_h264_idct_add8_8_mmx2;
+            c->h264_idct_add8      = ff_h264_idct_add8_8_mmx2;
             c->h264_idct_add16intra= ff_h264_idct_add16intra_8_mmx2;
 
             c->h264_v_loop_filter_chroma= ff_deblock_v_chroma_8_mmxext;
+            c->h264_h_loop_filter_chroma= ff_deblock_h_chroma_8_mmxext;
             c->h264_v_loop_filter_chroma_intra= ff_deblock_v_chroma_intra_8_mmxext;
-            if (chroma_format_idc == 1) {
-                c->h264_h_loop_filter_chroma= ff_deblock_h_chroma_8_mmxext;
-                c->h264_h_loop_filter_chroma_intra= ff_deblock_h_chroma_intra_8_mmxext;
-            }
+            c->h264_h_loop_filter_chroma_intra= ff_deblock_h_chroma_intra_8_mmxext;
 #if ARCH_X86_32
             c->h264_v_loop_filter_luma= ff_deblock_v_luma_8_mmxext;
             c->h264_h_loop_filter_luma= ff_deblock_h_luma_8_mmxext;
             c->h264_v_loop_filter_luma_intra = ff_deblock_v_luma_intra_8_mmxext;
             c->h264_h_loop_filter_luma_intra = ff_deblock_h_luma_intra_8_mmxext;
 #endif
-            c->weight_h264_pixels_tab[0]= ff_h264_weight_16_mmx2;
-            c->weight_h264_pixels_tab[1]= ff_h264_weight_8_mmx2;
-            c->weight_h264_pixels_tab[2]= ff_h264_weight_4_mmx2;
+            c->weight_h264_pixels_tab[0]= ff_h264_weight_16x16_mmx2;
+            c->weight_h264_pixels_tab[1]= ff_h264_weight_16x8_mmx2;
+            c->weight_h264_pixels_tab[2]= ff_h264_weight_8x16_mmx2;
+            c->weight_h264_pixels_tab[3]= ff_h264_weight_8x8_mmx2;
+            c->weight_h264_pixels_tab[4]= ff_h264_weight_8x4_mmx2;
+            c->weight_h264_pixels_tab[5]= ff_h264_weight_4x8_mmx2;
+            c->weight_h264_pixels_tab[6]= ff_h264_weight_4x4_mmx2;
+            c->weight_h264_pixels_tab[7]= ff_h264_weight_4x2_mmx2;
 
-            c->biweight_h264_pixels_tab[0]= ff_h264_biweight_16_mmx2;
-            c->biweight_h264_pixels_tab[1]= ff_h264_biweight_8_mmx2;
-            c->biweight_h264_pixels_tab[2]= ff_h264_biweight_4_mmx2;
+            c->biweight_h264_pixels_tab[0]= ff_h264_biweight_16x16_mmx2;
+            c->biweight_h264_pixels_tab[1]= ff_h264_biweight_16x8_mmx2;
+            c->biweight_h264_pixels_tab[2]= ff_h264_biweight_8x16_mmx2;
+            c->biweight_h264_pixels_tab[3]= ff_h264_biweight_8x8_mmx2;
+            c->biweight_h264_pixels_tab[4]= ff_h264_biweight_8x4_mmx2;
+            c->biweight_h264_pixels_tab[5]= ff_h264_biweight_4x8_mmx2;
+            c->biweight_h264_pixels_tab[6]= ff_h264_biweight_4x4_mmx2;
+            c->biweight_h264_pixels_tab[7]= ff_h264_biweight_4x2_mmx2;
 
             if (mm_flags&AV_CPU_FLAG_SSE2) {
                 c->h264_idct8_add           = ff_h264_idct8_add_8_sse2;
 
                 c->h264_idct_add16          = ff_h264_idct_add16_8_sse2;
                 c->h264_idct8_add4          = ff_h264_idct8_add4_8_sse2;
-                if (chroma_format_idc == 1)
-                    c->h264_idct_add8       = ff_h264_idct_add8_8_sse2;
+                c->h264_idct_add8           = ff_h264_idct_add8_8_sse2;
                 c->h264_idct_add16intra     = ff_h264_idct_add16intra_8_sse2;
                 c->h264_luma_dc_dequant_idct= ff_h264_luma_dc_dequant_idct_sse2;
 
-                c->weight_h264_pixels_tab[0]= ff_h264_weight_16_sse2;
-                c->weight_h264_pixels_tab[1]= ff_h264_weight_8_sse2;
+                c->weight_h264_pixels_tab[0]= ff_h264_weight_16x16_sse2;
+                c->weight_h264_pixels_tab[1]= ff_h264_weight_16x8_sse2;
+                c->weight_h264_pixels_tab[2]= ff_h264_weight_8x16_sse2;
+                c->weight_h264_pixels_tab[3]= ff_h264_weight_8x8_sse2;
+                c->weight_h264_pixels_tab[4]= ff_h264_weight_8x4_sse2;
 
-                c->biweight_h264_pixels_tab[0]= ff_h264_biweight_16_sse2;
-                c->biweight_h264_pixels_tab[1]= ff_h264_biweight_8_sse2;
+                c->biweight_h264_pixels_tab[0]= ff_h264_biweight_16x16_sse2;
+                c->biweight_h264_pixels_tab[1]= ff_h264_biweight_16x8_sse2;
+                c->biweight_h264_pixels_tab[2]= ff_h264_biweight_8x16_sse2;
+                c->biweight_h264_pixels_tab[3]= ff_h264_biweight_8x8_sse2;
+                c->biweight_h264_pixels_tab[4]= ff_h264_biweight_8x4_sse2;
 
 #if HAVE_ALIGNED_STACK
                 c->h264_v_loop_filter_luma = ff_deblock_v_luma_8_sse2;
@@ -417,10 +437,13 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chrom
 #endif
             }
             if (mm_flags&AV_CPU_FLAG_SSSE3) {
-                c->biweight_h264_pixels_tab[0]= ff_h264_biweight_16_ssse3;
-                c->biweight_h264_pixels_tab[1]= ff_h264_biweight_8_ssse3;
+                c->biweight_h264_pixels_tab[0]= ff_h264_biweight_16x16_ssse3;
+                c->biweight_h264_pixels_tab[1]= ff_h264_biweight_16x8_ssse3;
+                c->biweight_h264_pixels_tab[2]= ff_h264_biweight_8x16_ssse3;
+                c->biweight_h264_pixels_tab[3]= ff_h264_biweight_8x8_ssse3;
+                c->biweight_h264_pixels_tab[4]= ff_h264_biweight_8x4_ssse3;
             }
-            if (HAVE_AVX && mm_flags&AV_CPU_FLAG_AVX) {
+            if (mm_flags&AV_CPU_FLAG_AVX) {
 #if HAVE_ALIGNED_STACK
                 c->h264_v_loop_filter_luma = ff_deblock_v_luma_8_avx;
                 c->h264_h_loop_filter_luma = ff_deblock_h_luma_8_avx;
@@ -449,21 +472,30 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chrom
                 c->h264_idct8_dc_add   = ff_h264_idct8_dc_add_10_sse2;
 
                 c->h264_idct_add16     = ff_h264_idct_add16_10_sse2;
-                if (chroma_format_idc == 1)
-                    c->h264_idct_add8  = ff_h264_idct_add8_10_sse2;
+                c->h264_idct_add8      = ff_h264_idct_add8_10_sse2;
                 c->h264_idct_add16intra= ff_h264_idct_add16intra_10_sse2;
 #if HAVE_ALIGNED_STACK
                 c->h264_idct8_add      = ff_h264_idct8_add_10_sse2;
                 c->h264_idct8_add4     = ff_h264_idct8_add4_10_sse2;
 #endif
 
-                c->weight_h264_pixels_tab[0] = ff_h264_weight_16_10_sse2;
-                c->weight_h264_pixels_tab[1] = ff_h264_weight_8_10_sse2;
-                c->weight_h264_pixels_tab[2] = ff_h264_weight_4_10_sse2;
+                c->weight_h264_pixels_tab[0] = ff_h264_weight_16x16_10_sse2;
+                c->weight_h264_pixels_tab[1] = ff_h264_weight_16x8_10_sse2;
+                c->weight_h264_pixels_tab[2] = ff_h264_weight_8x16_10_sse2;
+                c->weight_h264_pixels_tab[3] = ff_h264_weight_8x8_10_sse2;
+                c->weight_h264_pixels_tab[4] = ff_h264_weight_8x4_10_sse2;
+                c->weight_h264_pixels_tab[5] = ff_h264_weight_4x8_10_sse2;
+                c->weight_h264_pixels_tab[6] = ff_h264_weight_4x4_10_sse2;
+                c->weight_h264_pixels_tab[7] = ff_h264_weight_4x2_10_sse2;
 
-                c->biweight_h264_pixels_tab[0] = ff_h264_biweight_16_10_sse2;
-                c->biweight_h264_pixels_tab[1] = ff_h264_biweight_8_10_sse2;
-                c->biweight_h264_pixels_tab[2] = ff_h264_biweight_4_10_sse2;
+                c->biweight_h264_pixels_tab[0] = ff_h264_biweight_16x16_10_sse2;
+                c->biweight_h264_pixels_tab[1] = ff_h264_biweight_16x8_10_sse2;
+                c->biweight_h264_pixels_tab[2] = ff_h264_biweight_8x16_10_sse2;
+                c->biweight_h264_pixels_tab[3] = ff_h264_biweight_8x8_10_sse2;
+                c->biweight_h264_pixels_tab[4] = ff_h264_biweight_8x4_10_sse2;
+                c->biweight_h264_pixels_tab[5] = ff_h264_biweight_4x8_10_sse2;
+                c->biweight_h264_pixels_tab[6] = ff_h264_biweight_4x4_10_sse2;
+                c->biweight_h264_pixels_tab[7] = ff_h264_biweight_4x2_10_sse2;
 
                 c->h264_v_loop_filter_chroma= ff_deblock_v_chroma_10_sse2;
                 c->h264_v_loop_filter_chroma_intra= ff_deblock_v_chroma_intra_10_sse2;
@@ -475,13 +507,23 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chrom
 #endif
             }
             if (mm_flags&AV_CPU_FLAG_SSE4) {
-                c->weight_h264_pixels_tab[0] = ff_h264_weight_16_10_sse4;
-                c->weight_h264_pixels_tab[1] = ff_h264_weight_8_10_sse4;
-                c->weight_h264_pixels_tab[2] = ff_h264_weight_4_10_sse4;
+                c->weight_h264_pixels_tab[0] = ff_h264_weight_16x16_10_sse4;
+                c->weight_h264_pixels_tab[1] = ff_h264_weight_16x8_10_sse4;
+                c->weight_h264_pixels_tab[2] = ff_h264_weight_8x16_10_sse4;
+                c->weight_h264_pixels_tab[3] = ff_h264_weight_8x8_10_sse4;
+                c->weight_h264_pixels_tab[4] = ff_h264_weight_8x4_10_sse4;
+                c->weight_h264_pixels_tab[5] = ff_h264_weight_4x8_10_sse4;
+                c->weight_h264_pixels_tab[6] = ff_h264_weight_4x4_10_sse4;
+                c->weight_h264_pixels_tab[7] = ff_h264_weight_4x2_10_sse4;
 
-                c->biweight_h264_pixels_tab[0] = ff_h264_biweight_16_10_sse4;
-                c->biweight_h264_pixels_tab[1] = ff_h264_biweight_8_10_sse4;
-                c->biweight_h264_pixels_tab[2] = ff_h264_biweight_4_10_sse4;
+                c->biweight_h264_pixels_tab[0] = ff_h264_biweight_16x16_10_sse4;
+                c->biweight_h264_pixels_tab[1] = ff_h264_biweight_16x8_10_sse4;
+                c->biweight_h264_pixels_tab[2] = ff_h264_biweight_8x16_10_sse4;
+                c->biweight_h264_pixels_tab[3] = ff_h264_biweight_8x8_10_sse4;
+                c->biweight_h264_pixels_tab[4] = ff_h264_biweight_8x4_10_sse4;
+                c->biweight_h264_pixels_tab[5] = ff_h264_biweight_4x8_10_sse4;
+                c->biweight_h264_pixels_tab[6] = ff_h264_biweight_4x4_10_sse4;
+                c->biweight_h264_pixels_tab[7] = ff_h264_biweight_4x2_10_sse4;
             }
 #if HAVE_AVX
             if (mm_flags&AV_CPU_FLAG_AVX) {
@@ -490,8 +532,7 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth, const int chrom
                 c->h264_idct8_dc_add   = ff_h264_idct8_dc_add_10_avx;
 
                 c->h264_idct_add16     = ff_h264_idct_add16_10_avx;
-                if (chroma_format_idc == 1)
-                    c->h264_idct_add8  = ff_h264_idct_add8_10_avx;
+                c->h264_idct_add8      = ff_h264_idct_add8_10_avx;
                 c->h264_idct_add16intra= ff_h264_idct_add16intra_10_avx;
 #if HAVE_ALIGNED_STACK
                 c->h264_idct8_add      = ff_h264_idct8_add_10_avx;

@@ -1,25 +1,26 @@
 /*
  * Copyright (c) 2008-2010 Stefano Sabatini
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include <unistd.h>             /* getopt */
 
+#undef HAVE_AV_CONFIG_H
 #include "libavutil/pixdesc.h"
 #include "libavutil/audioconvert.h"
 #include "libavfilter/avfiltergraph.h"
@@ -62,28 +63,21 @@ static void print_digraph(FILE *outfile, AVFilterGraph *graph)
                 char dst_filter_ctx_label[128];
                 const AVFilterContext *dst_filter_ctx = link->dst;
 
-                snprintf(dst_filter_ctx_label, sizeof(dst_filter_ctx_label),
-                         "%s (%s)",
+                snprintf(dst_filter_ctx_label, sizeof(dst_filter_ctx_label), "%s (%s)",
                          dst_filter_ctx->name,
                          dst_filter_ctx->filter->name);
 
-                fprintf(outfile, "\"%s\" -> \"%s\"",
-                        filter_ctx_label, dst_filter_ctx_label);
+                fprintf(outfile, "\"%s\" -> \"%s\"", filter_ctx_label, dst_filter_ctx_label);
                 if (link->type == AVMEDIA_TYPE_VIDEO) {
-                    fprintf(outfile,
-                            " [ label= \"fmt:%s w:%d h:%d tb:%d/%d\" ]",
+                    fprintf(outfile, " [ label= \"fmt:%s w:%d h:%d tb:%d/%d\" ]",
                             av_pix_fmt_descriptors[link->format].name,
-                            link->w, link->h, link->time_base.num,
-                            link->time_base.den);
+                            link->w, link->h, link->time_base.num, link->time_base.den);
                 } else if (link->type == AVMEDIA_TYPE_AUDIO) {
                     char buf[255];
-                    av_get_channel_layout_string(buf, sizeof(buf), -1,
-                                                 link->channel_layout);
-                    fprintf(outfile,
-                            " [ label= \"fmt:%s sr:%"PRId64" cl:%s tb:%d/%d\" ]",
+                    av_get_channel_layout_string(buf, sizeof(buf), -1, link->channel_layout);
+                    fprintf(outfile, " [ label= \"fmt:%s sr:%"PRId64" cl:%s\" ]",
                             av_get_sample_fmt_name(link->format),
-                            link->sample_rate, buf,
-                            link->time_base.num, link->time_base.den);
+                            link->sample_rate, buf);
                 }
                 fprintf(outfile, ";\n");
             }
@@ -95,17 +89,17 @@ static void print_digraph(FILE *outfile, AVFilterGraph *graph)
 int main(int argc, char **argv)
 {
     const char *outfilename = NULL;
-    const char *infilename  = NULL;
-    FILE *outfile           = NULL;
-    FILE *infile            = NULL;
-    char *graph_string      = NULL;
+    const char *infilename = NULL;
+    FILE *outfile = NULL;
+    FILE *infile = NULL;
+    char *graph_string = NULL;
     AVFilterGraph *graph = av_mallocz(sizeof(AVFilterGraph));
     char c;
 
     av_log_set_level(AV_LOG_DEBUG);
 
     while ((c = getopt(argc, argv, "hi:o:")) != -1) {
-        switch (c) {
+        switch(c) {
         case 'h':
             usage();
             return 0;
@@ -124,8 +118,7 @@ int main(int argc, char **argv)
         infilename = "/dev/stdin";
     infile = fopen(infilename, "r");
     if (!infile) {
-        fprintf(stderr, "Impossible to open input file '%s': %s\n",
-                infilename, strerror(errno));
+        fprintf(stderr, "Impossible to open input file '%s': %s\n", infilename, strerror(errno));
         return 1;
     }
 
@@ -133,8 +126,7 @@ int main(int argc, char **argv)
         outfilename = "/dev/stdout";
     outfile = fopen(outfilename, "w");
     if (!outfile) {
-        fprintf(stderr, "Impossible to open output file '%s': %s\n",
-                outfilename, strerror(errno));
+        fprintf(stderr, "Impossible to open output file '%s': %s\n", outfilename, strerror(errno));
         return 1;
     }
 
@@ -149,7 +141,7 @@ int main(int argc, char **argv)
             struct line *new_line = av_malloc(sizeof(struct line));
             count += strlen(last_line->data);
             last_line->next = new_line;
-            last_line       = new_line;
+            last_line = new_line;
         }
         last_line->next = NULL;
 

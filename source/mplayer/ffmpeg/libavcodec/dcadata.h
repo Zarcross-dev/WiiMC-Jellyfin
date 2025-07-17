@@ -3,20 +3,20 @@
  * Copyright (C) 2004 Gildas Bazin
  * Copyright (c) 2006 Benjamin Larsson
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -4224,7 +4224,7 @@ static const float lossless_quant_d[32] = {
 
 /* Vector quantization tables */
 
-DECLARE_ALIGNED(8, static const int8_t, high_freq_vq)[1024][32] =
+static const int8_t high_freq_vq[1024][32] =
 {
   {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
@@ -7528,7 +7528,7 @@ static const float dca_downmix_coeffs[65] = {
   0.001412537544623, 0.001000000000000, 0.000501187233627, 0.000251188643151, 0.000000000000000,
 };
 
-static const uint8_t dca_default_coeffs[10][5][2] = {
+static const uint8_t dca_default_coeffs[16][5][2] = {
     { { 13, 13 },                                                 },
     { {  0, 64 }, { 64,  0 },                                     },
     { {  0, 64 }, { 64,  0 },                                     },

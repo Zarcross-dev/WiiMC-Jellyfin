@@ -165,13 +165,7 @@ static void alloc_buf(mp_osd_obj_t* obj)
 }
 
 // renders the buffer
-static inline void vo_draw_text_from_buffer(mp_osd_obj_t* obj,
-                                            void (*draw_alpha)(int x0, int y0,
-                                                               int w, int h,
-                                                               unsigned char *src,
-                                                               unsigned char *srca,
-                                                               int stride))
-{
+inline static void vo_draw_text_from_buffer(mp_osd_obj_t* obj,void (*draw_alpha)(int x0,int y0, int w,int h, unsigned char* src, unsigned char *srca, int stride)){
     if (obj->allocated > 0) {
 	draw_alpha(obj->bbox.x1,obj->bbox.y1,
 		   obj->bbox.x2-obj->bbox.x1,
@@ -196,8 +190,7 @@ no_utf8:
   return c;
 }
 
-static inline void vo_update_text_osd(mp_osd_obj_t *obj, int dxs, int dys)
-{
+inline static void vo_update_text_osd(mp_osd_obj_t* obj,int dxs,int dys){
 	const char *cp=vo_osd_text;
 	int x=20;
 	int h=0;
@@ -242,11 +235,8 @@ void osd_set_nav_box (uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey) {
   nav_hl.ey = ey;
 }
 
-static inline void vo_update_nav(mp_osd_obj_t *obj, int dxs, int dys,
-                                 int left_border, int top_border,
-                                 int right_border, int bottom_border,
-                                 int orig_w, int orig_h)
-{
+inline static void vo_update_nav (mp_osd_obj_t *obj, int dxs, int dys, int left_border, int top_border,
+                      int right_border, int bottom_border, int orig_w, int orig_h) {
   int len;
   int sx = nav_hl.sx, sy = nav_hl.sy;
   int ex = nav_hl.ex, ey = nav_hl.ey;
@@ -308,7 +298,7 @@ static void tt_draw_alpha_buf(mp_osd_obj_t* obj, int x0,int y0, int w,int h, uns
 	bs+= srcskip;
     }
 }
-static inline void vo_update_text_teletext(mp_osd_obj_t *obj, int dxs, int dys)
+inline static void vo_update_text_teletext(mp_osd_obj_t *obj, int dxs, int dys)
 {
     int h=0,w=0,i,j,font,flashon;
     int wm,hm;
@@ -528,7 +518,6 @@ TODO: support for separated graphics symbols (where six rectangles does not touc
 
 int vo_osd_progbar_type=-1;
 int vo_osd_progbar_value=100;   // 0..256
-int progbar_align=50;
 
 // if we have n=256 bars then OSD progbar looks like below
 //
@@ -538,8 +527,7 @@ int progbar_align=50;
 //
 //  the above schema is rescalled to n=elems bars
 
-static inline void vo_update_text_progbar(mp_osd_obj_t *obj, int dxs, int dys)
-{
+inline static void vo_update_text_progbar(mp_osd_obj_t* obj,int dxs,int dys){
 
     obj->flags|=OSDFLAG_CHANGED|OSDFLAG_VISIBLE;
 
@@ -556,7 +544,7 @@ static inline void vo_update_text_progbar(mp_osd_obj_t *obj, int dxs, int dys)
 
     // calculate bbox corners:
     {	int h=0;
-        int y=((dys-vo_font->height)*progbar_align)/100;
+        int y=(dys-vo_font->height)/2;
         int delimw=vo_font->width[OSD_PB_START]
      		  +vo_font->width[OSD_PB_END]
      		  +vo_font->charspace;
@@ -679,8 +667,7 @@ static inline void vo_update_text_progbar(mp_osd_obj_t *obj, int dxs, int dys)
 
 subtitle* vo_sub=NULL;
 
-static inline void vo_update_text_sub(mp_osd_obj_t *obj, int dxs, int dys)
-{
+inline static void vo_update_text_sub(mp_osd_obj_t* obj,int dxs,int dys){
    unsigned char *t;
    int c,i,j,l,x,y,font,prevc,counter;
    int k;
@@ -1050,7 +1037,7 @@ static inline void vo_update_text_sub(mp_osd_obj_t *obj, int dxs, int dys)
 
 }
 
-static inline void vo_update_spudec_sub(mp_osd_obj_t* obj, int dxs, int dys)
+inline static void vo_update_spudec_sub(mp_osd_obj_t* obj, int dxs, int dys)
 {
   unsigned int bbox[4];
   spudec_calc_bbox(vo_spudec, dxs, dys, bbox);
@@ -1061,12 +1048,7 @@ static inline void vo_update_spudec_sub(mp_osd_obj_t* obj, int dxs, int dys)
   obj->flags |= OSDFLAG_BBOX;
 }
 
-static inline void vo_draw_spudec_sub(mp_osd_obj_t *obj,
-                                      void (*draw_alpha)(int x0, int y0,
-                                                         int w, int h,
-                                                         unsigned char *src,
-                                                         unsigned char *srca,
-                                                         int stride))
+inline static void vo_draw_spudec_sub(mp_osd_obj_t* obj, void (*draw_alpha)(int x0, int y0, int w, int h, unsigned char* src, unsigned char* srca, int stride))
 {
   spudec_draw_scaled(vo_spudec, obj->dxs, obj->dys, draw_alpha);
 }

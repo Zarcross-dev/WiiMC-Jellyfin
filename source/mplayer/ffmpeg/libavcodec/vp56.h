@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2006  Aurelien Jacobs <aurel@gnuage.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -30,6 +30,7 @@
 #include "dsputil.h"
 #include "get_bits.h"
 #include "bytestream.h"
+#include "cabac.h"
 #include "vp56dsp.h"
 
 typedef struct vp56_context VP56Context;
@@ -47,7 +48,7 @@ typedef void (*VP56Filter)(VP56Context *s, uint8_t *dst, uint8_t *src,
 typedef void (*VP56ParseCoeff)(VP56Context *s);
 typedef void (*VP56DefaultModelsInit)(VP56Context *s);
 typedef void (*VP56ParseVectorModels)(VP56Context *s);
-typedef int  (*VP56ParseCoeffModels)(VP56Context *s);
+typedef void (*VP56ParseCoeffModels)(VP56Context *s);
 typedef int  (*VP56ParseHeader)(VP56Context *s, const uint8_t *buf,
                                 int buf_size, int *golden_frame);
 
@@ -333,18 +334,29 @@ int vp56_rac_get_tree(VP56RangeCoder *c,
     return -tree->val;
 }
 
-// how probabilities are associated with decisions is different I think
-// well, the new scheme fits in the old but this way has one fewer branches per decision
-static av_always_inline int vp8_rac_get_tree(VP56RangeCoder *c, const int8_t (*tree)[2],
-                                   const uint8_t *probs)
+/**
+ * This is identical to vp8_rac_get_tree except for the possibility of starting
+ * on a node other than the root node, needed for coeff decode where this is
+ * used to save a bit after a 0 token (by disallowing EOB to immediately follow.)
+ */
+static av_always_inline
+int vp8_rac_get_tree_with_offset(VP56RangeCoder *c, const int8_t (*tree)[2],
+                                 const uint8_t *probs, int i)
 {
-    int i = 0;
-
     do {
         i = tree[i][vp56_rac_get_prob(c, probs[i])];
     } while (i > 0);
 
     return -i;
+}
+
+// how probabilities are associated with decisions is different I think
+// well, the new scheme fits in the old but this way has one fewer branches per decision
+static av_always_inline
+int vp8_rac_get_tree(VP56RangeCoder *c, const int8_t (*tree)[2],
+                     const uint8_t *probs)
+{
+    return vp8_rac_get_tree_with_offset(c, tree, probs, 0);
 }
 
 // DCTextra

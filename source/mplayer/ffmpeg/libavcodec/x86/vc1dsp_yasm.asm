@@ -2,25 +2,25 @@
 ;* VC1 deblocking optimizations
 ;* Copyright (c) 2009 David Conrad
 ;*
-;* This file is part of FFmpeg.
+;* This file is part of Libav.
 ;*
-;* FFmpeg is free software; you can redistribute it and/or
+;* Libav is free software; you can redistribute it and/or
 ;* modify it under the terms of the GNU Lesser General Public
 ;* License as published by the Free Software Foundation; either
 ;* version 2.1 of the License, or (at your option) any later version.
 ;*
-;* FFmpeg is distributed in the hope that it will be useful,
+;* Libav is distributed in the hope that it will be useful,
 ;* but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;* Lesser General Public License for more details.
 ;*
 ;* You should have received a copy of the GNU Lesser General Public
-;* License along with FFmpeg; if not, write to the Free Software
+;* License along with Libav; if not, write to the Free Software
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;******************************************************************************
 
-%include "libavutil/x86/x86inc.asm"
-%include "libavutil/x86/x86util.asm"
+%include "x86inc.asm"
+%include "x86util.asm"
 
 cextern pw_4
 cextern pw_5
@@ -227,6 +227,13 @@ section .text
     imul r2, 0x01010101
 %endmacro
 
+; I dont know why the sign extension is needed...
+%macro PSIGNW_SRA_MMX 2
+    psraw %2, 15
+    PSIGNW_MMX %1, %2
+%endmacro
+
+
 %macro VC1_LF_MMX 1
 INIT_MMX
 cglobal vc1_v_loop_filter_internal_%1
@@ -266,6 +273,10 @@ cglobal vc1_h_loop_filter8_%1, 3,5,0
     call vc1_h_loop_filter_internal_%1
     RET
 %endmacro
+
+%define PABSW PABSW_MMX
+%define PSIGNW PSIGNW_SRA_MMX
+VC1_LF_MMX mmx
 
 %define PABSW PABSW_MMX2
 VC1_LF_MMX mmx2

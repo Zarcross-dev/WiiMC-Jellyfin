@@ -29,7 +29,6 @@
 #include <inttypes.h>
 #include <math.h>
 
-#include "mp_msg.h"
 #include "af.h"
 
 #define L   	2      // Storage for filter taps

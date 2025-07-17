@@ -4,20 +4,20 @@
  *
  * Copyright (C) 2008 NVIDIA
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -25,27 +25,21 @@
 #define AVCODEC_VDPAU_H
 
 /**
- * @file
- * @ingroup lavc_codec_hwaccel_vdpau
- * Public libavcodec VDPAU header.
- */
-
-
-/**
- * @defgroup lavc_codec_hwaccel_vdpau VDPAU Decoder and Renderer
- * @ingroup lavc_codec_hwaccel
+ * @defgroup Decoder VDPAU Decoder and Renderer
  *
  * VDPAU hardware acceleration has two modules
  * - VDPAU decoding
  * - VDPAU presentation
  *
- * The VDPAU decoding module parses all headers using FFmpeg
+ * The VDPAU decoding module parses all headers using Libav
  * parsing mechanisms and uses VDPAU for the actual decoding.
  *
  * As per the current implementation, the actual decoding
  * and rendering (API calls) are done as part of the VDPAU
  * presentation (vo_vdpau.c) module.
  *
+ * @defgroup  VDPAU_Decoding VDPAU Decoding
+ * @ingroup Decoder
  * @{
  */
 
@@ -62,23 +56,16 @@
 #define FF_VDPAU_STATE_USED_FOR_REFERENCE 2
 
 /**
- * @brief This structure is used as a callback between the FFmpeg
+ * @brief This structure is used as a callback between the Libav
  * decoder (vd_) and presentation (vo_) module.
  * This is used for defining a video frame containing surface,
  * picture parameter, bitstream information etc which are passed
- * between the FFmpeg decoder and its clients.
+ * between the Libav decoder and its clients.
  */
 struct vdpau_render_state {
     VdpVideoSurface surface; ///< Used as rendered surface, never changed.
 
     int state; ///< Holds FF_VDPAU_STATE_* values.
-
-    /** Describe size/location of the compressed video data.
-        Set to 0 when freeing bitstream_buffers. */
-    int bitstream_buffers_allocated;
-    int bitstream_buffers_used;
-    /** The user is responsible for freeing this buffer using av_freep(). */
-    VdpBitstreamBuffer *bitstream_buffers;
 
     /** picture parameter information for all supported codecs */
     union VdpPictureInfo {
@@ -87,6 +74,13 @@ struct vdpau_render_state {
         VdpPictureInfoVC1          vc1;
         VdpPictureInfoMPEG4Part2 mpeg4;
     } info;
+
+    /** Describe size/location of the compressed video data.
+        Set to 0 when freeing bitstream_buffers. */
+    int bitstream_buffers_allocated;
+    int bitstream_buffers_used;
+    /** The user is responsible for freeing this buffer using av_freep(). */
+    VdpBitstreamBuffer *bitstream_buffers;
 };
 
 /* @}*/

@@ -2,20 +2,20 @@
  * SubRip subtitle decoder
  * Copyright (c) 2010  Aurelien Jacobs <aurel@gnuage.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -110,7 +110,7 @@ static const char *srt_to_ass(AVCodecContext *avctx, char *out, char *out_end,
                                     for (j=sptr-2; j>=0; j--)
                                         if (stack[j].param[i][0]) {
                                             out += snprintf(out, out_end-out,
-                                                            "%s", stack[j].param[i]);
+                                                            stack[j].param[i]);
                                             break;
                                         }
                         } else {
@@ -146,7 +146,7 @@ static const char *srt_to_ass(AVCodecContext *avctx, char *out, char *out_end,
                             for (i=0; i<PARAM_NUMBER; i++)
                                 if (stack[sptr].param[i][0])
                                     out += snprintf(out, out_end-out,
-                                                    "%s", stack[sptr].param[i]);
+                                                    stack[sptr].param[i]);
                         }
                     } else if (!buffer[1] && strspn(buffer, "bisu") == 1) {
                         out += snprintf(out, out_end-out,
@@ -216,13 +216,15 @@ static int srt_decode_frame(AVCodecContext *avctx,
     if (avpkt->size <= 0)
         return avpkt->size;
 
+    ff_ass_init(sub);
+
     while (ptr < end && *ptr) {
         ptr = read_ts(ptr, &ts_start, &ts_end, &x1, &y1, &x2, &y2);
         if (!ptr)
             break;
         ptr = srt_to_ass(avctx, buffer, buffer+sizeof(buffer), ptr,
                          x1, y1, x2, y2);
-        ff_ass_add_rect(sub, buffer, ts_start, ts_end-ts_start, 0);
+        ff_ass_add_rect(sub, buffer, ts_start, ts_end, 0);
     }
 
     *got_sub_ptr = sub->num_rects > 0;

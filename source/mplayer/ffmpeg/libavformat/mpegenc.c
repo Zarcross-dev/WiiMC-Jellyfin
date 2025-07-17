@@ -2,30 +2,27 @@
  * MPEG1/2 muxer
  * Copyright (c) 2000, 2001, 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavutil/fifo.h"
-#include "libavutil/log.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/opt.h"
 #include "libavcodec/put_bits.h"
 #include "avformat.h"
-#include "internal.h"
 #include "mpeg.h"
 
 #define MAX_PAYLOAD_SIZE 4096
@@ -59,13 +56,11 @@ typedef struct {
 } StreamInfo;
 
 typedef struct {
-    const AVClass *class;
     int packet_size; /* required packet size */
     int packet_number;
     int pack_header_freq;     /* frequency (in packets^-1) at which we send pack headers */
     int system_header_freq;
     int system_header_size;
-    int user_mux_rate; /* bitrate in units of bits/s */
     int mux_rate; /* bitrate in units of 50 bytes/s */
     /* stream info */
     int audio_bound;
@@ -79,7 +74,6 @@ typedef struct {
     double vcd_padding_bitrate; //FIXME floats
     int64_t vcd_padding_bytes_written;
 
-    int preload;
 } MpegMuxContext;
 
 extern AVOutputFormat ff_mpeg1vcd_muxer;
@@ -319,8 +313,6 @@ static int mpeg_mux_init(AVFormatContext *ctx)
         s->packet_size = ctx->packet_size;
     } else
         s->packet_size = 2048;
-    if (ctx->max_delay < 0) /* Not set by the caller */
-        ctx->max_delay = 0;
 
     s->vcd_padding_bytes_written = 0;
     s->vcd_padding_bitrate=0;
@@ -340,7 +332,7 @@ static int mpeg_mux_init(AVFormatContext *ctx)
             goto fail;
         st->priv_data = stream;
 
-        avpriv_set_pts_info(st, 64, 1, 90000);
+        av_set_pts_info(st, 64, 1, 90000);
 
         switch(st->codec->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
@@ -424,12 +416,12 @@ static int mpeg_mux_init(AVFormatContext *ctx)
             video_bitrate += codec_rate;
     }
 
-    if (s->user_mux_rate) {
-        s->mux_rate = (s->user_mux_rate + (8 * 50) - 1) / (8 * 50);
+    if(ctx->mux_rate){
+        s->mux_rate= (ctx->mux_rate + (8 * 50) - 1) / (8 * 50);
     } else {
         /* we increase slightly the bitrate to take into account the
            headers. XXX: compute it exactly */
-        bitrate += bitrate / 20;
+        bitrate += bitrate*5/100;
         bitrate += 10000;
         s->mux_rate = (bitrate + (8 * 50) - 1) / (8 * 50);
     }
@@ -835,12 +827,6 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
 
         if (stuffing_size < 0)
             stuffing_size = 0;
-
-        if (startcode == PRIVATE_STREAM_1 && id >= 0xa0) {
-            if (payload_size < av_fifo_size(stream->fifo))
-                stuffing_size += payload_size % stream->lpcm_align;
-        }
-
         if (stuffing_size > 16) {    /*<=16 for MPEG-1, <=32 for MPEG-2*/
             pad_packet_bytes += stuffing_size;
             packet_size      -= stuffing_size;
@@ -934,7 +920,7 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
 
         /* output data */
         assert(payload_size - stuffing_size <= av_fifo_size(stream->fifo));
-        av_fifo_generic_read(stream->fifo, ctx->pb, payload_size - stuffing_size, (void*)avio_write);
+        av_fifo_generic_read(stream->fifo, ctx->pb, payload_size - stuffing_size, &avio_write);
         stream->bytes_to_iframe -= payload_size - stuffing_size;
     }else{
         payload_size=
@@ -1053,7 +1039,7 @@ retry:
         StreamInfo *stream = st->priv_data;
         const int avail_data=  av_fifo_size(stream->fifo);
         const int space= stream->max_buffer_size - stream->buffer_index;
-        int rel_space= 1024LL*space / stream->max_buffer_size;
+        int rel_space= 1024*space / stream->max_buffer_size;
         PacketDesc *next_pkt= stream->premux_packet;
 
         /* for subtitle, a single PES packet must be generated,
@@ -1166,10 +1152,8 @@ static int mpeg_mux_write_packet(AVFormatContext *ctx, AVPacket *pkt)
     StreamInfo *stream = st->priv_data;
     int64_t pts, dts;
     PacketDesc *pkt_desc;
-    int preload;
+    const int preload= av_rescale(ctx->preload, 90000, AV_TIME_BASE);
     const int is_iframe = st->codec->codec_type == AVMEDIA_TYPE_VIDEO && (pkt->flags & AV_PKT_FLAG_KEY);
-
-    preload = av_rescale(s->preload, 90000, AV_TIME_BASE);
 
     pts= pkt->pts;
     dts= pkt->dts;
@@ -1243,24 +1227,7 @@ static int mpeg_mux_end(AVFormatContext *ctx)
     return 0;
 }
 
-#define OFFSET(x) offsetof(MpegMuxContext, x)
-#define E AV_OPT_FLAG_ENCODING_PARAM
-static const AVOption options[] = {
-    { "muxrate", NULL, OFFSET(user_mux_rate), AV_OPT_TYPE_INT, {0}, 0, INT_MAX, E },
-    { "preload", "Initial demux-decode delay in microseconds.", OFFSET(preload),  AV_OPT_TYPE_INT, {500000}, 0, INT_MAX, E},
-    { NULL },
-};
-
-#define MPEGENC_CLASS(flavor)\
-static const AVClass flavor ## _class = {\
-    .class_name = #flavor " muxer",\
-    .item_name  = av_default_item_name,\
-    .version    = LIBAVUTIL_VERSION_INT,\
-    .option     = options,\
-};
-
 #if CONFIG_MPEG1SYSTEM_MUXER
-MPEGENC_CLASS(mpeg)
 AVOutputFormat ff_mpeg1system_muxer = {
     .name              = "mpeg",
     .long_name         = NULL_IF_CONFIG_SMALL("MPEG-1 System format"),
@@ -1272,11 +1239,9 @@ AVOutputFormat ff_mpeg1system_muxer = {
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
-    .priv_class        = &mpeg_class,
 };
 #endif
 #if CONFIG_MPEG1VCD_MUXER
-MPEGENC_CLASS(vcd)
 AVOutputFormat ff_mpeg1vcd_muxer = {
     .name              = "vcd",
     .long_name         = NULL_IF_CONFIG_SMALL("MPEG-1 System format (VCD)"),
@@ -1287,11 +1252,9 @@ AVOutputFormat ff_mpeg1vcd_muxer = {
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
-    .priv_class        = &vcd_class,
 };
 #endif
 #if CONFIG_MPEG2VOB_MUXER
-MPEGENC_CLASS(vob)
 AVOutputFormat ff_mpeg2vob_muxer = {
     .name              = "vob",
     .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS format (VOB)"),
@@ -1303,13 +1266,11 @@ AVOutputFormat ff_mpeg2vob_muxer = {
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
-    .priv_class        = &vob_class,
 };
 #endif
 
 /* Same as mpeg2vob_mux except that the pack size is 2324 */
 #if CONFIG_MPEG2SVCD_MUXER
-MPEGENC_CLASS(svcd)
 AVOutputFormat ff_mpeg2svcd_muxer = {
     .name              = "svcd",
     .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS format (VOB)"),
@@ -1321,13 +1282,11 @@ AVOutputFormat ff_mpeg2svcd_muxer = {
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
-    .priv_class        = &svcd_class,
 };
 #endif
 
 /*  Same as mpeg2vob_mux except the 'is_dvd' flag is set to produce NAV pkts */
 #if CONFIG_MPEG2DVD_MUXER
-MPEGENC_CLASS(dvd)
 AVOutputFormat ff_mpeg2dvd_muxer = {
     .name              = "dvd",
     .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS format (DVD VOB)"),
@@ -1339,6 +1298,5 @@ AVOutputFormat ff_mpeg2dvd_muxer = {
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
-    .priv_class        = &dvd_class,
 };
 #endif

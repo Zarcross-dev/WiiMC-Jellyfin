@@ -1,0 +1,19 @@
+exif-utils.lo: exif-utils.c ../config.h ../libexif/exif-utils.h \
+ ../libexif/exif-byte-order.h ../libexif/exif-format.h \
+ ../libexif/_stdint.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h
+
+../config.h:
+
+../libexif/exif-utils.h:
+
+../libexif/exif-byte-order.h:
+
+../libexif/exif-format.h:
+
+../libexif/_stdint.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:

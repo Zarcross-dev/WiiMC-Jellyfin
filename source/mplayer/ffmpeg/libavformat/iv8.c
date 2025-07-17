@@ -1,30 +1,29 @@
 /*
  * Copyright (c) 2009 Michael Niedermayer
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "avformat.h"
-#include "internal.h"
 
 
 static int probe(AVProbeData *p)
 {
-    // the single file I have starts with that, I do not know if others do, too
+    // the single file i have starts with that, i dont know if others do too
     if(   p->buf[0] == 1
        && p->buf[1] == 1
        && p->buf[2] == 3
@@ -37,18 +36,18 @@ static int probe(AVProbeData *p)
     return 0;
 }
 
-static int read_header(AVFormatContext *s)
+static int read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codec->codec_id = CODEC_ID_MPEG4;
     st->need_parsing = AVSTREAM_PARSE_FULL;
-    avpriv_set_pts_info(st, 64, 1, 90000);
+    av_set_pts_info(st, 64, 1, 90000);
 
     return 0;
 
@@ -56,56 +55,33 @@ static int read_header(AVFormatContext *s)
 
 static int read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    int ret, size, pts, type, flags;
-    int first_pkt      = 0;
-    int frame_complete = 0;
+    int ret, size, pts, type;
+retry:
+    type= avio_rb16(s->pb); // 257 or 258
+    size= avio_rb16(s->pb);
 
-    while (!frame_complete) {
+    avio_rb16(s->pb); //some flags, 0x80 indicates end of frame
+    avio_rb16(s->pb); //packet number
+    pts=avio_rb32(s->pb);
+    avio_rb32(s->pb); //6A 13 E3 88
 
-        type  = avio_rb16(s->pb); // 257 or 258
-        size  = avio_rb16(s->pb);
-        flags = avio_rb16(s->pb); //some flags, 0x80 indicates end of frame
-                avio_rb16(s->pb); //packet number
-        pts   = avio_rb32(s->pb);
-                avio_rb32(s->pb); //6A 13 E3 88
+    size -= 12;
+    if(size<1)
+        return -1;
 
-        frame_complete = flags & 0x80;
-
-        size -= 12;
-        if (size < 1)
-            return -1;
-
-        if (type == 258) {
-            avio_skip(s->pb, size);
-            frame_complete = 0;
-            continue;
-        }
-
-        if (!first_pkt) {
-            ret = av_get_packet(s->pb, pkt, size);
-            if (ret < 0)
-                return ret;
-            first_pkt = 1;
-            pkt->pts  = pts;
-            pkt->pos -= 16;
-        } else {
-            ret = av_append_packet(s->pb, pkt, size);
-            if (ret < 0) {
-                av_log(s, AV_LOG_ERROR, "failed to grow packet\n");
-                av_free_packet(pkt);
-                return ret;
-            }
-        }
-        if (ret < size) {
-            av_log(s, AV_LOG_ERROR, "Truncated packet! Read %d of %d bytes\n",
-                   ret, size);
-            pkt->flags |= AV_PKT_FLAG_CORRUPT;
-            break;
-        }
+    if(type==258){
+        avio_skip(s->pb, size);
+        goto retry;
     }
+
+    ret= av_get_packet(s->pb, pkt, size);
+
+    pkt->pts= pts;
+    pkt->pos-=16;
+
     pkt->stream_index = 0;
 
-    return 0;
+    return ret;
 }
 
 AVInputFormat ff_iv8_demuxer = {
@@ -114,5 +90,6 @@ AVInputFormat ff_iv8_demuxer = {
     .read_probe     = probe,
     .read_header    = read_header,
     .read_packet    = read_packet,
-    .flags          = AVFMT_GENERIC_INDEX,
+    .flags= AVFMT_GENERIC_INDEX,
+    .value = CODEC_ID_MPEG4,
 };

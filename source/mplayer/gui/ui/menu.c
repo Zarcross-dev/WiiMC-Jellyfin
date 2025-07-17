@@ -16,8 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* menu window */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -50,7 +48,7 @@ static void uiMenuDraw( void )
  if ( menuRender || menuItem != oldMenuItem )
   {
    memcpy( menuDrawBuffer,guiApp.menu.Bitmap.Image,guiApp.menu.Bitmap.ImageSize );
-/* --- */
+// ---
    if ( menuItem != -1 )
     {
      buf=(uint32_t *)menuDrawBuffer;
@@ -63,14 +61,14 @@ static void uiMenuDraw( void )
          }
     }
    oldMenuItem=menuItem;
-/* --- */
+// ---
    wsConvert( &guiApp.menuWindow,menuDrawBuffer );
    menuRender=0;
   }
  wsPutImage( &guiApp.menuWindow );
 }
 
-void uiMenuMouseHandle( int RX,int RY )
+void uiMenuMouseHandle( int X,int Y,int RX,int RY )
 {
  int x,y,i;
 
@@ -109,8 +107,8 @@ void uiShowMenu( int mx,int my )
 
  menuItem = 0;
 
- wsMoveWindow( &guiApp.menuWindow,True,x,y );
- wsRaiseWindowTop( wsDisplay,guiApp.menuWindow.WindowID );
+ wsMoveWindow( &guiApp.menuWindow,False,x,y );
+ wsMoveTopWindow( wsDisplay,guiApp.menuWindow.WindowID );
  wsSetLayer( wsDisplay,guiApp.menuWindow.WindowID,1 );
  menuRender=1;
  wsVisibleWindow( &guiApp.menuWindow,wsShowWindow );
@@ -153,7 +151,9 @@ void uiMenuInit( void )
 
  if ( ( menuDrawBuffer = calloc( 1,guiApp.menu.Bitmap.ImageSize ) ) == NULL )
   {
+#ifdef DEBUG
     mp_msg( MSGT_GPLAYER,MSGL_DBG2,MSGTR_NEMFMR );
+#endif
    gtkMessageBox( GTK_MB_FATAL,MSGTR_NEMFMR );
    return;
   }
@@ -164,7 +164,9 @@ void uiMenuInit( void )
 
  wsSetShape( &guiApp.menuWindow,guiApp.menu.Mask.Image );
 
- mp_msg( MSGT_GPLAYER,MSGL_DBG2,"[menu] menuWindow ID: 0x%x\n",(int)guiApp.menuWindow.WindowID );
+#ifdef DEBUG
+  mp_msg( MSGT_GPLAYER,MSGL_DBG2,"menu: 0x%x\n",(int)guiApp.menuWindow.WindowID );
+#endif
 
  menuIsInitialized=1;
  guiApp.menuWindow.ReDraw=uiMenuDraw;

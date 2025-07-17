@@ -1,0 +1,231 @@
+pcre_scanner.lo: pcre_scanner.cc config.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/vector \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_algobase.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/c++config.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/os_defines.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/cpu_defines.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/functexcept.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/exception_defines.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/cpp_type_traits.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/type_traits.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/numeric_traits.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_pair.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/move.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/concept_check.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_iterator_base_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_iterator_base_funcs.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_iterator.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/debug/debug.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/allocator.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/c++allocator.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/new_allocator.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/new \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/exception \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_construct.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_uninitialized.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_vector.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/initializer_list \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_bvector.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/range_access.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/vector.tcc \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/assert.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
+ pcrecpp_internal.h pcre_scanner.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/string \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stringfwd.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/char_traits.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/postypes.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/cwchar \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/wchar.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/localefwd.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/c++locale.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/clocale \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/locale.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/iosfwd \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/cctype \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/ctype.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/ostream_insert.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/cxxabi_forced.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_function.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/backward/binders.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/basic_string.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/atomicity.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/gthr.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/gthr-single.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/atomic_word.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/basic_string.tcc \
+ pcrecpp.h pcre.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
+ pcrecpparg.h pcre_stringpiece.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h \
+ /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h
+
+config.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/vector:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_algobase.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/c++config.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/os_defines.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/cpu_defines.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/functexcept.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/exception_defines.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/cpp_type_traits.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/type_traits.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/numeric_traits.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_pair.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/move.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/concept_check.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_iterator_base_types.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_iterator_base_funcs.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_iterator.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/debug/debug.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/allocator.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/c++allocator.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/new_allocator.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/new:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/exception:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_construct.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_uninitialized.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_vector.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/initializer_list:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_bvector.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/range_access.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/vector.tcc:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/assert.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
+
+pcrecpp_internal.h:
+
+pcre_scanner.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/string:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stringfwd.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/char_traits.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/postypes.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/cwchar:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/wchar.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdarg.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/localefwd.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/c++locale.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/clocale:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/locale.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/iosfwd:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/cctype:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/ctype.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/ostream_insert.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/cxxabi_forced.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/stl_function.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/backward/binders.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/basic_string.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/ext/atomicity.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/gthr.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/gthr-single.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/powerpc-eabi/bits/atomic_word.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/c++/4.6.1/bits/basic_string.tcc:
+
+pcrecpp.h:
+
+pcre.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
+
+pcrecpparg.h:
+
+pcre_stringpiece.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/string.h:
+
+/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/string.h:

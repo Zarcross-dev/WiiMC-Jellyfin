@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * musicplaylist.h
  *
@@ -9,9 +9,6 @@
 
 #ifndef _MUSICPLAYLIST_H_
 #define _MUSICPLAYLIST_H_
-
-// Better move this later
-BROWSERENTRY * VideoPlaylistGetNextShuffle();
 
 BROWSERENTRY * MusicPlaylistGetNextShuffle();
 int MusicPlaylistLoad();

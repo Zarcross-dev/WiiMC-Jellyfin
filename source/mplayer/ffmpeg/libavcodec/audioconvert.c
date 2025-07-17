@@ -2,20 +2,20 @@
  * audio conversion
  * Copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -30,6 +30,54 @@
 #include "libavutil/samplefmt.h"
 #include "avcodec.h"
 #include "audioconvert.h"
+
+#if FF_API_OLD_SAMPLE_FMT
+const char *avcodec_get_sample_fmt_name(int sample_fmt)
+{
+    return av_get_sample_fmt_name(sample_fmt);
+}
+
+enum AVSampleFormat avcodec_get_sample_fmt(const char* name)
+{
+    return av_get_sample_fmt(name);
+}
+
+void avcodec_sample_fmt_string (char *buf, int buf_size, int sample_fmt)
+{
+    av_get_sample_fmt_string(buf, buf_size, sample_fmt);
+}
+#endif
+
+int64_t avcodec_guess_channel_layout(int nb_channels, enum CodecID codec_id, const char *fmt_name)
+{
+    switch(nb_channels) {
+    case 1: return AV_CH_LAYOUT_MONO;
+    case 2: return AV_CH_LAYOUT_STEREO;
+    case 3: return AV_CH_LAYOUT_SURROUND;
+    case 4: return AV_CH_LAYOUT_QUAD;
+    case 5: return AV_CH_LAYOUT_5POINT0;
+    case 6: return AV_CH_LAYOUT_5POINT1;
+    case 8: return AV_CH_LAYOUT_7POINT1;
+    default: return 0;
+    }
+}
+
+#if FF_API_OLD_AUDIOCONVERT
+int64_t avcodec_get_channel_layout(const char *name)
+{
+    return av_get_channel_layout(name);
+}
+
+void avcodec_get_channel_layout_string(char *buf, int buf_size, int nb_channels, int64_t channel_layout)
+{
+    av_get_channel_layout_string(buf, buf_size, nb_channels, channel_layout);
+}
+
+int avcodec_channel_layout_num_channels(int64_t channel_layout)
+{
+    return av_get_channel_layout_nb_channels(channel_layout);
+}
+#endif
 
 struct AVAudioConvert {
     int in_channels, out_channels;

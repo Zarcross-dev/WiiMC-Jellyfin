@@ -611,7 +611,7 @@ static const char help_text[]=
 #define MSGTR_MENU_PlayList MSGTR_PlayList
 #define MSGTR_MENU_SkinBrowser "Ricerca skin"
 #define MSGTR_MENU_Preferences MSGTR_Preferences
-#define MSGTR_MENU_Exit "Uscita"
+#define MSGTR_MENU_Exit "Uscita..."
 #define MSGTR_MENU_Mute "Muto"
 #define MSGTR_MENU_Original "Originale"
 #define MSGTR_MENU_AspectRatio "Aspetto"
@@ -945,6 +945,7 @@ static const char help_text[]=
 // vo_sdl.c
 #define MSGTR_LIBVO_SDL_CouldntGetAnyAcceptableSDLModeForOutput "[VO_SDL] Impossibile ottenere una modalità SDL accettabile per l'output.\n"
 #define MSGTR_LIBVO_SDL_SetVideoModeFailed "[VO_SDL] set_video_mode: SDL_SetVideoMode fallito: %s.\n"
+#define MSGTR_LIBVO_SDL_SetVideoModeFailedFull "[VO_SDL] Set_fullmode: SDL_SetVideoMode fallito: %s.\n"
 #define MSGTR_LIBVO_SDL_MappingI420ToIYUV "[VO_SDL] Mappo I420 su IYUV.\n"
 #define MSGTR_LIBVO_SDL_UnsupportedImageFormat "[VO_SDL] Formato immagine non supportato (0x%X).\n"
 #define MSGTR_LIBVO_SDL_InfoPleaseUseVmOrZoom "[VO_SDL] Info - per favore usa -vm or -zoom per passare alla risoluzione migliore.\n"
@@ -1178,11 +1179,35 @@ static const char help_text[]=
 
 // ao_sun.c
 #define MSGTR_AO_SUN_RtscSetinfoFailed "[AO SUN] rtsc: SETINFO fallito.\n"
-#define MSGTR_AO_SUN_RtscWriteFailed "[AO SUN] rtsc: scrittura fallita."
 #define MSGTR_AO_SUN_CantOpenAudioDev "[AO SUN] Non posso aprire il dispositivo audio %s, %s  -> no audio.\n"
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] audio_setup: la tua scheda non supporta il canale %d, %s, %d Hz samplerate.\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n   ***  Il tuo driver audio NON supporta select()  ***\n Ricompila MPlayer con #undef HAVE_AUDIO_SELECT in config.h !\n\n"
 #define MSGTR_AO_SUN_CantReopenReset "[AO SUN]\nErrore fatale: *** NON POSSO RIAPRIRE / RESETTARE IL DEVICE AUDIO *** %s\n"
+
+// ao_alsa5.c
+#define MSGTR_AO_ALSA5_InitInfo "[AO ALSA5] alsa-init: formato richiesto: %d Hz, %d canali, %s\n"
+#define MSGTR_AO_ALSA5_SoundCardNotFound "[AO ALSA5] alsa-init: nessuna scheda audio trovata.\n"
+#define MSGTR_AO_ALSA5_InvalidFormatReq "[AO ALSA5] alsa-init: formato voluto (%s) invalido - output disabilitato.\n"
+#define MSGTR_AO_ALSA5_PlayBackError "[AO ALSA5] alsa-init: errore apertura riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_PcmInfoError "[AO ALSA5] alsa-init: errore informazioni PCM: %s\n"
+#define MSGTR_AO_ALSA5_SoundcardsFound "[AO ALSA5] alsa-init: %d scheda/e audio travata/e, uso: %s\n"
+#define MSGTR_AO_ALSA5_PcmChanInfoError "[AO ALSA5] alsa-init: errore informazioni canale PCM: %s\n"
+#define MSGTR_AO_ALSA5_CantSetParms "[AO ALSA5] alsa-init: errore impostazione parametri: %s\n"
+#define MSGTR_AO_ALSA5_CantSetChan "[AO ALSA5] alsa-init: errore nell'impostazione canale: %s\n"
+#define MSGTR_AO_ALSA5_ChanPrepareError "[AO ALSA5] alsa-init: preparazione del canale: %s\n"
+#define MSGTR_AO_ALSA5_DrainError "[AO ALSA5] alsa-uninit: errore 'drain' riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_FlushError "[AO ALSA5] alsa-uninit: errore 'flush' riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_PcmCloseError "[AO ALSA5] alsa-uninit: errore chiusura PCM: %s\n"
+#define MSGTR_AO_ALSA5_ResetDrainError "[AO ALSA5] alsa-reset: errore 'drain' riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_ResetFlushError "[AO ALSA5] alsa-reset: errore 'flush' riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_ResetChanPrepareError "[AO ALSA5] alsa-reset: errore preparazione canale: %s\n"
+#define MSGTR_AO_ALSA5_PauseDrainError "[AO ALSA5] alsa-pause: errore 'drain' riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_PauseFlushError "[AO ALSA5] alsa-pause: errore 'flush' riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_ResumePrepareError "[AO ALSA5] alsa-resume: errore preparazione canale: %s\n"
+#define MSGTR_AO_ALSA5_Underrun "[AO ALSA5] alsa-play: ritardo alsa, reimposto il flusso.\n"
+#define MSGTR_AO_ALSA5_PlaybackPrepareError "[AO ALSA5] alsa-play: errore preparazione riproduzione: %s\n"
+#define MSGTR_AO_ALSA5_WriteErrorAfterReset "[AO ALSA5] alsa-play: errore di scrittura dopo reset: %s - mi arrendo.\n"
+#define MSGTR_AO_ALSA5_OutPutError "[AO ALSA5] alsa-play: errore di output: %s\n"
 
 // ao_alsa.c
 #define MSGTR_AO_ALSA_InvalidMixerIndexDefaultingToZero "[AO_ALSA] Indice mixer non valido. Uso il default 0.\n"
@@ -1677,12 +1702,12 @@ static const char help_text[]=
 
 // ================================== stream ====================================
 
-// ai_alsa.c
-#define MSGTR_MPDEMUX_AIALSA_CannotSetSamplerate "Non posso impostare il samplerate.\n"
-#define MSGTR_MPDEMUX_AIALSA_CannotSetBufferTime "Non posso impostare il tempo del buffer.\n"
-#define MSGTR_MPDEMUX_AIALSA_CannotSetPeriodTime "Non posso impostare il tempo del periodo.\n"
+// ai_alsa1x.c
+#define MSGTR_MPDEMUX_AIALSA1X_CannotSetSamplerate "Non posso impostare il samplerate.\n"
+#define MSGTR_MPDEMUX_AIALSA1X_CannotSetBufferTime "Non posso impostare il tempo del buffer.\n"
+#define MSGTR_MPDEMUX_AIALSA1X_CannotSetPeriodTime "Non posso impostare il tempo del periodo.\n"
 
-// ai_alsa.c
+// ai_alsa1x.c / ai_alsa.c
 #define MSGTR_MPDEMUX_AIALSA_PcmBrokenConfig "Configurazione PCM rovinata: nessuna configurazione disponibile.\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableAccessType "Tipo di accesso non disponibile.\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableSampleFmt "Formato sample non disponibile.\n"

@@ -4,20 +4,20 @@
  * based on public domain SHA-1 code by Steve Reid <steve@edmweb.com>
  * and on BSD-licensed SHA-2 code by Aaron D. Gifford
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -181,7 +181,7 @@ static void sha256_transform(uint32_t *state, const uint8_t buffer[64])
 {
     unsigned int i, a, b, c, d, e, f, g, h;
     uint32_t block[64];
-    uint32_t T1;
+    uint32_t T1, av_unused(T2);
 
     a = state[0];
     b = state[1];
@@ -193,7 +193,6 @@ static void sha256_transform(uint32_t *state, const uint8_t buffer[64])
     h = state[7];
 #if CONFIG_SMALL
     for (i = 0; i < 64; i++) {
-        uint32_t T2;
         if (i < 16)
             T1 = blk0(i);
         else

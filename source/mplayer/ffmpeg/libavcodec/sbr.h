@@ -3,20 +3,20 @@
  * Copyright (c) 2008-2009 Robert Swain ( rob opendot cl )
  * Copyright (c) 2010      Alex Converse <alex.converse@gmail.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -32,7 +32,6 @@
 #include <stdint.h>
 #include "fft.h"
 #include "aacps.h"
-#include "sbrdsp.h"
 
 /**
  * Spectral Band Replication header - spectrum parameters that invoke a reset if they differ from the previous header.
@@ -78,8 +77,8 @@ typedef struct {
      * @name State variables
      * @{
      */
-    DECLARE_ALIGNED(32, float, synthesis_filterbank_samples)[SBR_SYNTHESIS_BUF_SIZE];
-    DECLARE_ALIGNED(32, float, analysis_filterbank_samples) [1312];
+    DECLARE_ALIGNED(16, float, synthesis_filterbank_samples)[SBR_SYNTHESIS_BUF_SIZE];
+    DECLARE_ALIGNED(16, float, analysis_filterbank_samples) [1312];
     int                synthesis_filterbank_samples_offset;
     ///l_APrev and l_A
     int                e_a[2];
@@ -88,9 +87,8 @@ typedef struct {
     ///QMF values of the original signal
     float              W[2][32][32][2];
     ///QMF output of the HF adjustor
-    int                Ypos;
-    DECLARE_ALIGNED(16, float, Y)[2][38][64][2];
-    DECLARE_ALIGNED(16, float, g_temp)[42][48];
+    float              Y[2][38][64][2];
+    float              g_temp[42][48];
     float              q_temp[42][48];
     uint8_t            s_indexmapped[8][48];
     ///Envelope scalefactors
@@ -133,7 +131,6 @@ typedef struct {
     unsigned           kx[2];
     ///M' and M respectively, M is the number of QMF subbands that use SBR.
     unsigned           m[2];
-    unsigned           kx_and_m_pushed;
     ///The number of frequency bands in f_master
     unsigned           n_master;
     SBRData            data[2];
@@ -158,15 +155,15 @@ typedef struct {
     uint8_t            patch_num_subbands[6];
     uint8_t            patch_start_subband[6];
     ///QMF low frequency input to the HF generator
-    DECLARE_ALIGNED(16, float, X_low)[32][40][2];
+    float              X_low[32][40][2];
     ///QMF output of the HF generator
-    DECLARE_ALIGNED(16, float, X_high)[64][40][2];
+    float              X_high[64][40][2];
     ///QMF values of the reconstructed signal
     DECLARE_ALIGNED(16, float, X)[2][2][38][64];
     ///Zeroth coefficient used to filter the subband signals
-    DECLARE_ALIGNED(16, float, alpha0)[64][2];
+    float              alpha0[64][2];
     ///First coefficient used to filter the subband signals
-    DECLARE_ALIGNED(16, float, alpha1)[64][2];
+    float              alpha1[64][2];
     ///Dequantized envelope scalefactors, remapped
     float              e_origmapped[7][48];
     ///Dequantized noise scalefactors, remapped
@@ -180,10 +177,9 @@ typedef struct {
     ///Sinusoidal levels
     float              s_m[7][48];
     float              gain[7][48];
-    DECLARE_ALIGNED(32, float, qmf_filter_scratch)[5][64];
+    DECLARE_ALIGNED(16, float, qmf_filter_scratch)[5][64];
     FFTContext         mdct_ana;
     FFTContext         mdct;
-    SBRDSPContext      dsp;
 } SpectralBandReplication;
 
 #endif /* AVCODEC_SBR_H */

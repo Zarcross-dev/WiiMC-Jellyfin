@@ -2,20 +2,20 @@
  * LCL (LossLess Codec Library) Codec
  * Copyright (c) 2002-2004 Roberto Togni
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -96,13 +96,7 @@ static unsigned int mszh_decomp(const unsigned char * srcptr, int srclen, unsign
             ofs = FFMIN(ofs, destptr - destptr_bak);
             cnt *= 4;
             cnt = FFMIN(cnt, destptr_end - destptr);
-            if (ofs) {
-                av_memcpy_backptr(destptr, ofs, cnt);
-            } else {
-                // Not known what the correct behaviour is, but
-                // this at least avoids uninitialized data.
-                memset(destptr, 0, cnt);
-            }
+            av_memcpy_backptr(destptr, ofs, cnt);
             destptr += cnt;
         }
         maskbit >>= 1;
@@ -229,29 +223,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
                 len = mszh_dlen;
             }
             break;
-        case COMP_MSZH_NOCOMP: {
-            int bppx2;
-            switch (c->imgtype) {
-            case IMGTYPE_YUV111:
-            case IMGTYPE_RGB24:
-                bppx2 = 6;
-                break;
-            case IMGTYPE_YUV422:
-            case IMGTYPE_YUV211:
-                bppx2 = 4;
-                break;
-            case IMGTYPE_YUV411:
-            case IMGTYPE_YUV420:
-                bppx2 = 3;
-                break;
-            default:
-                bppx2 = 0; // will error out below
-                break;
-            }
-            if (len < ((width * height * bppx2) >> 1))
-                return AVERROR_INVALIDDATA;
+        case COMP_MSZH_NOCOMP:
             break;
-        }
         default:
             av_log(avctx, AV_LOG_ERROR, "BUG! Unknown MSZH compression in frame decoder.\n");
             return -1;
@@ -263,14 +236,9 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
          * gives a file with ZLIB fourcc, but frame is really uncompressed.
          * To be sure that's true check also frame size */
         if (c->compression == COMP_ZLIB_NORMAL && c->imgtype == IMGTYPE_RGB24 &&
-            len == width * height * 3) {
-            if (c->flags & FLAG_PNGFILTER) {
-                memcpy(c->decomp_buf, encoded, len);
-                encoded = c->decomp_buf;
-            } else {
-                break;
-            }
-        } else if (c->flags & FLAG_MULTITHREAD) {
+            len == width * height * 3)
+            break;
+        if (c->flags & FLAG_MULTITHREAD) {
             int ret;
             mthread_inlen = AV_RL32(encoded);
             mthread_inlen = FFMIN(mthread_inlen, len - 8);
@@ -485,10 +453,9 @@ static av_cold int decode_init(AVCodecContext *avctx)
     unsigned int max_basesize = FFALIGN(avctx->width, 4) * FFALIGN(avctx->height, 4) + AV_LZO_OUTPUT_PADDING;
     unsigned int max_decomp_size;
 
-    avcodec_get_frame_defaults(&c->pic);
     if (avctx->extradata_size < 8) {
         av_log(avctx, AV_LOG_ERROR, "Extradata size too small.\n");
-        return AVERROR_INVALIDDATA;
+        return 1;
     }
 
     /* Check codec type */
@@ -537,7 +504,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         break;
     default:
         av_log(avctx, AV_LOG_ERROR, "Unsupported image format %d.\n", c->imgtype);
-        return AVERROR_INVALIDDATA;
+        return 1;
     }
 
     /* Detect compression method */
@@ -554,7 +521,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
             break;
         default:
             av_log(avctx, AV_LOG_ERROR, "Unsupported compression format for MSZH (%d).\n", c->compression);
-            return AVERROR_INVALIDDATA;
+            return 1;
         }
         break;
 #if CONFIG_ZLIB_DECODER
@@ -572,7 +539,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         default:
             if (c->compression < Z_NO_COMPRESSION || c->compression > Z_BEST_COMPRESSION) {
                 av_log(avctx, AV_LOG_ERROR, "Unsupported compression level for ZLIB: (%d).\n", c->compression);
-                return AVERROR_INVALIDDATA;
+                return 1;
             }
             av_log(avctx, AV_LOG_DEBUG, "Compression level for ZLIB: (%d).\n", c->compression);
         }
@@ -580,14 +547,14 @@ static av_cold int decode_init(AVCodecContext *avctx)
 #endif
     default:
         av_log(avctx, AV_LOG_ERROR, "BUG! Unknown codec in compression switch.\n");
-        return AVERROR_INVALIDDATA;
+        return 1;
     }
 
     /* Allocate decompression buffer */
     if (c->decomp_size) {
         if ((c->decomp_buf = av_malloc(max_decomp_size)) == NULL) {
             av_log(avctx, AV_LOG_ERROR, "Can't allocate decompression buffer.\n");
-            return AVERROR(ENOMEM);
+            return 1;
         }
     }
 
@@ -613,7 +580,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         if (zret != Z_OK) {
             av_log(avctx, AV_LOG_ERROR, "Inflate init error: %d\n", zret);
             av_freep(&c->decomp_buf);
-            return AVERROR_UNKNOWN;
+            return 1;
         }
     }
 #endif
@@ -651,7 +618,7 @@ AVCodec ff_mszh_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("LCL (LossLess Codec Library) MSZH"),
+    .long_name = NULL_IF_CONFIG_SMALL("LCL (LossLess Codec Library) MSZH"),
 };
 #endif
 
@@ -665,6 +632,6 @@ AVCodec ff_zlib_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("LCL (LossLess Codec Library) ZLIB"),
+    .long_name = NULL_IF_CONFIG_SMALL("LCL (LossLess Codec Library) ZLIB"),
 };
 #endif

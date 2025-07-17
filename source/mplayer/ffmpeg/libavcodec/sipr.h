@@ -4,20 +4,20 @@
  * Copyright (c) 2008 Vladimir Voroshilov
  * Copyright (c) 2009 Vitor Sessak
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -53,18 +53,8 @@ typedef enum {
     MODE_COUNT
 } SiprMode;
 
-typedef struct SiprParameters {
-    int ma_pred_switch;        ///< switched moving average predictor
-    int vq_indexes[5];
-    int pitch_delay[5];        ///< pitch delay
-    int gp_index[5];           ///< adaptive-codebook gain indexes
-    int16_t fc_indexes[5][10]; ///< fixed-codebook indexes
-    int gc_index[5];           ///< fixed-codebook gain indexes
-} SiprParameters;
-
-typedef struct SiprContext {
+typedef struct {
     AVCodecContext *avctx;
-    AVFrame frame;
 
     SiprMode mode;
 
@@ -95,10 +85,16 @@ typedef struct SiprContext {
     float mem_preemph[LP_FILTER_ORDER_16k];
     float synth[LP_FILTER_ORDER_16k];
     double lsp_history_16k[16];
-
-    void (*decode_frame)(struct SiprContext *ctx, SiprParameters *params,
-                         float *out_data);
 } SiprContext;
+
+typedef struct {
+    int ma_pred_switch;        ///< switched moving average predictor
+    int vq_indexes[5];
+    int pitch_delay[5];        ///< pitch delay
+    int gp_index[5];           ///< adaptive-codebook gain indexes
+    int16_t fc_indexes[5][10]; ///< fixed-codebook indexes
+    int gc_index[5];           ///< fixed-codebook gain indexes
+} SiprParameters;
 
 extern const float ff_pow_0_5[16];
 

@@ -5,20 +5,20 @@
  * Blackfin video color space converter operations
  * convert I420 YV12 to RGB in various formats
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -30,11 +30,11 @@ and converts it to RGB565. R:5 bits, G:6 bits, B:5 bits.. packed into shorts.
 
 The following calculation is used for the conversion:
 
-  r = clipz((y - oy) * cy  + crv * (v - 128))
-  g = clipz((y - oy) * cy  + cgv * (v - 128) + cgu * (u - 128))
-  b = clipz((y - oy) * cy  + cbu * (u - 128))
+  r = clipz((y-oy)*cy  + crv*(v-128))
+  g = clipz((y-oy)*cy  + cgv*(v-128) + cgu*(u-128))
+  b = clipz((y-oy)*cy  + cbu*(u-128))
 
-y, u, v are prescaled by a factor of 4 i.e. left-shifted to gain precision.
+y,u,v are prescaled by a factor of 4 i.e. left-shifted to gain precision.
 
 
 New factorization to eliminate the truncation error which was
@@ -47,7 +47,7 @@ occurring due to the byteop3p.
 2) Scale operands up by a factor of 4 not 8 because Blackfin
    multiplies include a shift.
 
-3) Compute into the accumulators cy * yx0, cy * yx1.
+3) Compute into the accumulators cy*yx0, cy*yx1.
 
 4) Compute each of the linear equations:
      r = clipz((y - oy) * cy  + crv * (v - 128))
@@ -73,7 +73,7 @@ occurring due to the byteop3p.
 
 Where coeffs have the following layout in memory.
 
-uint32_t oy, oc, zero, cy, crv, rmask, cbu, bmask, cgu, cgv;
+uint32_t oy,oc,zero,cy,crv,rmask,cbu,bmask,cgu,cgv;
 
 coeffs is a pointer to oy.
 

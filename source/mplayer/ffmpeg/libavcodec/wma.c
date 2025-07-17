@@ -1,28 +1,27 @@
 /*
  * WMA compatible codec
- * Copyright (c) 2002-2007 The FFmpeg Project
+ * Copyright (c) 2002-2007 The Libav Project
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "avcodec.h"
 #include "sinewin.h"
 #include "wma.h"
-#include "wma_common.h"
 #include "wmadata.h"
 
 #undef NDEBUG
@@ -68,6 +67,46 @@ static void init_coef_vlc(VLC *vlc, uint16_t **prun_table,
     av_free(level_table);
 }
 
+/**
+ *@brief Get the samples per frame for this stream.
+ *@param sample_rate output sample_rate
+ *@param version wma version
+ *@param decode_flags codec compression features
+ *@return log2 of the number of output samples per frame
+ */
+int av_cold ff_wma_get_frame_len_bits(int sample_rate, int version,
+                                      unsigned int decode_flags)
+{
+
+    int frame_len_bits;
+
+    if (sample_rate <= 16000) {
+        frame_len_bits = 9;
+    } else if (sample_rate <= 22050 ||
+             (sample_rate <= 32000 && version == 1)) {
+        frame_len_bits = 10;
+    } else if (sample_rate <= 48000) {
+        frame_len_bits = 11;
+    } else if (sample_rate <= 96000) {
+        frame_len_bits = 12;
+    } else {
+        frame_len_bits = 13;
+    }
+
+    if (version == 3) {
+        int tmp = decode_flags & 0x6;
+        if (tmp == 0x2) {
+            ++frame_len_bits;
+        } else if (tmp == 0x4) {
+            --frame_len_bits;
+        } else if (tmp == 0x6) {
+            frame_len_bits -= 2;
+        }
+    }
+
+    return frame_len_bits;
+}
+
 int ff_wma_init(AVCodecContext *avctx, int flags2)
 {
     WMACodecContext *s = avctx->priv_data;
@@ -87,7 +126,7 @@ int ff_wma_init(AVCodecContext *avctx, int flags2)
     s->bit_rate    = avctx->bit_rate;
     s->block_align = avctx->block_align;
 
-    ff_dsputil_init(&s->dsp, avctx);
+    dsputil_init(&s->dsp, avctx);
     ff_fmt_convert_init(&s->fmt_conv, avctx);
 
     if (avctx->codec->id == CODEC_ID_WMAV1) {
@@ -98,9 +137,6 @@ int ff_wma_init(AVCodecContext *avctx, int flags2)
 
     /* compute MDCT block size */
     s->frame_len_bits = ff_wma_get_frame_len_bits(s->sample_rate, s->version, 0);
-    s->next_block_len_bits = s->frame_len_bits;
-    s->prev_block_len_bits = s->frame_len_bits;
-    s->block_len_bits      = s->frame_len_bits;
 
     s->frame_len = 1 << s->frame_len_bits;
     if (s->use_variable_block_len) {
@@ -378,13 +414,13 @@ int ff_wma_end(AVCodecContext *avctx)
         ff_mdct_end(&s->mdct_ctx[i]);
 
     if (s->use_exp_vlc) {
-        ff_free_vlc(&s->exp_vlc);
+        free_vlc(&s->exp_vlc);
     }
     if (s->use_noise_coding) {
-        ff_free_vlc(&s->hgain_vlc);
+        free_vlc(&s->hgain_vlc);
     }
     for (i = 0; i < 2; i++) {
-        ff_free_vlc(&s->coef_vlc[i]);
+        free_vlc(&s->coef_vlc[i]);
         av_free(s->run_table[i]);
         av_free(s->level_table[i]);
         av_free(s->int_table[i]);
@@ -486,3 +522,4 @@ int ff_wma_run_level_decode(AVCodecContext* avctx, GetBitContext* gb,
 
     return 0;
 }
+

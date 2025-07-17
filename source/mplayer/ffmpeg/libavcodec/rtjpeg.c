@@ -2,20 +2,20 @@
  * RTJpeg decoding functions
  * Copyright (c) 2006 Reimar Doeffinger
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "libavutil/common.h"
@@ -27,7 +27,7 @@
     i = scan[coeff--]; \
     block[i] = (c) * quant[i];
 
-/// aligns the bitstream to the given power of two
+//! aligns the bitstream to the give power of two
 #define ALIGN(a) \
     n = (-get_bits_count(gb)) & (a - 1); \
     if (n) {skip_bits(gb, n);}
@@ -56,7 +56,7 @@ static inline int get_block(GetBitContext *gb, DCTELEM *block, const uint8_t *sc
 
     // number of non-zero coefficients
     coeff = get_bits(gb, 6);
-    if (get_bits_left(gb) < (coeff << 1))
+    if (get_bits_count(gb) + (coeff << 1) >= gb->size_in_bits)
         return -1;
 
     // normally we would only need to clear the (63 - coeff) last values,
@@ -73,7 +73,7 @@ static inline int get_block(GetBitContext *gb, DCTELEM *block, const uint8_t *sc
 
     // 4 bits per coefficient
     ALIGN(4);
-    if (get_bits_left(gb) < (coeff << 2))
+    if (get_bits_count(gb) + (coeff << 2) >= gb->size_in_bits)
         return -1;
     while (coeff) {
         ac = get_sbits(gb, 4);
@@ -84,7 +84,7 @@ static inline int get_block(GetBitContext *gb, DCTELEM *block, const uint8_t *sc
 
     // 8 bits per coefficient
     ALIGN(8);
-    if (get_bits_left(gb) < (coeff << 3))
+    if (get_bits_count(gb) + (coeff << 3) >= gb->size_in_bits)
         return -1;
     while (coeff) {
         ac = get_sbits(gb, 8);
@@ -97,15 +97,15 @@ static inline int get_block(GetBitContext *gb, DCTELEM *block, const uint8_t *sc
 
 /**
  * @brief decode one rtjpeg YUV420 frame
- * @param c context, must be initialized via ff_rtjpeg_decode_init
+ * @param c context, must be initialized via rtjpeg_decode_init
  * @param f AVFrame to place decoded frame into. If parts of the frame
  *          are not coded they are left unchanged, so consider initializing it
  * @param buf buffer containing input data
  * @param buf_size length of input data in bytes
  * @return number of bytes consumed from the input buffer
  */
-int ff_rtjpeg_decode_frame_yuv420(RTJpegContext *c, AVFrame *f,
-                                  const uint8_t *buf, int buf_size) {
+int rtjpeg_decode_frame_yuv420(RTJpegContext *c, AVFrame *f,
+                               const uint8_t *buf, int buf_size) {
     GetBitContext gb;
     int w = c->w / 16, h = c->h / 16;
     int x, y;
@@ -114,25 +114,24 @@ int ff_rtjpeg_decode_frame_yuv420(RTJpegContext *c, AVFrame *f,
     init_get_bits(&gb, buf, buf_size * 8);
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
-#define BLOCK(quant, dst, stride) do { \
-    int res = get_block(&gb, block, c->scan, quant); \
-    if (res < 0) \
-        return res; \
-    if (res > 0) \
-        c->dsp->idct_put(dst, stride, block); \
-} while (0)
             DCTELEM *block = c->block;
-            BLOCK(c->lquant, y1, f->linesize[0]);
+            if (get_block(&gb, block, c->scan, c->lquant) > 0)
+                c->dsp->idct_put(y1, f->linesize[0], block);
             y1 += 8;
-            BLOCK(c->lquant, y1, f->linesize[0]);
+            if (get_block(&gb, block, c->scan, c->lquant) > 0)
+                c->dsp->idct_put(y1, f->linesize[0], block);
             y1 += 8;
-            BLOCK(c->lquant, y2, f->linesize[0]);
+            if (get_block(&gb, block, c->scan, c->lquant) > 0)
+                c->dsp->idct_put(y2, f->linesize[0], block);
             y2 += 8;
-            BLOCK(c->lquant, y2, f->linesize[0]);
+            if (get_block(&gb, block, c->scan, c->lquant) > 0)
+                c->dsp->idct_put(y2, f->linesize[0], block);
             y2 += 8;
-            BLOCK(c->cquant, u,  f->linesize[1]);
+            if (get_block(&gb, block, c->scan, c->cquant) > 0)
+                c->dsp->idct_put(u, f->linesize[1], block);
             u += 8;
-            BLOCK(c->cquant, v,  f->linesize[2]);
+            if (get_block(&gb, block, c->scan, c->cquant) > 0)
+                c->dsp->idct_put(v, f->linesize[2], block);
             v += 8;
         }
         y1 += 2 * 8 * (f->linesize[0] - w);
@@ -154,9 +153,9 @@ int ff_rtjpeg_decode_frame_yuv420(RTJpegContext *c, AVFrame *f,
  * @param lquant luma quantization table to use
  * @param cquant chroma quantization table to use
  */
-void ff_rtjpeg_decode_init(RTJpegContext *c, DSPContext *dsp,
-                           int width, int height,
-                           const uint32_t *lquant, const uint32_t *cquant) {
+void rtjpeg_decode_init(RTJpegContext *c, DSPContext *dsp,
+                        int width, int height,
+                        const uint32_t *lquant, const uint32_t *cquant) {
     int i;
     c->dsp = dsp;
     for (i = 0; i < 64; i++) {

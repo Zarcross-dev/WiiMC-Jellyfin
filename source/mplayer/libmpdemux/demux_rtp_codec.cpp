@@ -23,8 +23,6 @@
 extern "C" {
 #include <limits.h>
 #include <math.h>
-
-#include "mpcommon.h"
 #include "stheader.h"
 #include "libavutil/base64.h"
 }
@@ -141,7 +139,7 @@ void rtpCodecInitialize_video(demuxer_t* demuxer,
     const uint8_t* fooData;
     avcodec_register_all();
     h264parserctx = av_parser_init(CODEC_ID_H264);
-    avcctx = avcodec_alloc_context3(NULL);
+    avcctx = avcodec_alloc_context();
     // Pass the config to the parser
     h264parserctx->parser->parser_parse(h264parserctx, avcctx,
                   &fooData, &fooLen, configData, configLen);
@@ -361,7 +359,7 @@ static void needVideoFrameRate(demuxer_t* demuxer,
   // figure out the frame rate by itself, so (unless the user specifies
   // it manually, using "-fps") we figure it out ourselves here, using the
   // presentation timestamps in successive packets,
-  if (force_fps != 0.0) return; // user used "-fps"
+  extern double force_fps; if (force_fps != 0.0) return; // user used "-fps"
 
   demux_stream_t* d_video = demuxer->video;
   sh_video_t* sh_video = (sh_video_t*)(d_video->sh);

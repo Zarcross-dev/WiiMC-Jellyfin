@@ -19,40 +19,35 @@
 #ifndef MPLAYER_GUI_LIST_H
 #define MPLAYER_GUI_LIST_H
 
-/// listMgr() commands
-enum {
-    PLAYLIST_GET,
-    PLAYLIST_ITEM_APPEND,
-    PLAYLIST_ITEM_INSERT,
-    PLAYLIST_ITEM_SET_CURR,
-    PLAYLIST_ITEM_GET_CURR,
-    PLAYLIST_ITEM_GET_PREV,
-    PLAYLIST_ITEM_GET_NEXT,
-    PLAYLIST_ITEM_DEL_CURR,
-    PLAYLIST_DELETE,
-    URLLIST_GET,
-    URLLIST_ITEM_ADD,
-    URLLIST_DELETE
-};
+#define gtkAddPlItem     5
+#define gtkGetNextPlItem 6
+#define gtkGetPrevPlItem 7
+#define gtkGetCurrPlItem 8
+#define gtkDelPl         9
+#define gtkDelCurrPlItem 23
+#define gtkInsertPlItem  24
+#define gtkSetCurrPlItem 25
+#define gtkAddURLItem    15
 
 typedef struct plItem {
+    struct plItem *prev, *next;
     char *path;
     char *name;
-    struct plItem *prev, *next;
 } plItem;
 
 typedef struct urlItem {
-    char *url;
     struct urlItem *next;
+    char *url;
 } urlItem;
 
-/// @name list manager (playlist, URL list)
-void *listMgr(int cmd, void *data);
+extern plItem *plList;
+extern plItem *plCurrent;
+extern plItem *plLastPlayed;
 
-/// @name char pointer list operations
-//@{
-void listRepl(char ***list, const char *search, const char *replace);
-void listSet(char ***list, const char *entry);
-//@}
+extern urlItem *urlList;
+
+void gaddlist(char ***list, const char *entry);
+void greplace(char ***list, const char *search, const char *replace);
+void *listSet(int cmd, void *vparam);
 
 #endif /* MPLAYER_GUI_LIST_H */

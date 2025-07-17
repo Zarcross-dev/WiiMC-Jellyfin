@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -37,7 +37,6 @@
 #include "config.h"
 #include "attributes.h"
 #include "timer.h"
-#include "cpu.h"
 #include "dict.h"
 
 struct AVDictionary {
@@ -156,10 +155,6 @@ struct AVDictionary {
 #define puts please_use_av_log_instead_of_puts
 #undef  perror
 #define perror please_use_av_log_instead_of_perror
-#undef strcasecmp
-#define strcasecmp please_use_av_strcasecmp
-#undef strncasecmp
-#define strncasecmp please_use_av_strncasecmp
 
 #define FF_ALLOC_OR_GOTO(ctx, p, size, label)\
 {\
@@ -192,11 +187,12 @@ struct AVDictionary {
 #   define NULL_IF_CONFIG_SMALL(x) x
 #endif
 
+
 /**
  * Define a function with only the non-default version specified.
  *
  * On systems with ELF shared libraries, all symbols exported from
- * FFmpeg libraries are tagged with the name and major version of the
+ * Libav libraries are tagged with the name and major version of the
  * library to which they belong.  If a function is moved from one
  * library to another, a wrapper must be retained in the original
  * location to preserve binary compatibility.
@@ -221,7 +217,7 @@ struct AVDictionary {
 #endif
 
 /**
- * Return NULL if a threading library has not been enabled.
+ * Returns NULL if a threading library has not been enabled.
  * Used to disable threading functions in AVCodec definitions
  * when not needed.
  */
@@ -239,8 +235,7 @@ struct AVDictionary {
  */
 static av_always_inline void emms_c(void)
 {
-    if(av_get_cpu_flags() & AV_CPU_FLAG_MMX)
-        __asm__ volatile ("emms" ::: "memory");
+    __asm__ volatile ("emms" ::: "memory");
 }
 #else /* HAVE_MMX */
 #define emms_c()

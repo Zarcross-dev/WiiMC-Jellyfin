@@ -2,20 +2,20 @@
  * audio encoder psychoacoustic model
  * Copyright (C) 2008 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -112,15 +112,20 @@ av_cold struct FFPsyPreprocessContext* ff_psy_preprocess_init(AVCodecContext *av
     return ctx;
 }
 
-void ff_psy_preprocess(struct FFPsyPreprocessContext *ctx, float **audio, int channels)
+void ff_psy_preprocess(struct FFPsyPreprocessContext *ctx,
+                       const int16_t *audio, int16_t *dest,
+                       int tag, int channels)
 {
-    int ch;
-    int frame_size = ctx->avctx->frame_size;
-
+    int ch, i;
     if (ctx->fstate) {
         for (ch = 0; ch < channels; ch++)
-            ff_iir_filter_flt(ctx->fcoeffs, ctx->fstate[ch], frame_size,
-                              &audio[ch][frame_size], 1, &audio[ch][frame_size], 1);
+            ff_iir_filter(ctx->fcoeffs, ctx->fstate[tag+ch], ctx->avctx->frame_size,
+                          audio + ch, ctx->avctx->channels,
+                          dest  + ch, ctx->avctx->channels);
+    } else {
+        for (ch = 0; ch < channels; ch++)
+            for (i = 0; i < ctx->avctx->frame_size; i++)
+                dest[i*ctx->avctx->channels + ch] = audio[i*ctx->avctx->channels + ch];
     }
 }
 
@@ -134,3 +139,4 @@ av_cold void ff_psy_preprocess_end(struct FFPsyPreprocessContext *ctx)
     av_freep(&ctx->fstate);
     av_free(ctx);
 }
+

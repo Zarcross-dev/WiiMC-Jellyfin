@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * musicplaylist.cpp
  * Music playlist
@@ -332,16 +332,8 @@ static int EnqueueFile(char * path)
 	return 1;
 }
 
-static int MusicSortStart;
-static int MusicSortEnd;
-
 static int MusicSortCallback(const void *f1, const void *f2)
 {
-	if ((((BROWSERENTRY *)f1)->pos < MusicSortStart) || (((BROWSERENTRY *)f1)->pos > MusicSortEnd)
-		|| (((BROWSERENTRY *)f2)->pos < MusicSortStart) || (((BROWSERENTRY *)f2)->pos > MusicSortEnd))
-	{
-		return 0;
-	}
 	return stricmp(((BROWSERENTRY *)f1)->display, ((BROWSERENTRY *)f2)->display);
 }
 
@@ -368,6 +360,8 @@ static bool EnqueueFolder(char * path, int silent)
 		return false;
 	}
 	
+	int start = browserMusic.numEntries;
+
 	filepath = (char*)mem2_malloc((MAXPATHLEN+1)*sizeof(char), MEM2_BROWSER);
 	if(!filepath) return false;
 
@@ -393,45 +387,17 @@ static bool EnqueueFolder(char * path, int silent)
 			if(!EnqueueFolder(filepath, SILENT))
 				break;
 		}
-	}
-
-	// rewinddir seems to be broken
-	closedir(dir);
-	dir = opendir(path);
-
-	int start = browserMusic.numEntries;
-	while ((entry=readdir(dir))!=NULL)
-	{
-		if(entry->d_name[0] == '.')
-			continue;
-
-		if(strlen(path)+strlen(entry->d_name)>MAXPATHLEN) continue;
-		snprintf(filepath, MAXPATHLEN, "%s/%s", path, entry->d_name);
-
-#ifdef _DIRENT_HAVE_D_TYPE
-		if(entry->d_type==DT_DIR)
-			filestat.st_mode = S_IFDIR;
 		else
-			filestat.st_mode = S_IFREG;
-#else
-		if(stat(filepath, &filestat) < 0)
-			continue;
-#endif
-		if(S_ISREG(filestat.st_mode))
 		{
 			if(EnqueueFile(filepath) < 0)
 				break;
 		}
 	}
-	if(browserMusic.numEntries-start > 1)
-	{
-		MusicSortStart = start;
-		MusicSortEnd = browserMusic.numEntries - 1;
-		SortBrowser(&browserMusic, MusicSortCallback);
-	}
-
 	mem2_free(filepath, MEM2_BROWSER);
 	closedir(dir);
+
+	if(browserMusic.numEntries-start > 1)
+		SortBrower(&browserMusic, MusicSortCallback);
 
 	return true;
 }
@@ -480,11 +446,7 @@ static void Remove(BROWSERENTRY *i)
 	mem2_free(i->file, MEM2_BROWSER);
 	mem2_free(i->url, MEM2_BROWSER);
 	mem2_free(i->display, MEM2_BROWSER);
-	mem2_free(i->xml, MEM2_BROWSER);
-	mem2_free(i->year, MEM2_BROWSER);
-	mem2_free(i->desc, MEM2_BROWSER);
 	mem2_free(i->image, MEM2_BROWSER);
-	mem2_free(i->tunein, MEM2_BROWSER);
 	mem2_free(i, MEM2_BROWSER);
 }
 

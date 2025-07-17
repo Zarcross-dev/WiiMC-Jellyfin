@@ -3,20 +3,20 @@
  * Copyright (C) 2004 Alex Beregszaszi
  * Copyright (C) 2006 Benjamin Larsson
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -49,7 +49,6 @@
 #include <zlib.h>
 
 #include "avcodec.h"
-#include "internal.h"
 #include "put_bits.h"
 #include "bytestream.h"
 
@@ -177,7 +176,7 @@ static int encode_bitstream(FlashSVContext *s, AVFrame *p, uint8_t *buf,
 
                 bytestream_put_be16(&ptr, zsize);
                 buf_pos += zsize + 2;
-                av_dlog(s->avctx, "buf_pos = %d\n", buf_pos);
+                av_dlog(avctx, "buf_pos = %d\n", buf_pos);
             } else {
                 pred_blocks++;
                 bytestream_put_be16(&ptr, 0);
@@ -195,10 +194,11 @@ static int encode_bitstream(FlashSVContext *s, AVFrame *p, uint8_t *buf,
 }
 
 
-static int flashsv_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
-                                const AVFrame *pict, int *got_packet)
+static int flashsv_encode_frame(AVCodecContext *avctx, uint8_t *buf,
+                                int buf_size, void *data)
 {
     FlashSVContext * const s = avctx->priv_data;
+    AVFrame *pict = data;
     AVFrame * const p = &s->frame;
     uint8_t *pfptr;
     int res;
@@ -228,11 +228,15 @@ static int flashsv_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         I_frame = 1;
     }
 
-    if ((res = ff_alloc_packet2(avctx, pkt, s->image_width * s->image_height * 3)) < 0)
-        return res;
+    if (buf_size < s->image_width * s->image_height * 3) {
+        //Conservative upper bound check for compressed data
+        av_log(avctx, AV_LOG_ERROR, "buf_size %d <  %d\n",
+               buf_size, s->image_width * s->image_height * 3);
+        return -1;
+    }
 
-    pkt->size = encode_bitstream(s, p, pkt->data, pkt->size, opt_w * 16, opt_h * 16,
-                                 pfptr, &I_frame);
+    res = encode_bitstream(s, p, buf, buf_size, opt_w * 16, opt_h * 16,
+                           pfptr, &I_frame);
 
     //save the current frame
     if (p->linesize[0] > 0)
@@ -255,11 +259,7 @@ static int flashsv_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     avctx->coded_frame = p;
 
-    if (p->key_frame)
-        pkt->flags |= AV_PKT_FLAG_KEY;
-    *got_packet = 1;
-
-    return 0;
+    return res;
 }
 
 static av_cold int flashsv_encode_end(AVCodecContext *avctx)
@@ -281,8 +281,9 @@ AVCodec ff_flashsv_encoder = {
     .id             = CODEC_ID_FLASHSV,
     .priv_data_size = sizeof(FlashSVContext),
     .init           = flashsv_encode_init,
-    .encode2        = flashsv_encode_frame,
+    .encode         = flashsv_encode_frame,
     .close          = flashsv_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_BGR24, PIX_FMT_NONE },
+    .pix_fmts       = (const enum PixelFormat[]){PIX_FMT_BGR24, PIX_FMT_NONE},
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video"),
 };
+

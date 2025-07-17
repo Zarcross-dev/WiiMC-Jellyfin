@@ -3,20 +3,20 @@
  * Copyright (c) 2003 Fabrice Bellard
  * Copyright (c) 2003 Michael Niedermayer
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -58,13 +58,13 @@ AVCodecParserContext *av_parser_init(int codec_id)
     if (!s)
         return NULL;
     s->parser = parser;
-    s->priv_data = av_mallocz(parser->priv_data_size);
-    if (!s->priv_data) {
-        av_free(s);
-        return NULL;
+    if (parser->priv_data_size) {
+        s->priv_data = av_mallocz(parser->priv_data_size);
+        if (!s->priv_data) {
+            av_free(s);
+            return NULL;
+        }
     }
-    s->fetch_timestamp=1;
-    s->pict_type = AV_PICTURE_TYPE_I;
     if (parser->parser_init) {
         ret = parser->parser_init(s);
         if (ret != 0) {
@@ -73,6 +73,8 @@ AVCodecParserContext *av_parser_init(int codec_id)
             return NULL;
         }
     }
+    s->fetch_timestamp=1;
+    s->pict_type = AV_PICTURE_TYPE_I;
     s->key_frame = -1;
     s->convergence_duration = 0;
     s->dts_sync_point       = INT_MIN;
@@ -214,15 +216,15 @@ void av_parser_close(AVCodecParserContext *s)
 /*****************************************************/
 
 /**
- * Combine the (truncated) bitstream to a complete frame.
+ * combines the (truncated) bitstream to a complete frame
  * @return -1 if no complete frame could be created, AVERROR(ENOMEM) if there was a memory allocation error
  */
 int ff_combine_frame(ParseContext *pc, int next, const uint8_t **buf, int *buf_size)
 {
     if(pc->overread){
-        av_dlog(NULL, "overread %d, state:%X next:%d index:%d o_index:%d\n",
+        av_dlog(pc, "overread %d, state:%X next:%d index:%d o_index:%d\n",
                 pc->overread, pc->state, next, pc->index, pc->overread_index);
-        av_dlog(NULL, "%X %X %X %X\n", (*buf)[0], (*buf)[1], (*buf)[2], (*buf)[3]);
+        av_dlog(pc, "%X %X %X %X\n", (*buf)[0], (*buf)[1], (*buf)[2], (*buf)[3]);
     }
 
     /* Copy overread bytes from last frame into buffer. */
@@ -272,9 +274,9 @@ int ff_combine_frame(ParseContext *pc, int next, const uint8_t **buf, int *buf_s
     }
 
     if(pc->overread){
-        av_dlog(NULL, "overread %d, state:%X next:%d index:%d o_index:%d\n",
+        av_dlog(pc, "overread %d, state:%X next:%d index:%d o_index:%d\n",
                 pc->overread, pc->state, next, pc->index, pc->overread_index);
-        av_dlog(NULL, "%X %X %X %X\n", (*buf)[0], (*buf)[1],(*buf)[2],(*buf)[3]);
+        av_dlog(pc, "%X %X %X %X\n", (*buf)[0], (*buf)[1],(*buf)[2],(*buf)[3]);
     }
 
     return 0;
@@ -285,6 +287,14 @@ void ff_parse_close(AVCodecParserContext *s)
     ParseContext *pc = s->priv_data;
 
     av_freep(&pc->buffer);
+}
+
+void ff_parse1_close(AVCodecParserContext *s)
+{
+    ParseContext1 *pc1 = s->priv_data;
+
+    av_free(pc1->pc.buffer);
+    av_free(pc1->enc);
 }
 
 /*************************/

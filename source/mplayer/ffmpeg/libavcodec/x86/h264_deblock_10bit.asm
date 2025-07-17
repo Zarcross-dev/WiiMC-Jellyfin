@@ -24,8 +24,8 @@
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;******************************************************************************
 
-%include "libavutil/x86/x86inc.asm"
-%include "libavutil/x86/x86util.asm"
+%include "x86inc.asm"
+%include "x86util.asm"
 
 SECTION_RODATA
 
@@ -165,7 +165,7 @@ cglobal deblock_v_luma_10_%1, 5,5,8*(mmsize/16)
     SUB        rsp, pad
     shl        r2d, 2
     shl        r3d, 2
-    LOAD_AB     m4, m5, r2d, r3d
+    LOAD_AB     m4, m5, r2, r3
     mov         r3, 32/mmsize
     mov         r2, r0
     sub         r0, r1
@@ -222,7 +222,7 @@ cglobal deblock_h_luma_10_%1, 5,6,8*(mmsize/16)
     SUB        rsp, pad
     shl        r2d, 2
     shl        r3d, 2
-    LOAD_AB     m4, m5, r2d, r3d
+    LOAD_AB     m4, m5, r2, r3
     mov         r3, r1
     mova        am, m4
     add         r3, r1
@@ -302,7 +302,7 @@ cglobal deblock_h_luma_10_%1, 5,6,8*(mmsize/16)
 %endmacro
 
 INIT_XMM
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
 ; in:  m0=p1, m1=p0, m2=q0, m3=q1, m8=p2, m9=q2
 ;      m12=alpha, m13=beta
 ; out: m0=p1', m3=q1', m1=p0', m2=q0'
@@ -352,7 +352,7 @@ cglobal deblock_v_luma_10_%1, 5,5,15
     %define mask2 m11
     shl        r2d, 2
     shl        r3d, 2
-    LOAD_AB    m12, m13, r2d, r3d
+    LOAD_AB    m12, m13, r2, r3
     mov         r2, r0
     sub         r0, r1
     sub         r0, r1
@@ -380,7 +380,7 @@ cglobal deblock_v_luma_10_%1, 5,5,15
 cglobal deblock_h_luma_10_%1, 5,7,15
     shl        r2d, 2
     shl        r3d, 2
-    LOAD_AB    m12, m13, r2d, r3d
+    LOAD_AB    m12, m13, r2, r3
     mov         r2, r1
     add         r2, r1
     add         r2, r1
@@ -419,10 +419,8 @@ cglobal deblock_h_luma_10_%1, 5,7,15
 
 INIT_XMM
 DEBLOCK_LUMA_64 sse2
-%if HAVE_AVX
 INIT_AVX
 DEBLOCK_LUMA_64 avx
-%endif
 %endif
 
 %macro SWAPMOVA 2
@@ -437,7 +435,7 @@ DEBLOCK_LUMA_64 avx
 ;     %1=p0 %2=p1 %3=p2 %4=p3 %5=q0 %6=q1 %7=mask0
 ;     %8=mask1p %9=2 %10=p0' %11=p1' %12=p2'
 %macro LUMA_INTRA_P012 12 ; p0..p3 in memory
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     paddw     t0, %3, %2
     mova      t2, %4
     paddw     t2, %3
@@ -503,7 +501,7 @@ DEBLOCK_LUMA_64 avx
     LOAD_AB t0, t1, r2d, r3d
     mova    %1, t0
     LOAD_MASK m0, m1, m2, m3, %1, t1, t0, t2, t3
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     mova    %2, t0        ; mask0
     psrlw   t3, %1, 2
 %else
@@ -600,7 +598,7 @@ DEBLOCK_LUMA_64 avx
 %endif
 %endmacro
 
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
 ;-----------------------------------------------------------------------------
 ; void deblock_v_luma_intra( uint16_t *pix, int stride, int alpha, int beta )
 ;-----------------------------------------------------------------------------
@@ -716,10 +714,8 @@ cglobal deblock_h_luma_intra_10_%1, 4,7,16
 
 INIT_XMM
 DEBLOCK_LUMA_INTRA_64 sse2
-%if HAVE_AVX
 INIT_AVX
 DEBLOCK_LUMA_INTRA_64 avx
-%endif
 
 %endif
 
@@ -796,18 +792,16 @@ cglobal deblock_h_luma_intra_10_%1, 4,7,8*(mmsize/16)
     RET
 %endmacro
 
-%if ARCH_X86_64 == 0
+%ifndef ARCH_X86_64
 INIT_MMX
 DEBLOCK_LUMA mmxext
 DEBLOCK_LUMA_INTRA mmxext
 INIT_XMM
 DEBLOCK_LUMA sse2
 DEBLOCK_LUMA_INTRA sse2
-%if HAVE_AVX
 INIT_AVX
 DEBLOCK_LUMA avx
 DEBLOCK_LUMA_INTRA avx
-%endif
 %endif
 
 ; in: %1=p0, %2=q0, %3=p1, %4=q1, %5=mask, %6=tmp, %7=tmp
@@ -864,7 +858,7 @@ cglobal deblock_v_chroma_10_%1, 5,7-(mmsize/16),8*(mmsize/16)
 .loop:
 %endif
     CHROMA_V_LOAD r5
-    LOAD_AB     m4, m5, r2d, r3d
+    LOAD_AB     m4, m5, r2, r3
     LOAD_MASK   m0, m1, m2, m3, m4, m5, m7, m6, m4
     pxor        m4, m4
     CHROMA_V_LOAD_TC m6, r4
@@ -876,7 +870,7 @@ cglobal deblock_v_chroma_10_%1, 5,7-(mmsize/16),8*(mmsize/16)
 %if mmsize < 16
     add         r0, mmsize
     add         r5, mmsize
-    add         r4, mmsize/4
+    add         r4, mmsize/8
     dec         r6
     jg .loop
     REP_RET
@@ -898,7 +892,7 @@ cglobal deblock_v_chroma_intra_10_%1, 4,6-(mmsize/16),8*(mmsize/16)
 .loop:
 %endif
     CHROMA_V_LOAD r4
-    LOAD_AB     m4, m5, r2d, r3d
+    LOAD_AB     m4, m5, r2, r3
     LOAD_MASK   m0, m1, m2, m3, m4, m5, m7, m6, m4
     CHROMA_DEBLOCK_P0_Q0_INTRA m1, m2, m0, m3, m7, m5, m6
     CHROMA_V_STORE
@@ -913,13 +907,11 @@ cglobal deblock_v_chroma_intra_10_%1, 4,6-(mmsize/16),8*(mmsize/16)
 %endif
 %endmacro
 
-%if ARCH_X86_64 == 0
+%ifndef ARCH_X86_64
 INIT_MMX
 DEBLOCK_CHROMA mmxext
 %endif
 INIT_XMM
 DEBLOCK_CHROMA sse2
-%if HAVE_AVX
 INIT_AVX
 DEBLOCK_CHROMA avx
-%endif

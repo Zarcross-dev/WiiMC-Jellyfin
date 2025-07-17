@@ -2,20 +2,20 @@
  * Winnov WNV1 codec
  * Copyright (c) 2005 Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -64,16 +64,11 @@ static int decode_frame(AVCodecContext *avctx,
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     WNV1Context * const l = avctx->priv_data;
-    AVFrame * const p = &l->pic;
+    AVFrame * const p= (AVFrame*)&l->pic;
     unsigned char *Y,*U,*V;
     int i, j;
     int prev_y = 0, prev_u = 0, prev_v = 0;
     uint8_t *rbuf;
-
-    if(buf_size<=8) {
-        av_log(avctx, AV_LOG_ERROR, "buf_size %d is too small\n", buf_size);
-        return AVERROR_INVALIDDATA;
-    }
 
     rbuf = av_malloc(buf_size + FF_INPUT_BUFFER_PADDING_SIZE);
     if(!rbuf){
@@ -141,7 +136,6 @@ static av_cold int decode_init(AVCodecContext *avctx){
 
     l->avctx = avctx;
     avctx->pix_fmt = PIX_FMT_YUV422P;
-    avcodec_get_frame_defaults(&l->pic);
 
     code_vlc.table = code_table;
     code_vlc.table_allocated = 1 << CODE_VLC_BITS;
@@ -171,5 +165,5 @@ AVCodec ff_wnv1_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Winnov WNV1"),
+    .long_name = NULL_IF_CONFIG_SMALL("Winnov WNV1"),
 };

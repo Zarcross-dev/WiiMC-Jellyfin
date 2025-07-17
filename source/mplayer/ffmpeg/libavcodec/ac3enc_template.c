@@ -41,11 +41,6 @@ static int normalize_samples(AC3EncodeContext *s);
 
 static void clip_coefficients(DSPContext *dsp, CoefType *coef, unsigned int len);
 
-static CoefType calc_cpl_coord(CoefSumType energy_ch, CoefSumType energy_cpl);
-
-static void sum_square_butterfly(AC3EncodeContext *s, CoefSumType sum[4],
-                                 const CoefType *coef0, const CoefType *coef1,
-                                 int len);
 
 int AC3_NAME(allocate_sample_buffers)(AC3EncodeContext *s)
 {
@@ -67,9 +62,9 @@ alloc_fail:
 }
 
 
-/*
+/**
  * Deinterleave input samples.
- * Channels are reordered from FFmpeg's default order to AC-3 order.
+ * Channels are reordered from Libav's default order to AC-3 order.
  */
 static void deinterleave_input_samples(AC3EncodeContext *s,
                                        const SampleType *samples)
@@ -96,7 +91,7 @@ static void deinterleave_input_samples(AC3EncodeContext *s,
 }
 
 
-/*
+/**
  * Apply the MDCT to input samples to generate frequency coefficients.
  * This applies the KBD window and normalizes the input to reduce precision
  * loss due to fixed-point calculations.
@@ -123,25 +118,37 @@ static void apply_mdct(AC3EncodeContext *s)
 }
 
 
-/*
+/**
+ * Calculate a single coupling coordinate.
+ */
+static inline float calc_cpl_coord(float energy_ch, float energy_cpl)
+{
+    float coord = 0.125;
+    if (energy_cpl > 0)
+        coord *= sqrtf(energy_ch / energy_cpl);
+    return FFMIN(coord, COEF_MAX);
+}
+
+
+/**
  * Calculate coupling channel and coupling coordinates.
+ * TODO: Currently this is only used for the floating-point encoder. I was
+ *       able to make it work for the fixed-point encoder, but quality was
+ *       generally lower in most cases than not using coupling. If a more
+ *       adaptive coupling strategy were to be implemented it might be useful
+ *       at that time to use coupling for the fixed-point encoder as well.
  */
 static void apply_channel_coupling(AC3EncodeContext *s)
 {
-    LOCAL_ALIGNED_16(CoefType, cpl_coords,      [AC3_MAX_BLOCKS], [AC3_MAX_CHANNELS][16]);
 #if CONFIG_AC3ENC_FLOAT
+    LOCAL_ALIGNED_16(float,   cpl_coords,       [AC3_MAX_BLOCKS], [AC3_MAX_CHANNELS][16]);
     LOCAL_ALIGNED_16(int32_t, fixed_cpl_coords, [AC3_MAX_BLOCKS], [AC3_MAX_CHANNELS][16]);
-#else
-    int32_t (*fixed_cpl_coords)[AC3_MAX_CHANNELS][16] = cpl_coords;
-#endif
     int blk, ch, bnd, i, j;
     CoefSumType energy[AC3_MAX_BLOCKS][AC3_MAX_CHANNELS][16] = {{{0}}};
     int cpl_start, num_cpl_coefs;
 
     memset(cpl_coords,       0, AC3_MAX_BLOCKS * sizeof(*cpl_coords));
-#if CONFIG_AC3ENC_FLOAT
-    memset(fixed_cpl_coords, 0, AC3_MAX_BLOCKS * sizeof(*cpl_coords));
-#endif
+    memset(fixed_cpl_coords, 0, AC3_MAX_BLOCKS * sizeof(*fixed_cpl_coords));
 
     /* align start to 16-byte boundary. align length to multiple of 32.
         note: coupling start bin % 4 will always be 1 */
@@ -166,6 +173,10 @@ static void apply_channel_coupling(AC3EncodeContext *s)
 
         /* coefficients must be clipped in order to be encoded */
         clip_coefficients(&s->dsp, cpl_coef, num_cpl_coefs);
+
+        /* scale coupling coefficients from float to 24-bit fixed-point */
+        s->ac3dsp.float_to_fixed24(&block->fixed_coef[CPL_CH][cpl_start],
+                                   cpl_coef, num_cpl_coefs);
     }
 
     /* calculate energy in each band in coupling channel and each fbw channel */
@@ -229,11 +240,11 @@ static void apply_channel_coupling(AC3EncodeContext *s)
                     } else {
                         CoefSumType coord_diff = 0;
                         for (bnd = 0; bnd < s->num_cpl_bands; bnd++) {
-                            coord_diff += FFABS(cpl_coords[blk-1][ch][bnd] -
-                                                cpl_coords[blk  ][ch][bnd]);
+                            coord_diff += fabs(cpl_coords[blk-1][ch][bnd] -
+                                               cpl_coords[blk  ][ch][bnd]);
                         }
                         coord_diff /= s->num_cpl_bands;
-                        if (coord_diff > NEW_CPL_COORD_THRESHOLD)
+                        if (coord_diff > 0.03)
                             block->new_cpl_coords[ch] = 1;
                     }
                 }
@@ -280,11 +291,9 @@ static void apply_channel_coupling(AC3EncodeContext *s)
         if (!block->cpl_in_use)
             continue;
 
-#if CONFIG_AC3ENC_FLOAT
         s->ac3dsp.float_to_fixed24(fixed_cpl_coords[blk][1],
                                    cpl_coords[blk][1],
                                    s->fbw_channels * 16);
-#endif
         s->ac3dsp.extract_exponents(block->cpl_coord_exp[1],
                                     fixed_cpl_coords[blk][1],
                                     s->fbw_channels * 16);
@@ -328,17 +337,18 @@ static void apply_channel_coupling(AC3EncodeContext *s)
 
     if (CONFIG_EAC3_ENCODER && s->eac3)
         ff_eac3_set_cpl_states(s);
+#endif /* CONFIG_AC3ENC_FLOAT */
 }
 
 
-/*
+/**
  * Determine rematrixing flags for each block and band.
  */
 static void compute_rematrixing_strategy(AC3EncodeContext *s)
 {
     int nb_coefs;
-    int blk, bnd;
-    AC3Block *block, *block0;
+    int blk, bnd, i;
+    AC3Block *block, *av_uninit(block0);
 
     if (s->channel_mode != AC3_CHMODE_STEREO)
         return;
@@ -346,6 +356,11 @@ static void compute_rematrixing_strategy(AC3EncodeContext *s)
     for (blk = 0; blk < s->num_blocks; blk++) {
         block = &s->blocks[blk];
         block->new_rematrixing_strategy = !blk;
+
+        if (!s->rematrixing_enabled) {
+            block0 = block;
+            continue;
+        }
 
         block->num_rematrixing_bands = 4;
         if (block->cpl_in_use) {
@@ -356,18 +371,21 @@ static void compute_rematrixing_strategy(AC3EncodeContext *s)
         }
         nb_coefs = FFMIN(block->end_freq[1], block->end_freq[2]);
 
-        if (!s->rematrixing_enabled) {
-            block0 = block;
-            continue;
-        }
-
         for (bnd = 0; bnd < block->num_rematrixing_bands; bnd++) {
             /* calculate calculate sum of squared coeffs for one band in one block */
             int start = ff_ac3_rematrix_band_tab[bnd];
             int end   = FFMIN(nb_coefs, ff_ac3_rematrix_band_tab[bnd+1]);
-            CoefSumType sum[4];
-            sum_square_butterfly(s, sum, block->mdct_coef[1] + start,
-                                 block->mdct_coef[2] + start, end - start);
+            CoefSumType sum[4] = {0,};
+            for (i = start; i < end; i++) {
+                CoefType lt = block->mdct_coef[1][i];
+                CoefType rt = block->mdct_coef[2][i];
+                CoefType md = lt + rt;
+                CoefType sd = lt - rt;
+                MAC_COEF(sum[0], lt, lt);
+                MAC_COEF(sum[1], rt, rt);
+                MAC_COEF(sum[2], md, md);
+                MAC_COEF(sum[3], sd, sd);
+            }
 
             /* compare sums to determine if rematrixing will be used for this band */
             if (FFMIN(sum[2], sum[3]) < FFMIN(sum[0], sum[1]))
@@ -386,11 +404,14 @@ static void compute_rematrixing_strategy(AC3EncodeContext *s)
 }
 
 
-int AC3_NAME(encode_frame)(AVCodecContext *avctx, AVPacket *avpkt,
-                           const AVFrame *frame, int *got_packet_ptr)
+/**
+ * Encode a single AC-3 frame.
+ */
+int AC3_NAME(encode_frame)(AVCodecContext *avctx, unsigned char *frame,
+                           int buf_size, void *data)
 {
     AC3EncodeContext *s = avctx->priv_data;
-    const SampleType *samples = (const SampleType *)frame->data[0];
+    const SampleType *samples = data;
     int ret;
 
     if (s->options.allow_per_frame_metadata) {
@@ -437,13 +458,7 @@ int AC3_NAME(encode_frame)(AVCodecContext *avctx, AVPacket *avpkt,
 
     ff_ac3_quantize_mantissas(s);
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, s->frame_size)))
-        return ret;
-    ff_ac3_output_frame(s, avpkt->data);
+    ff_ac3_output_frame(s, frame);
 
-    if (frame->pts != AV_NOPTS_VALUE)
-        avpkt->pts = frame->pts - ff_samples_to_time_base(avctx, avctx->delay);
-
-    *got_packet_ptr = 1;
-    return 0;
+    return s->frame_size;
 }

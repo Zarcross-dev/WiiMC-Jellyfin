@@ -5,26 +5,25 @@
  * derived from the code by
  * Copyright (C) 2009 Thomas P. Higdon <thomas.p.higdon@gmail.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
-#include "internal.h"
 
 typedef struct yop_dec_context {
     AVPacket video_packet;
@@ -38,21 +37,16 @@ typedef struct yop_dec_context {
 static int yop_probe(AVProbeData *probe_packet)
 {
     if (AV_RB16(probe_packet->buf) == AV_RB16("YO")  &&
-        probe_packet->buf[2]<10                      &&
-        probe_packet->buf[3]<10                      &&
         probe_packet->buf[6]                         &&
         probe_packet->buf[7]                         &&
         !(probe_packet->buf[8] & 1)                  &&
-        !(probe_packet->buf[10] & 1)                 &&
-        AV_RL16(probe_packet->buf + 12 + 6) >= 920    &&
-        AV_RL16(probe_packet->buf + 12 + 6) < probe_packet->buf[12] * 3 + 4 + probe_packet->buf[7] * 2048
-    )
+        !(probe_packet->buf[10] & 1))
         return AVPROBE_SCORE_MAX * 3 / 4;
 
     return 0;
 }
 
-static int yop_read_header(AVFormatContext *s)
+static int yop_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     YopDecContext *yop = s->priv_data;
     AVIOContext *pb  = s->pb;
@@ -62,8 +56,8 @@ static int yop_read_header(AVFormatContext *s)
 
     int frame_rate, ret;
 
-    audio_stream = avformat_new_stream(s, NULL);
-    video_stream = avformat_new_stream(s, NULL);
+    audio_stream = av_new_stream(s, 0);
+    video_stream = av_new_stream(s, 1);
 
     // Extra data that will be passed to the decoder
     video_stream->codec->extradata_size = 8;
@@ -77,7 +71,7 @@ static int yop_read_header(AVFormatContext *s)
     // Audio
     audio_dec               = audio_stream->codec;
     audio_dec->codec_type   = AVMEDIA_TYPE_AUDIO;
-    audio_dec->codec_id     = CODEC_ID_ADPCM_IMA_APC;
+    audio_dec->codec_id     = CODEC_ID_ADPCM_IMA_WS;
     audio_dec->channels     = 1;
     audio_dec->sample_rate  = 22050;
 
@@ -111,7 +105,7 @@ static int yop_read_header(AVFormatContext *s)
 
     avio_seek(pb, 2048, SEEK_SET);
 
-    avpriv_set_pts_info(video_stream, 32, 1, frame_rate);
+    av_set_pts_info(video_stream, 32, 1, frame_rate);
 
     return 0;
 }
@@ -189,6 +183,8 @@ static int yop_read_seek(AVFormatContext *s, int stream_index,
     int64_t frame_pos, pos_min, pos_max;
     int frame_count;
 
+    av_free_packet(&yop->video_packet);
+
     if (!stream_index)
         return -1;
 
@@ -199,13 +195,9 @@ static int yop_read_seek(AVFormatContext *s, int stream_index,
     timestamp      = FFMAX(0, FFMIN(frame_count, timestamp));
 
     frame_pos      = timestamp * yop->frame_size + pos_min;
-
-    if (avio_seek(s->pb, frame_pos, SEEK_SET) < 0)
-        return -1;
-
-    av_free_packet(&yop->video_packet);
     yop->odd_frame = timestamp & 1;
 
+    avio_seek(s->pb, frame_pos, SEEK_SET);
     return 0;
 }
 
@@ -218,6 +210,6 @@ AVInputFormat ff_yop_demuxer = {
     .read_packet    = yop_read_packet,
     .read_close     = yop_read_close,
     .read_seek      = yop_read_seek,
-    .extensions     = "yop",
-    .flags          = AVFMT_GENERIC_INDEX,
+    .extensions = "yop",
+    .flags = AVFMT_GENERIC_INDEX,
 };

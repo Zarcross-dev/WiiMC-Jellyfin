@@ -2,20 +2,20 @@
  * SubRip subtitle demuxer
  * Copyright (c) 2010  Aurelien Jacobs <aurel@gnuage.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -40,12 +40,12 @@ static int srt_probe(AVProbeData *p)
     return 0;
 }
 
-static int srt_read_header(AVFormatContext *s)
+static int srt_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = av_new_stream(s, 0);
     if (!st)
         return -1;
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    av_set_pts_info(st, 64, 1, 1000);
     st->codec->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codec->codec_id   = CODEC_ID_SRT;
     return 0;
@@ -81,7 +81,7 @@ static int srt_read_packet(AVFormatContext *s, AVPacket *pkt)
     do {
         ptr2 = ptr;
         ptr += ff_get_line(s->pb, ptr, sizeof(buffer)+buffer-ptr);
-    } while (!is_eol(*ptr2) && !url_feof(s->pb) && ptr-buffer<sizeof(buffer)-1);
+    } while (!is_eol(*ptr2) && !s->pb->eof_reached && ptr-buffer<sizeof(buffer)-1);
 
     if (buffer[0] && !(res = av_new_packet(pkt, ptr-buffer))) {
         memcpy(pkt->data, buffer, pkt->size);

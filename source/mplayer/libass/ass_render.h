@@ -4,17 +4,19 @@
  *
  * This file is part of libass.
  *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
+ * libass is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * libass is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with libass; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifndef LIBASS_RENDER_H
@@ -27,9 +29,6 @@
 #include FT_GLYPH_H
 #include FT_SYNTHESIS_H
 
-// XXX: fix the inclusion mess so we can avoid doing this here
-typedef struct ass_shaper ASS_Shaper;
-
 #include "ass.h"
 #include "ass_font.h"
 #include "ass_bitmap.h"
@@ -41,9 +40,6 @@ typedef struct ass_shaper ASS_Shaper;
 
 #define GLYPH_CACHE_MAX 1000
 #define BITMAP_CACHE_MAX_SIZE 30 * 1048576
-
-#define PARSED_FADE (1<<0)
-#define PARSED_A    (1<<1)
 
 typedef struct {
     double xMin;
@@ -76,7 +72,6 @@ typedef struct {
     double aspect;              // frame aspect ratio, d_width / d_height.
     double storage_aspect;      // pixel ratio of the source image
     ASS_Hinting hinting;
-    ASS_ShapingLevel shaper;
 
     char *default_font;
     char *default_family;
@@ -100,26 +95,19 @@ typedef enum {
 
 // describes a glyph
 // GlyphInfo and TextInfo are used for text centering and word-wrapping operations
-typedef struct glyph_info {
+typedef struct {
     unsigned symbol;
     unsigned skip;              // skip glyph when layouting text
-    ASS_Font *font;
-    int face_index;
-    int glyph_index;
-    double font_size;
-    ASS_Drawing *drawing;
-    FT_Outline *outline;
-    FT_Outline *border;
+    FT_Glyph glyph;
+    FT_Glyph outline_glyph;
     Bitmap *bm;                 // glyph bitmap
     Bitmap *bm_o;               // outline bitmap
     Bitmap *bm_s;               // shadow bitmap
     FT_BBox bbox;
     FT_Vector pos;
-    FT_Vector offset;
     char linebreak;             // the first (leading) glyph of some line ?
     uint32_t c[4];              // colors
     FT_Vector advance;          // 26.6
-    FT_Vector cluster_advance;
     Effect effect_type;
     int effect_timing;          // time duration of current karaoke word
     // after process_karaoke_effects: distance in pixels from the glyph origin.
@@ -132,24 +120,12 @@ typedef struct glyph_info {
     double shadow_y;
     double frx, fry, frz;       // rotation
     double fax, fay;            // text shearing
-    double scale_x, scale_y;
-    double border_x, border_y;
-    unsigned italic;
-    unsigned bold;
-    int flags;
-
-    int bm_run_id;
-    int shape_run_id;
 
     BitmapHashKey hash_key;
-
-    // next glyph in this cluster
-    struct glyph_info *next;
 } GlyphInfo;
 
 typedef struct {
     double asc, desc;
-    int offset, len;
 } LineInfo;
 
 typedef struct {
@@ -167,9 +143,9 @@ typedef struct {
 typedef struct {
     ASS_Event *event;
     ASS_Style *style;
-    int parsed_tags;
 
     ASS_Font *font;
+    char *font_path;
     double font_size;
     int flags;                  // decoration flags (underline/strike-through)
 
@@ -208,9 +184,6 @@ typedef struct {
     int effect_timing;
     int effect_skip_timing;
 
-    // bitmap run id (used for final bitmap rendering)
-    int bm_run_id;
-
     enum {
         SCROLL_LR,              // left-to-right
         SCROLL_RL,
@@ -225,14 +198,13 @@ typedef struct {
     unsigned italic;
     int treat_family_as_pattern;
     int wrap_style;
-    int font_encoding;
 } RenderContext;
 
 typedef struct {
-    Cache *font_cache;
-    Cache *outline_cache;
-    Cache *bitmap_cache;
-    Cache *composite_cache;
+    Hashmap *font_cache;
+    Hashmap *glyph_cache;
+    Hashmap *bitmap_cache;
+    Hashmap *composite_cache;
     size_t glyph_max;
     size_t bitmap_max_size;
 } CacheStore;
@@ -244,7 +216,6 @@ struct ass_renderer {
     ASS_Settings settings;
     int render_id;
     ASS_SynthPriv *synth_priv;
-    ASS_Shaper *shaper;
 
     ASS_Image *images_root;     // rendering result is stored here
     ASS_Image *prev_images_root;
@@ -291,8 +262,5 @@ typedef struct {
 
 void reset_render_context(ASS_Renderer *render_priv);
 void ass_free_images(ASS_Image *img);
-
-// XXX: this is actually in ass.c, includes should be fixed later on
-void ass_lazy_track_init(ASS_Library *lib, ASS_Track *track);
 
 #endif /* LIBASS_RENDER_H */

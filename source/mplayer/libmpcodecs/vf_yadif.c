@@ -34,7 +34,6 @@
 #include "libmpdemux/demuxer.h"
 #include "libvo/fastmemcpy.h"
 #include "libavutil/common.h"
-#include "libavutil/x86_cpu.h"
 
 //===========================================================================//
 
@@ -60,19 +59,8 @@ static void store_ref(struct vf_priv_s *p, uint8_t *src[3], int src_stride[3], i
 
     for(i=0; i<3; i++){
         int is_chroma= !!i;
-        int pn_width  = width >>is_chroma;
-        int pn_height = height>>is_chroma;
 
-
-        memcpy_pic(p->ref[2][i], src[i], pn_width, pn_height, p->stride[i], src_stride[i]);
-
-        fast_memcpy(p->ref[2][i] +  pn_height   * p->stride[i],
-                          src[i] + (pn_height-1)*src_stride[i], pn_width);
-        fast_memcpy(p->ref[2][i] + (pn_height+1)* p->stride[i],
-                          src[i] + (pn_height-1)*src_stride[i], pn_width);
-
-        fast_memcpy(p->ref[2][i] -   p->stride[i], src[i], pn_width);
-        fast_memcpy(p->ref[2][i] - 2*p->stride[i], src[i], pn_width);
+        memcpy_pic(p->ref[2][i], src[i], width>>is_chroma, height>>is_chroma, p->stride[i], src_stride[i]);
     }
 }
 
@@ -384,7 +372,7 @@ static int config(struct vf_instance *vf,
         for(i=0; i<3; i++){
             int is_chroma= !!i;
             int w= ((width   + 31) & (~31))>>is_chroma;
-            int h=(((height  +  1) & ( ~1))>>is_chroma) + 6;
+            int h= ((height+6+ 31) & (~31))>>is_chroma;
 
             vf->priv->stride[i]= w;
             for(j=0; j<3; j++)

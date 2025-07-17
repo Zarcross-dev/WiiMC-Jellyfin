@@ -19,10 +19,6 @@
 #ifndef MPLAYER_GUI_ACTIONS_H
 #define MPLAYER_GUI_ACTIONS_H
 
-#include "stream/stream.h"
-
-#define SAME_STREAMTYPE (STREAMTYPE_DUMMY - 1)
-
 extern int uiGotoTheNext;
 
 void uiAbsSeek(float sec);

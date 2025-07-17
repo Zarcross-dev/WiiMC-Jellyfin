@@ -229,9 +229,9 @@ static uint32_t Directx_CreateOverlay(uint32_t imgfmt)
         .dwFlags  = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_BACKBUFFERCOUNT | DDSD_PIXELFORMAT,
         .dwWidth  = image_width,
         .dwHeight = image_height,
+        .dwBackBufferCount = 2,
     };
     uint32_t i = 0;
-    ddsdOverlay.dwBackBufferCount = 2;
     while (i < NUM_FORMATS && imgfmt != g_ddpf[i].img_format)
         i++;
     if (!g_lpdd || !g_lpddsPrimary || i == NUM_FORMATS)
@@ -464,12 +464,10 @@ static uint32_t Directx_ManageDisplay(void)
     width   = vo_dwidth;
     height  = vo_dheight;
 
-    if (aspect_scaling()) {
-        aspect(&width, &height, A_WINZOOM);
-        panscan_calc_windowed();
-        width   += vo_panscan_x;
-        height  += vo_panscan_y;
-    }
+    aspect(&width, &height, A_WINZOOM);
+    panscan_calc_windowed();
+    width   += vo_panscan_x;
+    height  += vo_panscan_y;
     width    = FFMIN(width, vo_screenwidth);
     height   = FFMIN(height, vo_screenheight);
     rd.left += (vo_dwidth - width) / 2;
@@ -630,10 +628,10 @@ static uint32_t Directx_CheckOverlayPixelformats(void)
         .dwFlags  = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT,
         .dwWidth  = 300,
         .dwHeight = 280,
+        .dwBackBufferCount = 0,
     };
     uint32_t i;
     uint32_t formatcount = 0;
-    ddsdOverlay.dwBackBufferCount = 0;
     //get driver caps to determine overlay support
     ddrval = g_lpdd->lpVtbl->GetCaps(g_lpdd, &capsDrv, NULL);
     if (FAILED(ddrval)) {
@@ -960,6 +958,9 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 
     if (!vo_w32_config(d_width, d_height, options))
         return 1;
+
+    if (WinID == -1)
+        SetWindowText(vo_w32_window, title);
 
     /*create the surfaces*/
     if (Directx_CreatePrimarySurface())

@@ -2,33 +2,30 @@
  * TTA demuxer
  * Copyright (c) 2006 Alex Beregszaszi
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavcodec/get_bits.h"
 #include "avformat.h"
-#include "internal.h"
 #include "id3v1.h"
 #include "libavutil/dict.h"
 
 typedef struct {
     int totalframes, currentframe;
-    int frame_size;
-    int last_frame_size;
 } TTAContext;
 
 static int tta_probe(AVProbeData *p)
@@ -40,11 +37,11 @@ static int tta_probe(AVProbeData *p)
     return 0;
 }
 
-static int tta_read_header(AVFormatContext *s)
+static int tta_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     TTAContext *c = s->priv_data;
     AVStream *st;
-    int i, channels, bps, samplerate, datalen;
+    int i, channels, bps, samplerate, datalen, framelen;
     uint64_t framepos, start_offset;
 
     if (!av_dict_get(s->metadata, "", NULL, AV_DICT_IGNORE_SUFFIX))
@@ -71,23 +68,20 @@ static int tta_read_header(AVFormatContext *s)
 
     avio_skip(s->pb, 4); // header crc
 
-    c->frame_size      = samplerate * 256 / 245;
-    c->last_frame_size = datalen % c->frame_size;
-    if (!c->last_frame_size)
-        c->last_frame_size = c->frame_size;
-    c->totalframes = datalen / c->frame_size + (c->last_frame_size < c->frame_size);
+    framelen = samplerate*256/245;
+    c->totalframes = datalen / framelen + ((datalen % framelen) ? 1 : 0);
     c->currentframe = 0;
 
-    if(c->totalframes >= UINT_MAX/sizeof(uint32_t) || c->totalframes <= 0){
-        av_log(s, AV_LOG_ERROR, "totalframes %d invalid\n", c->totalframes);
+    if(c->totalframes >= UINT_MAX/sizeof(uint32_t)){
+        av_log(s, AV_LOG_ERROR, "totalframes too large\n");
         return -1;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 64, 1, samplerate);
+    av_set_pts_info(st, 64, 1, samplerate);
     st->start_time = 0;
     st->duration = datalen;
 
@@ -95,8 +89,7 @@ static int tta_read_header(AVFormatContext *s)
 
     for (i = 0; i < c->totalframes; i++) {
         uint32_t size = avio_rl32(s->pb);
-        av_add_index_entry(st, framepos, i * c->frame_size, size, 0,
-                           AVINDEX_KEYFRAME);
+        av_add_index_entry(st, framepos, i*framelen, size, 0, AVINDEX_KEYFRAME);
         framepos += size;
     }
     avio_skip(s->pb, 4); // seektable crc
@@ -114,10 +107,6 @@ static int tta_read_header(AVFormatContext *s)
         return -1;
     }
     st->codec->extradata = av_mallocz(st->codec->extradata_size+FF_INPUT_BUFFER_PADDING_SIZE);
-    if (!st->codec->extradata) {
-        st->codec->extradata_size = 0;
-        return AVERROR(ENOMEM);
-    }
     avio_seek(s->pb, start_offset, SEEK_SET);
     avio_read(s->pb, st->codec->extradata, st->codec->extradata_size);
 
@@ -131,15 +120,13 @@ static int tta_read_packet(AVFormatContext *s, AVPacket *pkt)
     int size, ret;
 
     // FIXME!
-    if (c->currentframe >= c->totalframes)
-        return AVERROR_EOF;
+    if (c->currentframe > c->totalframes)
+        return -1;
 
     size = st->index_entries[c->currentframe].size;
 
     ret = av_get_packet(s->pb, pkt, size);
     pkt->dts = st->index_entries[c->currentframe++].timestamp;
-    pkt->duration = c->currentframe == c->totalframes ? c->last_frame_size :
-                                                        c->frame_size;
     return ret;
 }
 
@@ -150,10 +137,9 @@ static int tta_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     int index = av_index_search_timestamp(st, timestamp, flags);
     if (index < 0)
         return -1;
-    if (avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
-        return -1;
 
     c->currentframe = index;
+    avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET);
 
     return 0;
 }
@@ -166,5 +152,5 @@ AVInputFormat ff_tta_demuxer = {
     .read_header    = tta_read_header,
     .read_packet    = tta_read_packet,
     .read_seek      = tta_read_seek,
-    .extensions     = "tta",
+    .extensions = "tta",
 };

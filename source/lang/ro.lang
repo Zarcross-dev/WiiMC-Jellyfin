@@ -1,1 +1,599 @@
-�
+msgid "********"
+msgstr "••••••••"
+
+msgid "Videos"
+msgstr "Video"
+
+msgid "Music"
+msgstr "Audio"
+
+msgid "Pictures"
+msgstr "Imagini"
+
+msgid "Online Media"
+msgstr "Media online"
+
+msgid "Please Wait"
+msgstr "Așteptaţi..."
+
+msgid "Error"
+msgstr "Eroare"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Retry"
+msgstr "Reîncercare"
+
+msgid "Cancel"
+msgstr "Anulare"
+
+msgid "Information"
+msgstr "Informaţii"
+
+msgid "Credits"
+msgstr "Despre..."
+
+msgid "Play"
+msgstr "Redare"
+
+msgid "Pause"
+msgstr "Pauză"
+
+msgid "Single Play"
+msgstr "Redare unică"
+
+msgid "Continuous Play"
+msgstr "Redare continuă"
+
+msgid "Shuffle"
+msgstr "Redare aleatoare"
+
+msgid "Loop"
+msgstr "Redare in buclă"
+
+msgid "Continuous"
+msgstr "Redare continuă"
+
+msgid "Playlist"
+msgstr "Listă de redare"
+
+msgid "Restart"
+msgstr "Restart"
+
+msgid "Loading..."
+msgstr "Încărcare..."
+
+msgid "Global"
+msgstr "Setări generale"
+
+msgid "Network"
+msgstr "Reţea"
+
+msgid "Subtitles"
+msgstr "Subtitrări"
+
+msgid "Subtitle Delay"
+msgstr "Decalare subtitrare"
+
+msgid "Settings"
+msgstr "Configurare"
+
+msgid "On"
+msgstr "Activat(ă)"
+
+msgid "Off"
+msgstr "Dezactivat(ă)"
+
+msgid "Always"
+msgstr "Întotdeauna"
+
+msgid "Disabled"
+msgstr "Dezactivat(ă)"
+
+msgid "Skip Backward"
+msgstr "Înapoi"
+
+msgid "Pause"
+msgstr "Pauză"
+
+msgid "Skip Forward"
+msgstr "Înainte"
+
+msgid "Single"
+msgstr "Redare unică"
+
+msgid "now playing"
+msgstr "Fişier redat:"
+
+msgid "Previous"
+msgstr "Fişierul precedent"
+
+msgid "Next"
+msgstr "Fişierul următor"
+
+msgid "Close"
+msgstr "Închide"
+
+msgid "DVD"
+msgstr "DVD"
+
+msgid "Go back"
+msgstr "Înapoi"
+
+msgid "Update Available"
+msgstr "Actualizare disponibilă"
+
+msgid "An update is available!"
+msgstr "O nouă actualizare este disponibilă!"
+
+msgid "Update now"
+msgstr "Actualizează acum"
+
+msgid "Update later"
+msgstr "Actualizează mai târziu"
+
+msgid "Online media file not found."
+msgstr "Fișier media online negăsit."
+
+msgid "Unrecognized DVD format!"
+msgstr "Format DVD necunoscut!"
+
+msgid "Port cannot be blank!"
+msgstr "Nu aţi completat portul!"
+
+msgid "Port is not a number!"
+msgstr "Portul trebuie să fie un număr!"
+
+msgid "Port is outside the allowed range (4-49151)!"
+msgstr "Portul nu este în intervalul permis (4-49151)!"
+
+msgid "Settings - Global"
+msgstr "Setări generale"
+
+msgid "Settings - Videos"
+msgstr "Setări video"
+
+msgid "Settings - Music"
+msgstr "Setări audio"
+
+msgid "Settings - Pictures"
+msgstr "Setări imagini"
+
+msgid "Settings - Online Media"
+msgstr "Setări media online"
+
+msgid "Settings - Network"
+msgstr "Setări reţea"
+
+msgid "Settings - DVD"
+msgstr "Setări DVD"
+
+msgid "File Extensions"
+msgstr "Extensii fişiere"
+
+msgid "Language"
+msgstr "Limbă"
+
+msgid "Volume"
+msgstr "Volum"
+
+msgid "Exit Action"
+msgstr "La ieșire ..."
+
+msgid "Wiimote Rumble"
+msgstr "Vibraţie Wiimote"
+
+msgid "Hide"
+msgstr "Ascunde"
+
+msgid "Show"
+msgstr "Arată"
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Return to Wii Menu"
+msgstr "Întoarcere la meniul Wii"
+
+msgid "Power Off Wii"
+msgstr "Oprire Wii"
+
+msgid "Return to Loader"
+msgstr "Întoarcere la loader"
+
+msgid "Screen Zoom"
+msgstr "Dimensiune imagine"
+
+msgid "Screen Position"
+msgstr "Poziţionare imagine"
+
+msgid "Frame Dropping"
+msgstr "Renunţare la unele cadre"
+
+msgid "Aspect Ratio"
+msgstr "Format imagine"
+
+msgid "Cache Fill"
+msgstr "Nivel de umplere memorie tampon"
+
+msgid "Audio Delay"
+msgstr "Decalare audio"
+
+msgid "Auto-Resume"
+msgstr "Continuare automată"
+
+msgid "Videos Files Folder"
+msgstr "Folder fișiere video"
+
+msgid "Play Order"
+msgstr "Mod de redare"
+
+msgid "Music Files Folder"
+msgstr "Folder fișiere audio"
+
+msgid "Pictures Files Folder"
+msgstr "Folder fișiere imagini"
+
+msgid "Display Name"
+msgstr "Numele afișat"
+
+msgid "Share IP"
+msgstr "IP partajare"
+
+msgid "Share Name"
+msgstr "Nume partajare"
+
+msgid "Username"
+msgstr "Nume utilizator"
+
+msgid "Password"
+msgstr "Parolă"
+
+msgid "New Share"
+msgstr "Partajare nouă"
+
+msgid "Delete"
+msgstr "Șterge"
+
+msgid "Delete Share"
+msgstr "Șterge partajare"
+
+msgid "Are you sure that you want to delete this share?"
+msgstr "Esti sigur că vrei să ștergi această partajare?"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "Folder"
+msgstr "Folder"
+
+msgid "Mode"
+msgstr "Mod"
+
+msgid "New Site"
+msgstr "Site Nou"
+
+msgid "Passive"
+msgstr "Pasiv"
+
+msgid "Active"
+msgstr "Activ"
+
+msgid "Delete Site"
+msgstr "Șterge Site"
+
+msgid "Are you sure that you want to delete this site?"
+msgstr "Eşti sigur că vrei să ștergi acest site?"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Error loading file!"
+msgstr "Eroare la încărcarea fişierului!"
+
+msgid "Resume"
+msgstr "Continuare"
+
+msgid "Stop Slideshow"
+msgstr "Opreşte afişarea automată"
+
+msgid "Start Slideshow"
+msgstr "Porneşte afişarea automată"
+
+msgid "Slideshow Delay"
+msgstr "Interval între imagini"
+
+msgid "Online Media Folder"
+msgstr "Folder media online"
+
+msgid "Add SMB Share"
+msgstr "Adăuga partajare SMB"
+
+msgid "Add FTP Site"
+msgstr "Adăuga site FTP"
+
+msgid "DVD Menu"
+msgstr "Meniu DVD"
+
+msgid "Skip to Main Title"
+msgstr "Salt direct la titlul principal"
+
+msgid "Unable to Initialize MPlayer"
+msgstr "MPlayer nu poate fi iniţializat"
+
+msgid "Unable to find a valid working path"
+msgstr "Nu a fost găsita o cale validă"
+
+msgid "Unable to change path to"
+msgstr "Nu se poate schimba calea la"
+
+msgid "Out of memory: too many files!"
+msgstr "Memorie insuficientă: prea multe fişiere!"
+
+msgid "Directory name is too long!"
+msgstr "Numele directorului este prea lung!"
+
+msgid "SD Card"
+msgstr "Card SD"
+
+msgid "USB Mass Storage"
+msgstr "USB Mass Storage"
+
+msgid "Data DVD"
+msgstr "DVD date"
+
+msgid "USB drive not found!"
+msgstr "Drive-ul USB nu a fost găsit!"
+
+msgid "SD card not found!"
+msgstr "Cardul SD nu a fost găsit!"
+
+msgid "Loading DVD..."
+msgstr "Încărcare DVD..."
+
+msgid "No disc inserted!"
+msgstr "Nici un disc introdus!"
+
+msgid "Unsupported DVD."
+msgstr "DVD invalid."
+
+msgid "Up One Level"
+msgstr "Un nivel mai sus"
+
+msgid "Error opening"
+msgstr "Eroare la deschidere"
+
+msgid "Warning"
+msgstr "Avertisment"
+
+msgid "One or more pictures within this folder exceeds the maximum size (6 MB) and will not be viewable."
+msgstr "Una sau mai multe imagini din acest folder depăşeşte dimensiunea maximă (6 MB) şi nu va fi vizibilă."
+
+msgid "Error loading playlist!"
+msgstr "Eroare la încărcarea listei de redare!"
+
+msgid "Playlist does not contain any supported entries!"
+msgstr "Lista de redare nu conţine date acceptate!"
+
+msgid "No Results Found"
+msgstr "Nu a fost găsit nici un rezultat"
+
+msgid "Your search did not match any media files."
+msgstr "Căutarea dvs. nu corespunde niciunui fişier media."
+
+msgid "Error opening file!"
+msgstr "Eroare la deschiderea fişierului!"
+
+msgid "Saving..."
+msgstr "Salvare..."
+
+msgid "Error creating file!"
+msgstr "Eroare la crearea fişierului!"
+
+msgid "Error saving file!"
+msgstr "Eroare la salvarea fişierului!"
+
+msgid "Playlist is Empty"
+msgstr "Lista de redare este goala"
+
+msgid "Hover over items and push the + button to add them to your playlist."
+msgstr "Pozitionati cursorul peste fișiere şi apăsaţi butonul + pentru a le adăuga la lista de redare."
+
+msgid "Exit Playlist"
+msgstr "Ieșire din lista de redare"
+
+msgid "Update successful!"
+msgstr "Actualizare reuşită!"
+
+msgid "Update failed!"
+msgstr "Actualizare nereuşită!"
+
+msgid "Initializing network..."
+msgstr "Se iniţializează reţeaua..."
+
+msgid "Check settings file."
+msgstr "Verificaţi fișierul de configurare."
+
+msgid "Share name is blank."
+msgstr "Nu aţi introdus numele partajării."
+
+msgid "Share IP is blank."
+msgstr "Nu aţi introdus IP-ul partajării"
+
+msgid "Invalid network share settings"
+msgstr "Setările pentru partajare sunt invalide"
+
+msgid "Connecting to network share..."
+msgstr "Conectare la reţeaua partajată..."
+
+msgid "Failed to connect to network share."
+msgstr "Conectare nereuşită la reţeaua partajată."
+
+msgid "IP is blank."
+msgstr "Nu aţi introdus IP-ul"
+
+msgid "Username is blank."
+msgstr "Nu aţi introdus numele de utilizator"
+
+msgid "Password is blank."
+msgstr "Nu aţi introdus parola"
+
+msgid "Invalid FTP site settings"
+msgstr "Setări FTP invalide"
+
+msgid "Connecting to FTP site..."
+msgstr "Conectare la FTP..."
+
+msgid "Failed to connect to FTP site."
+msgstr "Conectare la FTP nereuşită."
+
+msgid "Could not find a valid SD or USB device - one is required for normal operation."
+msgstr "Nu s-a putut găsi un dispozitiv SD sau USB - pentru funcţionarea normală este nevoie de unul."
+
+msgid "Could not create folder"
+msgstr "Nu s-a putut crea folderul"
+
+msgid "Saving settings..."
+msgstr "Salvare setări..."
+
+msgid "Could not save settings to"
+msgstr "Nu se pot salva setările pe"
+
+msgid "Thanks to"
+msgstr "Multumiri :"
+
+msgid "This software is open source and may be copied, distributed, or modified under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "Acest software este open source şi poate fi copiat, distribuit, sau modificat în conformitate cu termenii GNU General Public License (GPL) versiunea 2."
+
+msgid "Menu artwork"
+msgstr "Realizarea grafică a meniului"
+
+msgid ""
+msgstr ""
+
+msgid "Coding & menu design"
+msgstr "Programare & concepţie interfaţă grafică"
+
+msgid "Logo"
+msgstr "Logo"
+
+msgid "Version"
+msgstr "Versiune"
+
+msgid "Buffering..."
+msgstr "Încărcare..."
+
+msgid "Buffering"
+msgstr "Încărcare..."
+
+msgid "Unable to initialize network (Error #:"
+msgstr "Reţeaua nu poate fi iniţializată (Eroare #:"
+
+msgid "Settings - Subtitles"
+msgstr "Setări - Subtitrări"
+
+msgid "Visibility"
+msgstr "Vizibilitate"
+
+msgid "Delay"
+msgstr "Decalare"
+
+msgid "Codepage"
+msgstr "Codepage"
+
+msgid "Subtitle Language"
+msgstr "Limbă subtitrare"
+
+msgid "Default"
+msgstr "Implicit(ă)"
+
+msgid "Could not change language. Not enough memory!"
+msgstr "Nu s-a putut schimba limba. Memorie insuficientă."
+
+msgid "Font Required"
+msgstr "Font necesar"
+
+msgid "A new font is required to display this language."
+msgstr "Pentru a afişa această limbă este necesar un font nou."
+
+msgid "Download font"
+msgstr "Descărcare font"
+
+msgid "Unable to save font file!"
+msgstr "Nu pot salva fişierul de font!"
+
+msgid "Out of Memory"
+msgstr "Memorie insuficientă"
+
+msgid "WiiMC does not have enough free memory to load the picture viewer."
+msgstr "WiiMC nu are suficientă memorie liberă pentru a încărca programul de afişat imagini."
+
+msgid "Close MPlayer"
+msgstr "Închide MPlayer"
+
+msgid "Subtitle Codepage"
+msgstr "Codepage pentru subtitrări"
+
+msgid "This directory contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "Acest director conţine mai multe fişiere decât valoarea maximă permisă. Nu toate fişierele vor fi vizibile."
+
+msgid "This playlist contains more entries than the maximum allowed. Not all entries will be visible."
+msgstr "Această listă de redare conţine mai multe inregistrări decât valoarea maximă permisă. Nu toate inregistrările vor fi vizibile."
+
+msgid "Downloading..."
+msgstr "Descărcare..."
+
+msgid "Unzipping..."
+msgstr "Dezarhivare..."
+
+msgid "Color"
+msgstr "Culoare"
+
+msgid "Size"
+msgstr "Mărime"
+
+msgid "White"
+msgstr "Alb"
+
+msgid "Black"
+msgstr "Negru"
+
+msgid "Yellow"
+msgstr "Galben"
+
+msgid "Red"
+msgstr "Roşu"
+
+msgid "Sleep Timer"
+msgstr "Temporizator de oprire"
+
+msgid "sec"
+msgstr "sec"
+
+msgid "min"
+msgstr "min"
+
+msgid "Theme"
+msgstr "Temă"
+
+msgid "Blue"
+msgstr "Albastru"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Grey"
+msgstr "Gri"
+
+msgid "Orange"
+msgstr "Portocaliu"
+
+msgid "Purple (Default)"
+msgstr "Violet (Standard)"
+
+msgid "Auto-Play Next Video"
+msgstr "Auto-redarea fişierului următor"
+
+msgid "Adding files to playlist..."
+msgstr "Fişierele sunt adăugate la lista de redare..."

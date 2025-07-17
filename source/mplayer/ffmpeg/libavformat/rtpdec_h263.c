@@ -2,20 +2,20 @@
  * RTP H.263 Depacketizer, RFC 4629
  * Copyright (c) 2010 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -23,9 +23,13 @@
 #include "rtpdec_formats.h"
 #include "libavutil/intreadwrite.h"
 
-int ff_h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
-                          AVStream *st, AVPacket *pkt, uint32_t *timestamp,
-                          const uint8_t *buf, int len, int flags)
+static int h263_handle_packet(AVFormatContext *ctx,
+                              PayloadContext *data,
+                              AVStream *st,
+                              AVPacket * pkt,
+                              uint32_t * timestamp,
+                              const uint8_t * buf,
+                              int len, int flags)
 {
     uint8_t *ptr;
     uint16_t header;
@@ -92,12 +96,13 @@ RTPDynamicProtocolHandler ff_h263_1998_dynamic_handler = {
     .enc_name         = "H263-1998",
     .codec_type       = AVMEDIA_TYPE_VIDEO,
     .codec_id         = CODEC_ID_H263,
-    .parse_packet     = ff_h263_handle_packet,
+    .parse_packet     = h263_handle_packet,
 };
 
 RTPDynamicProtocolHandler ff_h263_2000_dynamic_handler = {
     .enc_name         = "H263-2000",
     .codec_type       = AVMEDIA_TYPE_VIDEO,
     .codec_id         = CODEC_ID_H263,
-    .parse_packet     = ff_h263_handle_packet,
+    .parse_packet     = h263_handle_packet,
 };
+

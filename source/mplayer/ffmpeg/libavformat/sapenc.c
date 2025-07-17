@@ -2,20 +2,20 @@
  * Session Announcement Protocol (RFC 2974) muxer
  * Copyright (c) 2010 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -104,7 +104,8 @@ static int sap_write_header(AVFormatContext *s)
     }
 
     if (!announce_addr[0]) {
-        struct addrinfo hints = { 0 }, *ai = NULL;
+        struct addrinfo hints, *ai = NULL;
+        memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
         if (getaddrinfo(host, NULL, &hints, &ai)) {
             av_log(s, AV_LOG_ERROR, "Unable to resolve %s\n", host);
@@ -145,22 +146,19 @@ static int sap_write_header(AVFormatContext *s)
                     "?ttl=%d", ttl);
         if (!same_port)
             base_port += 2;
-        ret = ffurl_open(&fd, url, AVIO_FLAG_WRITE, &s->interrupt_callback, NULL);
+        ret = ffurl_open(&fd, url, AVIO_FLAG_WRITE);
         if (ret) {
             ret = AVERROR(EIO);
             goto fail;
         }
-        ret = ff_rtp_chain_mux_open(&contexts[i], s, s->streams[i], fd, 0);
-        if (ret < 0)
-            goto fail;
-        s->streams[i]->priv_data = contexts[i];
+        s->streams[i]->priv_data = contexts[i] =
+            ff_rtp_chain_mux_open(s, s->streams[i], fd, 0);
         av_strlcpy(contexts[i]->filename, url, sizeof(contexts[i]->filename));
     }
 
     ff_url_join(url, sizeof(url), "udp", NULL, announce_addr, port,
                 "?ttl=%d&connect=1", ttl);
-    ret = ffurl_open(&sap->ann_fd, url, AVIO_FLAG_WRITE,
-                     &s->interrupt_callback, NULL);
+    ret = ffurl_open(&sap->ann_fd, url, AVIO_FLAG_WRITE);
     if (ret) {
         ret = AVERROR(EIO);
         goto fail;
@@ -211,7 +209,7 @@ static int sap_write_header(AVFormatContext *s)
     pos += strlen(&sap->ann[pos]) + 1;
 
     if (av_sdp_create(contexts, s->nb_streams, &sap->ann[pos],
-                      sap->ann_size - pos)) {
+                       sap->ann_size - pos)) {
         ret = AVERROR_INVALIDDATA;
         goto fail;
     }
@@ -260,5 +258,6 @@ AVOutputFormat ff_sap_muxer = {
     .write_header      = sap_write_header,
     .write_packet      = sap_write_packet,
     .write_trailer     = sap_write_close,
-    .flags             = AVFMT_NOFILE | AVFMT_GLOBALHEADER,
+    .flags = AVFMT_NOFILE | AVFMT_GLOBALHEADER,
 };
+

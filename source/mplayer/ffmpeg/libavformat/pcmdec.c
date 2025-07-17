@@ -2,28 +2,26 @@
  * RAW PCM demuxers
  * Copyright (c) 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "avformat.h"
 #include "rawdec.h"
 #include "pcm.h"
-#include "libavutil/log.h"
-#include "libavutil/opt.h"
 
 #define RAW_SAMPLES     1024
 
@@ -36,7 +34,6 @@ static int raw_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret= av_get_packet(s->pb, pkt, size);
 
-    pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;
     if (ret < 0)
         return ret;
@@ -49,30 +46,20 @@ static int raw_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-static const AVOption pcm_options[] = {
-    { "sample_rate", "", offsetof(RawAudioDemuxerContext, sample_rate), AV_OPT_TYPE_INT, {.dbl = 0}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
-    { "channels",    "", offsetof(RawAudioDemuxerContext, channels),    AV_OPT_TYPE_INT, {.dbl = 0}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
-    { NULL },
-};
-
-#define PCMDEF(name_, long_name_, ext, codec)               \
-static const AVClass name_ ## _demuxer_class = {            \
-    .class_name = #name_ " demuxer",                        \
-    .item_name  = av_default_item_name,                     \
-    .option     = pcm_options,                              \
-    .version    = LIBAVUTIL_VERSION_INT,                    \
-};                                                          \
-AVInputFormat ff_pcm_ ## name_ ## _demuxer = {              \
-    .name           = #name_,                               \
-    .long_name      = NULL_IF_CONFIG_SMALL(long_name_),     \
-    .priv_data_size = sizeof(RawAudioDemuxerContext),       \
-    .read_header    = ff_raw_read_header,                   \
-    .read_packet    = raw_read_packet,                      \
-    .read_seek      = ff_pcm_read_seek,                     \
-    .flags          = AVFMT_GENERIC_INDEX,                  \
-    .extensions     = ext,                                  \
-    .raw_codec_id   = codec,                                \
-    .priv_class     = &name_ ## _demuxer_class,             \
+#define PCMDEF(name, long_name, ext, codec) \
+AVInputFormat ff_pcm_ ## name ## _demuxer = {\
+    #name,\
+    NULL_IF_CONFIG_SMALL(long_name),\
+    sizeof(RawAudioDemuxerContext),\
+    NULL,\
+    ff_raw_read_header,\
+    raw_read_packet,\
+    NULL,\
+    pcm_read_seek,\
+    .flags= AVFMT_GENERIC_INDEX,\
+    .extensions = ext,\
+    .value = codec,\
+    .priv_class = &ff_rawaudio_demuxer_class,\
 };
 
 PCMDEF(f64be, "PCM 64 bit floating-point big-endian format",

@@ -2,20 +2,20 @@
  * Copyright (c) 2004-2005 Michael Niedermayer, Loren Merritt
  * Copyright (c) 2011 Daniel Kang
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -1161,6 +1161,16 @@ QPEL(put_, 16,XMM, 16)\
 QPEL(avg_, 8, XMM, 16)\
 QPEL(avg_, 16,XMM, 16)\
 
+
+#define AVG_3DNOW_OP(a,b,temp, size) \
+"mov" #size " " #b ", " #temp "   \n\t"\
+"pavgusb " #temp ", " #a "        \n\t"\
+"mov" #size " " #a ", " #b "      \n\t"
+#define AVG_MMX2_OP(a,b,temp, size) \
+"mov" #size " " #b ", " #temp "   \n\t"\
+"pavgb " #temp ", " #a "          \n\t"\
+"mov" #size " " #a ", " #b "      \n\t"
+
 #define PAVGB "pavgusb"
 QPEL_H264(put_,       PUT_OP, 3dnow)
 QPEL_H264(avg_, AVG_3DNOW_OP, 3dnow)
@@ -1284,6 +1294,6 @@ QPEL16_OP(mc31, MMX)\
 QPEL16_OP(mc32, MMX)\
 QPEL16_OP(mc33, MMX)
 
-#if CONFIG_H264QPEL && ARCH_X86_32 && HAVE_YASM // ARCH_X86_64 implies sse2+
+#if ARCH_X86_32 && HAVE_YASM // ARCH_X86_64 implies sse2+
 QPEL16(mmxext)
 #endif

@@ -2,27 +2,26 @@
  * ARMovie/RPL demuxer
  * Copyright (c) 2007 Christian Ohm, 2008 Eli Friedman
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "libavutil/avstring.h"
 #include "libavutil/dict.h"
 #include "avformat.h"
-#include "internal.h"
 #include <stdlib.h>
 
 #define RPL_SIGNATURE "ARMovie\x0A"
@@ -58,7 +57,7 @@ static int read_line(AVIOContext * pb, char* line, int bufsize)
             break;
         if (b == '\n') {
             line[i] = '\0';
-            return url_feof(pb) ? -1 : 0;
+            return 0;
         }
         line[i] = b;
     }
@@ -110,7 +109,7 @@ static AVRational read_fps(const char* line, int* error)
     return result;
 }
 
-static int rpl_read_header(AVFormatContext *s)
+static int rpl_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     AVIOContext *pb = s->pb;
     RPLContext *rpl = s->priv_data;
@@ -140,7 +139,7 @@ static int rpl_read_header(AVFormatContext *s)
     av_dict_set(&s->metadata, "author"   , line, 0);
 
     // video headers
-    vst = avformat_new_stream(s, NULL);
+    vst = av_new_stream(s, 0);
     if (!vst)
         return AVERROR(ENOMEM);
     vst->codec->codec_type      = AVMEDIA_TYPE_VIDEO;
@@ -150,7 +149,7 @@ static int rpl_read_header(AVFormatContext *s)
     vst->codec->bits_per_coded_sample = read_line_and_int(pb, &error);  // video bits per sample
     error |= read_line(pb, line, sizeof(line));                   // video frames per second
     fps = read_fps(line, &error);
-    avpriv_set_pts_info(vst, 32, fps.den, fps.num);
+    av_set_pts_info(vst, 32, fps.den, fps.num);
 
     // Figure out the video codec
     switch (vst->codec->codec_tag) {
@@ -164,9 +163,11 @@ static int rpl_read_header(AVFormatContext *s)
             // The header is wrong here, at least sometimes
             vst->codec->bits_per_coded_sample = 16;
             break;
+#if 0
         case 130:
             vst->codec->codec_id = CODEC_ID_ESCAPE130;
             break;
+#endif
         default:
             av_log(s, AV_LOG_WARNING,
                    "RPL video format %i not supported yet!\n",
@@ -180,7 +181,7 @@ static int rpl_read_header(AVFormatContext *s)
     // samples, though. This code will ignore additional tracks.
     audio_format = read_line_and_int(pb, &error);  // audio format ID
     if (audio_format) {
-        ast = avformat_new_stream(s, NULL);
+        ast = av_new_stream(s, 0);
         if (!ast)
             return AVERROR(ENOMEM);
         ast->codec->codec_type      = AVMEDIA_TYPE_AUDIO;
@@ -225,7 +226,7 @@ static int rpl_read_header(AVFormatContext *s)
                    "RPL audio format %i not supported yet!\n",
                    audio_format);
         }
-        avpriv_set_pts_info(ast, 32, 1, ast->codec->bit_rate);
+        av_set_pts_info(ast, 32, 1, ast->codec->bit_rate);
     } else {
         for (i = 0; i < 3; i++)
             error |= read_line(pb, line, sizeof(line));
@@ -252,7 +253,7 @@ static int rpl_read_header(AVFormatContext *s)
     // Read the index
     avio_seek(pb, chunk_catalog_offset, SEEK_SET);
     total_audio_size = 0;
-    for (i = 0; !error && i < number_of_chunks; i++) {
+    for (i = 0; i < number_of_chunks; i++) {
         int64_t offset, video_size, audio_size;
         error |= read_line(pb, line, sizeof(line));
         if (3 != sscanf(line, "%"PRId64" , %"PRId64" ; %"PRId64,

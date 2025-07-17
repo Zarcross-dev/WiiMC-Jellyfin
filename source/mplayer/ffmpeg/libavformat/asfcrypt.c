@@ -3,20 +3,20 @@
  * Copyright (c) 2007 Reimar Doeffinger
  * This is a rewrite of code contained in freeme/freeme2
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -140,7 +140,7 @@ void ff_asfcrypt_dec(const uint8_t key[20], uint8_t *data, int len) {
     struct AVRC4 rc4;
     int num_qwords = len >> 3;
     uint8_t *qwords = data;
-    uint64_t rc4buff[8] = { 0 };
+    uint64_t rc4buff[8];
     uint64_t packetkey;
     uint32_t ms_keys[12];
     uint64_t ms_state;
@@ -151,6 +151,7 @@ void ff_asfcrypt_dec(const uint8_t key[20], uint8_t *data, int len) {
         return;
     }
 
+    memset(rc4buff, 0, sizeof(rc4buff));
     av_rc4_init(&rc4, key, 12 * 8, 1);
     av_rc4_crypt(&rc4, (uint8_t *)rc4buff, NULL, sizeof(rc4buff), NULL, 1);
     multiswap_init((uint8_t *)rc4buff, ms_keys);

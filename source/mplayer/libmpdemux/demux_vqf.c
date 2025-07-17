@@ -25,7 +25,6 @@
 #include "mpbswap.h"
 
 #include "stream/stream.h"
-#include "mp_msg.h"
 #include "demuxer.h"
 #include "stheader.h"
 #include "libmpcodecs/vqf.h"

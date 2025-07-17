@@ -2,20 +2,20 @@
  * RTP muxer chaining code
  * Copyright (c) 2010 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -25,42 +25,37 @@
 #include "avio_internal.h"
 #include "libavutil/opt.h"
 
-int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
-                          AVStream *st, URLContext *handle, int packet_size)
+AVFormatContext *ff_rtp_chain_mux_open(AVFormatContext *s, AVStream *st,
+                                       URLContext *handle, int packet_size)
 {
-    AVFormatContext *rtpctx = NULL;
+    AVFormatContext *rtpctx;
     int ret;
     AVOutputFormat *rtp_format = av_guess_format("rtp", NULL, NULL);
-    uint8_t *rtpflags;
-    AVDictionary *opts = NULL;
 
-    if (!rtp_format) {
-        ret = AVERROR(ENOSYS);
-        goto fail;
-    }
+    if (!rtp_format)
+        return NULL;
 
     /* Allocate an AVFormatContext for each output stream */
     rtpctx = avformat_alloc_context();
-    if (!rtpctx) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
-    }
+    if (!rtpctx)
+        return NULL;
 
     rtpctx->oformat = rtp_format;
-    if (!avformat_new_stream(rtpctx, NULL)) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
+    if (!av_new_stream(rtpctx, 0)) {
+        av_free(rtpctx);
+        return NULL;
     }
-    /* Pass the interrupt callback on */
-    rtpctx->interrupt_callback = s->interrupt_callback;
     /* Copy the max delay setting; the rtp muxer reads this. */
     rtpctx->max_delay = s->max_delay;
     /* Copy other stream parameters. */
     rtpctx->streams[0]->sample_aspect_ratio = st->sample_aspect_ratio;
-    rtpctx->flags |= s->flags & AVFMT_FLAG_MP4A_LATM;
 
-    if (av_opt_get(s, "rtpflags", AV_OPT_SEARCH_CHILDREN, &rtpflags) >= 0)
-        av_dict_set(&opts, "rtpflags", rtpflags, AV_DICT_DONT_STRDUP_VAL);
+    av_set_parameters(rtpctx, NULL);
+    /* Copy the rtpflags values straight through */
+    if (s->oformat->priv_class &&
+        av_find_opt(s->priv_data, "rtpflags", NULL, 0, 0))
+        av_set_int(rtpctx->priv_data, "rtpflags",
+                   av_get_int(s->priv_data, "rtpflags", NULL));
 
     /* Set the synchronized start time. */
     rtpctx->start_time_realtime = s->start_time_realtime;
@@ -71,8 +66,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
         ffio_fdopen(&rtpctx->pb, handle);
     } else
         ffio_open_dyn_packet_buf(&rtpctx->pb, packet_size);
-    ret = avformat_write_header(rtpctx, &opts);
-    av_dict_free(&opts);
+    ret = avformat_write_header(rtpctx, NULL);
 
     if (ret) {
         if (handle) {
@@ -83,15 +77,9 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
             av_free(ptr);
         }
         avformat_free_context(rtpctx);
-        return ret;
+        return NULL;
     }
 
-    *out = rtpctx;
-    return 0;
-
-fail:
-    av_free(rtpctx);
-    if (handle)
-        ffurl_close(handle);
-    return ret;
+    return rtpctx;
 }
+

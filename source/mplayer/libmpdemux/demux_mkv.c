@@ -180,7 +180,7 @@ typedef struct mkv_demuxer {
     uint64_t *cluster_positions;
     int num_cluster_pos;
 
-    uint64_t skip_to_timecode;
+    int64_t skip_to_timecode;
     int v_skip_to_keyframe, a_skip_to_keyframe;
 
     int64_t stop_timecode;
@@ -380,15 +380,6 @@ lzo_fail:
             }
             *size = dstlen - out_avail;
         }
-      else if (track->encodings[i].comp_algo == 3)
-        {
-          *dest = malloc (*size + track->encodings[i].comp_settings_len);
-          memcpy(*dest, track->encodings[i].comp_settings,
-                 track->encodings[i].comp_settings_len);
-          memcpy(*dest + track->encodings[i].comp_settings_len, src, *size);
-          *size += track->encodings[i].comp_settings_len;
-          modified = 1;
-        }
     }
 
     return modified;
@@ -551,7 +542,7 @@ static int demux_mkv_read_trackencodings(demuxer_t *demuxer,
                                track->tnum);
                     }
 
-                    if (e.comp_algo != 0 && e.comp_algo != 2 && e.comp_algo != 3) {
+                    if (e.comp_algo != 0 && e.comp_algo != 2) {
                         mp_msg(MSGT_DEMUX, MSGL_WARN,
                                MSGTR_MPDEMUX_MKV_UnknownCompression,
                                track->tnum, e.comp_algo);
@@ -2301,15 +2292,13 @@ static void handle_subtitles(demuxer_t *demuxer, mkv_track_t *track,
     sub_utf8 = 1;
     dp = new_demux_packet(size);
     memcpy(dp->buffer, block, size);
-   // dp->pts = timecode / 1000.0f;
-    dp->pts = timecode / 1e9;
-    //dp->endpts = (timecode + block_duration) / 1000.0f;
-    dp->endpts = (timecode + block_duration) / 1e9;
+    dp->pts = timecode / 1000.0f;
+    dp->endpts = (timecode + block_duration) / 1000.0f;
     ds_add_packet(demuxer->sub, dp);
 }
 
 static void handle_realvideo(demuxer_t *demuxer, mkv_track_t *track,
-                             uint8_t *buffer, uint32_t size, int64_t block_bref)
+                             uint8_t *buffer, uint32_t size, int block_bref)
 {
     mkv_demuxer_t *mkv_d = (mkv_demuxer_t *) demuxer->priv;
     demux_packet_t *dp;
@@ -2335,7 +2324,7 @@ static void handle_realvideo(demuxer_t *demuxer, mkv_track_t *track,
 }
 
 static void handle_realaudio(demuxer_t *demuxer, mkv_track_t *track,
-                             uint8_t *buffer, uint32_t size, int64_t block_bref)
+                             uint8_t *buffer, uint32_t size, int block_bref)
 {
     mkv_demuxer_t *mkv_d = (mkv_demuxer_t *) demuxer->priv;
     int sps = track->sub_packet_size;
@@ -2530,30 +2519,6 @@ static void handle_video_bframes(demuxer_t *demuxer, mkv_track_t *track,
         track->max_pts = dp->pts;
 }
 
-#define MPMIN(a, b) ((a) > (b) ? (b) : (a))
-#define rint_wii(x)   (floor((x)+0.5f))
-//double quant = 0;
-//double rts = 0;
-
-//extern double find_prob;
-
-static double fix_timestamp(demuxer_t *demuxer, mkv_track_t *track, double ts)
-{
-    mkv_demuxer_t *mkv_d = demuxer->priv;
-    //if (demuxer->opts->demux_mkv->fix_timestamps && track->default_duration > 0) {
-   // if (track->default_duration > 0) {
-		//find_prob++;
-        // Assume that timestamps have been rounded to the timecode scale.
-       double quant = MPMIN(mkv_d->tc_scale / 1e9, 0.001);
-   //    double rts = rint_wii(ts / track->default_duration) * track->default_duration;
-       // rts = floor((ts / track->default_duration) + 0.5f) * track->default_duration;
-       double rts = rint_wii(ts);// * track->default_duration;
-        if (fabs(rts - ts) < quant)
-            ts = rts;
-   // }
-    return ts;
-}
-
 static int handle_block(demuxer_t *demuxer, uint8_t *block, uint64_t length,
                         uint64_t block_duration, int64_t block_bref,
                         int64_t block_fref, uint8_t simpleblock)
@@ -2562,11 +2527,11 @@ static int handle_block(demuxer_t *demuxer, uint8_t *block, uint64_t length,
     mkv_track_t *track = NULL;
     demux_stream_t *ds = NULL;
     uint64_t old_length;
-    uint64_t tc;
+    int64_t tc;
     uint32_t *lace_size;
     uint8_t laces, flags;
     int i, num, tmp, use_this_block = 1;
-    double current_pts;
+    float current_pts;
     int16_t time;
 
     /* first byte(s): track num */
@@ -2582,19 +2547,15 @@ static int handle_block(demuxer_t *demuxer, uint8_t *block, uint64_t length,
         return 0;
     block += old_length - length;
 
-  /*  tc = ((time * mkv_d->tc_scale + mkv_d->cluster_tc) / 1000000.0 -
+    tc = ((time * mkv_d->tc_scale + mkv_d->cluster_tc) / 1000000.0 -
           mkv_d->first_tc);
     if (tc < 0)
         tc = 0;
     if (mkv_d->stop_timecode > 0 && tc > mkv_d->stop_timecode) {
         free(lace_size);
         return -1;
-    } */
-	tc = time * mkv_d->tc_scale + mkv_d->cluster_tc;
-   // current_pts = tc / 1000.0;
- //   current_pts = tc / 1e9;
-	current_pts = fix_timestamp(demuxer, track, tc / 1e9); //- track->codec_delay;
-	//find_prob = current_pts;
+    }
+    current_pts = tc / 1000.0;
 
     for (i = 0; i < mkv_d->num_tracks; i++)
         if (mkv_d->tracks[i]->tnum == num) {
@@ -2621,7 +2582,7 @@ static int handle_block(demuxer_t *demuxer, uint8_t *block, uint64_t length,
             sh_audio_t *sh = (sh_audio_t *) ds->sh;
 
             if (block_duration != 0) {
-                sh->i_bps = length * 1e9 / block_duration;
+                sh->i_bps = length * 1000 / block_duration;
                 track->fix_i_bps = 0;
             } else if (track->qt_last_a_pts == 0.0)
                 track->qt_last_a_pts = current_pts;
@@ -2726,8 +2687,7 @@ static int demux_mkv_fill_buffer(demuxer_t *demuxer, demux_stream_t *ds)
                         free(block);
                         return 0;
                     }
-                   // block_duration *= mkv_d->tc_scale / 1000000.0;
-                    block_duration *= mkv_d->tc_scale;
+                    block_duration *= mkv_d->tc_scale / 1000000.0;
                     break;
 
                 case MATROSKA_ID_BLOCK:
@@ -2994,8 +2954,7 @@ static void demux_mkv_seek(demuxer_t *demuxer, float rel_seek_secs,
 
         if (demuxer->video->id >= 0)
             mkv_d->v_skip_to_keyframe = 1;
-       // mkv_d->skip_to_timecode = index->timecode;
-	    mkv_d->skip_to_timecode = index->timecode * mkv_d->tc_scale;
+        mkv_d->skip_to_timecode = index->timecode;
         mkv_d->a_skip_to_keyframe = 1;
 
         demux_mkv_fill_buffer(demuxer, NULL);

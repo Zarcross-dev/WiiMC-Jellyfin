@@ -1,6 +1,6 @@
 /****************************************************************************
  * WiiMC
- * Tantric 2009-2012
+ * Tantric 2009-2011
  *
  * mem2_manager.c
  *
@@ -147,7 +147,7 @@ bool AddMem2Area (u32 size, const int index)
 	if((u32)mem2_areas[index].heap_ptr < (u32)SYS_GetArena2Lo())
 	{
 #ifdef DEBUG_MEM2_LEVEL
-		printf("not enough mem2: %i   max free mem2: %d\n",index, (u32) (SYS_GetArena2Hi() - SYS_GetArena2Lo()));
+		printf("not enough mem2: %i\n",index);
 #endif		
 		mem2_areas[index].old_arena2hi = NULL;
 		mem2_areas[index].heap_ptr = NULL;
@@ -365,9 +365,6 @@ u32 mem2_size(const int i)
 	return info.free_size;
 }
 
-//extern int debug_mem;
-extern int debug_space;
-
 #ifdef DEBUG_MEM2_LEVEL
 static void PrintAreaInfo(int index)
 {
@@ -378,9 +375,7 @@ static void PrintAreaInfo(int index)
 	printf("Area: %i. Allocated: %u. Top Allocated: %u\n",index,mem2_areas[index].allocated,mem2_areas[index].top_allocated);
 	__lwp_heap_getinfo(&mem2_areas[index].heap,&info);
 	printf("Area: %i. free blocks: %u  free size: %u  used blocks: %u  used_size: %u\n",index, 
-			info.free_blocks,info.free_size,info.used_blocks,info.used_size);
-	//debug_mem = info.free_size,info.used_blocks;
-	debug_space = info.free_size;
+			info.free_blocks,info.free_size,info.used_blocks,info.used_size); 
 }
 #endif
 
@@ -396,14 +391,3 @@ void ShowAreaInfo(const int area) //if area == -1 print all areas info
 		for(i = 0; i < MEM2_MAX; i++) PrintAreaInfo(i);
 #endif
 }
-
-void *__real_memcpy(void * , const void * , size_t );
-void *fast_memcpy_Gekko(void * , const void * , size_t );
-
-
-void *__wrap_memcpy(void * destination, const void * source, size_t size)
-{
-	return fast_memcpy_Gekko(destination, source, size);
-}
-
-

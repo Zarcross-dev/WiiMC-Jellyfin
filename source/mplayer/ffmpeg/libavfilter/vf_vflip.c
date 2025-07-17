@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2007 Bobby Bingham
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -25,7 +25,6 @@
 
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "video.h"
 
 typedef struct {
     int vsub;   ///< vertical chroma subsampling
@@ -48,7 +47,7 @@ static AVFilterBufferRef *get_video_buffer(AVFilterLink *link, int perms,
     int i;
 
     if (!(perms & AV_PERM_NEG_LINESIZES))
-        return ff_default_get_video_buffer(link, perms, w, h);
+        return avfilter_default_get_video_buffer(link, perms, w, h);
 
     picref = avfilter_get_video_buffer(link->dst->outputs[0], perms, w, h);
     for (i = 0; i < 4; i ++) {
@@ -94,14 +93,14 @@ AVFilter avfilter_vf_vflip = {
 
     .priv_size = sizeof(FlipContext),
 
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
+    .inputs    = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO,
                                     .get_video_buffer = get_video_buffer,
                                     .start_frame      = start_frame,
                                     .draw_slice       = draw_slice,
                                     .config_props     = config_input, },
                                   { .name = NULL}},
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
+    .outputs   = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO, },
                                   { .name = NULL}},
 };

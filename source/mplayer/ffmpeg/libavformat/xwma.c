@@ -2,27 +2,26 @@
  * xWMA demuxer
  * Copyright (c) 2011 Max Horn
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include <inttypes.h>
 
 #include "avformat.h"
-#include "internal.h"
 #include "riff.h"
 
 /*
@@ -40,7 +39,7 @@ static int xwma_probe(AVProbeData *p)
     return 0;
 }
 
-static int xwma_read_header(AVFormatContext *s)
+static int xwma_read_header(AVFormatContext *s, AVFormatParameters *ap)
 {
     int64_t size, av_uninit(data_size);
     int ret;
@@ -70,7 +69,7 @@ static int xwma_read_header(AVFormatContext *s)
     if (tag != MKTAG('f', 'm', 't', ' '))
         return -1;
     size = avio_rl32(pb);
-    st = avformat_new_stream(s, NULL);
+    st = av_new_stream(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -115,19 +114,8 @@ static int xwma_read_header(AVFormatContext *s)
         }
     }
 
-    if (!st->codec->channels) {
-        av_log(s, AV_LOG_WARNING, "Invalid channel count: %d\n",
-               st->codec->channels);
-        return AVERROR_INVALIDDATA;
-    }
-    if (!st->codec->bits_per_coded_sample) {
-        av_log(s, AV_LOG_WARNING, "Invalid bits_per_coded_sample: %d\n",
-               st->codec->bits_per_coded_sample);
-        return AVERROR_INVALIDDATA;
-    }
-
     /* set the sample rate */
-    avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
+    av_set_pts_info(st, 64, 1, st->codec->sample_rate);
 
     /* parse the remaining RIFF chunks */
     for (;;) {

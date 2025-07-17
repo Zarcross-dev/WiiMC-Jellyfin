@@ -1,46 +1,84 @@
-MAIN_MAKEFILE=1
 include config.mak
 
 vpath %.c    $(SRC_PATH)
-vpath %.cpp  $(SRC_PATH)
 vpath %.h    $(SRC_PATH)
 vpath %.S    $(SRC_PATH)
 vpath %.asm  $(SRC_PATH)
 vpath %.v    $(SRC_PATH)
 vpath %.texi $(SRC_PATH)
-vpath %/fate_config.sh.template $(SRC_PATH)
+
+ifndef V
+Q      = @
+ECHO   = printf "$(1)\t%s\n" $(2)
+BRIEF  = CC AS YASM AR LD HOSTCC
+SILENT = DEPCC YASMDEP RM RANLIB
+MSG    = $@
+M      = @$(call ECHO,$(TAG),$@);
+$(foreach VAR,$(BRIEF), \
+    $(eval override $(VAR) = @$$(call ECHO,$(VAR),$$(MSG)); $($(VAR))))
+$(foreach VAR,$(SILENT),$(eval override $(VAR) = @$($(VAR))))
+$(eval INSTALL = @$(call ECHO,INSTALL,$$(^:$(SRC_PATH)/%=%)); $(INSTALL))
+endif
+
+ALLFFLIBS = avcodec avdevice avfilter avformat avutil postproc swscale
+
+IFLAGS     := -I. -I$(SRC_PATH) -I../
+CPPFLAGS   := $(IFLAGS) $(CPPFLAGS)
+CFLAGS     += $(ECFLAGS)
+CCFLAGS     = $(CFLAGS)
+YASMFLAGS  += $(IFLAGS) -I$(SRC_PATH)/libavutil/x86/ -Pconfig.asm
+HOSTCFLAGS += $(IFLAGS)
+LDFLAGS    := $(ALLFFLIBS:%=-Llib%) $(LDFLAGS)
+
+define COMPILE
+	$($(1)DEP)
+	$($(1)) $(CPPFLAGS) $($(1)FLAGS) $($(1)_DEPFLAGS) -c $($(1)_O) $<
+endef
+
+COMPILE_C = $(call COMPILE,CC)
+COMPILE_S = $(call COMPILE,AS)
+
+%.o: %.c
+	$(COMPILE_C)
+
+%.o: %.S
+	$(COMPILE_S)
+
+%.ho: %.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -Wno-unused -c -o $@ -x c $<
+
+%.ver: %.v
+	$(Q)sed 's/$$MAJOR/$($(basename $(@F))_VERSION_MAJOR)/' $^ > $@
+
+%.c %.h: TAG = GEN
 
 PROGS-$(CONFIG_FFMPEG)   += ffmpeg
-PROGS-$(CONFIG_FFPLAY)   += ffplay
-PROGS-$(CONFIG_FFPROBE)  += ffprobe
-PROGS-$(CONFIG_FFSERVER) += ffserver
+PROGS-$(CONFIG_AVCONV)   += avconv
+PROGS-$(CONFIG_AVPLAY)   += avplay
+PROGS-$(CONFIG_AVPROBE)  += avprobe
+PROGS-$(CONFIG_AVSERVER) += avserver
 
 PROGS      := $(PROGS-yes:%=%$(EXESUF))
-INSTPROGS   = $(PROGS-yes:%=%$(PROGSSUF)$(EXESUF))
 OBJS        = $(PROGS-yes:%=%.o) cmdutils.o
 TESTTOOLS   = audiogen videogen rotozoom tiny_psnr base64
-HOSTPROGS  := $(TESTTOOLS:%=tests/%) doc/print_options
+HOSTPROGS  := $(TESTTOOLS:%=tests/%)
 TOOLS       = qt-faststart trasher
 TOOLS-$(CONFIG_ZLIB) += cws2fws
 
-BASENAMES   = ffmpeg ffplay ffprobe ffserver
-ALLPROGS    = $(BASENAMES:%=%$(PROGSSUF)$(EXESUF))
-ALLPROGS_G  = $(BASENAMES:%=%$(PROGSSUF)_g$(EXESUF))
+BASENAMES   = ffmpeg avconv avplay avprobe avserver
+ALLPROGS    = $(BASENAMES:%=%$(EXESUF))
 ALLMANPAGES = $(BASENAMES:%=%.1)
 
 FFLIBS-$(CONFIG_AVDEVICE) += avdevice
 FFLIBS-$(CONFIG_AVFILTER) += avfilter
 FFLIBS-$(CONFIG_AVFORMAT) += avformat
-FFLIBS-$(CONFIG_AVRESAMPLE) += avresample
 FFLIBS-$(CONFIG_AVCODEC)  += avcodec
 FFLIBS-$(CONFIG_POSTPROC) += postproc
-FFLIBS-$(CONFIG_SWRESAMPLE)+= swresample
 FFLIBS-$(CONFIG_SWSCALE)  += swscale
 
 FFLIBS := avutil
 
-DATA_FILES := $(wildcard $(SRC_PATH)/presets/*.ffpreset) $(SRC_PATH)/doc/ffprobe.xsd
-EXAMPLES_FILES := $(wildcard $(SRC_PATH)/doc/examples/*.c) $(SRC_PATH)/doc/examples/Makefile
+DATA_FILES := $(wildcard $(SRC_PATH)/ffpresets/*.ffpreset)
 
 SKIPHEADERS = cmdutils_common_opts.h
 
@@ -50,10 +88,6 @@ FF_EXTRALIBS := $(FFEXTRALIBS)
 FF_DEP_LIBS  := $(DEP_LIBS)
 
 all: $(PROGS)
-
-$(PROGS): %$(EXESUF): %$(PROGSSUF)_g$(EXESUF)
-	$(CP) $< $@$(PROGSSUF)
-	$(STRIP) $@$(PROGSSUF)
 
 $(TOOLS): %$(EXESUF): %.o
 	$(LD) $(LDFLAGS) -o $@ $< $(ELIBS)
@@ -66,11 +100,9 @@ config.h: .config
 	@-printf '\nWARNING: $(?F) newer than config.h, rerun configure\n\n'
 	@-tput sgr0 2>/dev/null
 
-SUBDIR_VARS := CLEANFILES EXAMPLES FFLIBS HOSTPROGS TESTPROGS TOOLS      \
-               ARCH_HEADERS BUILT_HEADERS SKIPHEADERS                    \
-               ALTIVEC-OBJS ARMV5TE-OBJS ARMV6-OBJS ARMVFP-OBJS MMI-OBJS \
-               MMX-OBJS NEON-OBJS VIS-OBJS YASM-OBJS                     \
-               OBJS TESTOBJS
+SUBDIR_VARS := OBJS FFLIBS CLEANFILES DIRS TESTPROGS EXAMPLES SKIPHEADERS \
+               ALTIVEC-OBJS MMX-OBJS NEON-OBJS X86-OBJS YASM-OBJS-FFT YASM-OBJS \
+               HOSTPROGS BUILT_HEADERS TESTOBJS ARCH_HEADERS ARMV6-OBJS TOOLS
 
 define RESET
 $(1) :=
@@ -81,17 +113,15 @@ define DOSUBDIR
 $(foreach V,$(SUBDIR_VARS),$(eval $(call RESET,$(V))))
 SUBDIR := $(1)/
 include $(SRC_PATH)/$(1)/Makefile
--include $(SRC_PATH)/$(1)/$(ARCH)/Makefile
-include $(SRC_PATH)/library.mak
 endef
 
 $(foreach D,$(FFLIBS),$(eval $(call DOSUBDIR,lib$(D))))
 
-ffplay.o: CFLAGS += $(SDL_CFLAGS)
-ffplay_g$(EXESUF): FF_EXTRALIBS += $(SDL_LIBS)
-ffserver_g$(EXESUF): LDFLAGS += $(FFSERVERLDFLAGS)
+avplay.o: CFLAGS += $(SDL_CFLAGS)
+avplay$(EXESUF): FF_EXTRALIBS += $(SDL_LIBS)
+avserver$(EXESUF): LDFLAGS += $(AVSERVERLDFLAGS)
 
-%$(PROGSSUF)_g$(EXESUF): %.o cmdutils.o $(FF_DEP_LIBS)
+$(PROGS): %$(EXESUF): %.o cmdutils.o $(FF_DEP_LIBS)
 	$(LD) $(LDFLAGS) -o $@ $< cmdutils.o $(FF_EXTRALIBS)
 
 OBJDIRS += tools
@@ -124,12 +154,11 @@ install-progs-$(CONFIG_SHARED): install-libs
 
 install-progs: install-progs-yes $(PROGS)
 	$(Q)mkdir -p "$(BINDIR)"
-	$(INSTALL) -c -m 755 $(INSTPROGS) "$(BINDIR)"
+	$(INSTALL) -c -m 755 $(PROGS) "$(BINDIR)"
 
-install-data: $(DATA_FILES) $(EXAMPLES_FILES)
-	$(Q)mkdir -p "$(DATADIR)/examples"
+install-data: $(DATA_FILES)
+	$(Q)mkdir -p "$(DATADIR)"
 	$(INSTALL) -m 644 $(DATA_FILES) "$(DATADIR)"
-	$(INSTALL) -m 644 $(EXAMPLES_FILES) "$(DATADIR)/examples"
 
 uninstall: uninstall-libs uninstall-headers uninstall-progs uninstall-data
 
@@ -140,30 +169,17 @@ uninstall-data:
 	$(RM) -r "$(DATADIR)"
 
 clean::
-	$(RM) $(ALLPROGS) $(ALLPROGS_G)
+	$(RM) $(ALLPROGS)
 	$(RM) $(CLEANSUFFIXES)
 	$(RM) $(TOOLS)
 	$(RM) $(CLEANSUFFIXES:%=tools/%)
-	$(RM) coverage.info
-	$(RM) -r coverage-html
 
 distclean::
 	$(RM) $(DISTCLEANSUFFIXES)
 	$(RM) config.* .version version.h libavutil/avconfig.h
 
 config:
-	$(SRC_PATH)/configure $(value FFMPEG_CONFIGURATION)
-
-# Without the sed genthml thinks "libavutil" and "./libavutil" are two different things
-coverage.info: $(wildcard *.gcda *.gcno */*.gcda */*.gcno */*/*.gcda */*/*.gcno)
-	$(Q)lcov -c -d . -b . | sed -e 's#/./#/#g' > $@
-
-coverage-html: coverage.info
-	$(Q)mkdir -p $@
-	$(Q)genhtml -o $@ $<
-	$(Q)touch $@
-
-check: all alltools checkheaders examples testprogs fate
+	$(SRC_PATH)/configure $(value LIBAV_CONFIGURATION)
 
 include $(SRC_PATH)/doc/Makefile
 include $(SRC_PATH)/tests/Makefile
@@ -179,5 +195,5 @@ $(sort $(OBJDIRS)):
 # so this saves some time on slow systems.
 .SUFFIXES:
 
-.PHONY: all all-yes alltools check *clean config install*
+.PHONY: all all-yes alltools *clean config examples install*
 .PHONY: testprogs uninstall*

@@ -2,20 +2,20 @@
  * RV30/40 decoder common data declarations
  * Copyright (c) 2007 Mike Melanson, Konstantin Shishkov
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -92,6 +92,7 @@ typedef struct RV34DecContext{
     const uint8_t *luma_dc_quant_p;///< luma subblock DC quantizer for interframes
 
     RV34VLC *cur_vlcs;       ///< VLC set used for current frame decoding
+    int bits;                ///< slice size in bits
     H264PredContext h;       ///< functions for 4x4 and 16x16 intra block prediction
     SliceInfo si;            ///< current slice information
 
@@ -106,13 +107,11 @@ typedef struct RV34DecContext{
     int rpr;                 ///< one field size in RV30 slice header
 
     int cur_pts, last_pts, next_pts;
-    int scaled_weight;
     int weight1, weight2;    ///< B frame distance fractions (0.14) used in motion compensation
-    int mv_weight1, mv_weight2;
 
     uint16_t *cbp_luma;      ///< CBP values for luma subblocks
     uint8_t  *cbp_chroma;    ///< CBP values for chroma subblocks
-    uint16_t *deblock_coefs; ///< deblock coefficients for each macroblock
+    int      *deblock_coefs; ///< deblock coefficients for each macroblock
 
     /** 8x8 block available flags (for MV prediction) */
     DECLARE_ALIGNED(8, uint32_t, avail_cache)[3*4];
@@ -135,7 +134,5 @@ int ff_rv34_get_start_offset(GetBitContext *gb, int blocks);
 int ff_rv34_decode_init(AVCodecContext *avctx);
 int ff_rv34_decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPacket *avpkt);
 int ff_rv34_decode_end(AVCodecContext *avctx);
-int ff_rv34_decode_init_thread_copy(AVCodecContext *avctx);
-int ff_rv34_decode_update_thread_context(AVCodecContext *dst, const AVCodecContext *src);
 
 #endif /* AVCODEC_RV34_H */

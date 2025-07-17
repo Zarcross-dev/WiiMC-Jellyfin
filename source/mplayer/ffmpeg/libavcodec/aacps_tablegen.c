@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2010 Alex Converse <alex.converse@gmail.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -69,23 +69,23 @@ int main(void)
     write_float_3d_array(HB, 46, 8, 4);
     printf("};\n");
 
-    printf("static const DECLARE_ALIGNED(16, float, f20_0_8)[8][8][2] = {\n");
-    write_float_3d_array(f20_0_8, 8, 8, 2);
+    printf("static const float f20_0_8[8][7][2] = {\n");
+    write_float_3d_array(f20_0_8, 8, 7, 2);
     printf("};\n");
-    printf("static const DECLARE_ALIGNED(16, float, f34_0_12)[12][8][2] = {\n");
-    write_float_3d_array(f34_0_12, 12, 8, 2);
+    printf("static const float f34_0_12[12][7][2] = {\n");
+    write_float_3d_array(f34_0_12, 12, 7, 2);
     printf("};\n");
-    printf("static const DECLARE_ALIGNED(16, float, f34_1_8)[8][8][2] = {\n");
-    write_float_3d_array(f34_1_8, 8, 8, 2);
+    printf("static const float f34_1_8[8][7][2] = {\n");
+    write_float_3d_array(f34_1_8, 8, 7, 2);
     printf("};\n");
-    printf("static const DECLARE_ALIGNED(16, float, f34_2_4)[4][8][2] = {\n");
-    write_float_3d_array(f34_2_4, 4, 8, 2);
+    printf("static const float f34_2_4[4][7][2] = {\n");
+    write_float_3d_array(f34_2_4, 4, 7, 2);
     printf("};\n");
 
-    printf("static const DECLARE_ALIGNED(16, float, Q_fract_allpass)[2][50][3][2] = {\n");
+    printf("static const float Q_fract_allpass[2][50][3][2] = {\n");
     write_float_4d_array(Q_fract_allpass, 2, 50, 3, 2);
     printf("};\n");
-    printf("static const DECLARE_ALIGNED(16, float, phi_fract)[2][50][2] = {\n");
+    printf("static const float phi_fract[2][50][2] = {\n");
     write_float_3d_array(phi_fract, 2, 50, 2);
     printf("};\n");
 

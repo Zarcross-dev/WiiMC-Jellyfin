@@ -2,20 +2,20 @@
  * DPX (.dpx) image decoder
  * Copyright (c) 2009 Jimmy Christensen
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -140,11 +140,11 @@ static int decode_frame(AVCodecContext *avctx,
         case 12:
         case 16:
             if (endian) {
-                avctx->pix_fmt = elements == 4 ? PIX_FMT_RGBA64BE : PIX_FMT_RGB48BE;
+                avctx->pix_fmt = PIX_FMT_RGB48BE;
             } else {
-                avctx->pix_fmt = elements == 4 ? PIX_FMT_RGBA64LE : PIX_FMT_RGB48LE;
+                avctx->pix_fmt = PIX_FMT_RGB48LE;
             }
-            target_packet_size =
+            target_packet_size = 6;
             source_packet_size = elements * 2;
             break;
         default:
@@ -241,5 +241,5 @@ AVCodec ff_dpx_decoder = {
     .init           = decode_init,
     .close          = decode_end,
     .decode         = decode_frame,
-    .long_name      = NULL_IF_CONFIG_SMALL("DPX image"),
+    .long_name = NULL_IF_CONFIG_SMALL("DPX image"),
 };

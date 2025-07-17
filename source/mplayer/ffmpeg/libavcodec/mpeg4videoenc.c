@@ -3,25 +3,23 @@
  * Copyright (c) 2000,2001 Fabrice Bellard
  * Copyright (c) 2002-2010 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/log.h"
-#include "libavutil/opt.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "mpeg4video.h"
@@ -89,7 +87,7 @@ static inline int get_block_rate(MpegEncContext * s, DCTELEM block[64], int bloc
  * @param[in,out] block MB coefficients, these will be restored
  * @param[in] dir ac prediction direction for each 8x8 block
  * @param[out] st scantable for each 8x8 block
- * @param[in] zigzag_last_index index referring to the last non zero coefficient in zigzag order
+ * @param[in] zigzag_last_index index refering to the last non zero coefficient in zigzag order
  */
 static inline void restore_ac_coeffs(MpegEncContext * s, DCTELEM block[6][64], const int dir[6], uint8_t *st[6], const int zigzag_last_index[6])
 {
@@ -120,7 +118,7 @@ static inline void restore_ac_coeffs(MpegEncContext * s, DCTELEM block[6][64], c
  * @param[in,out] block MB coefficients, these will be updated if 1 is returned
  * @param[in] dir ac prediction direction for each 8x8 block
  * @param[out] st scantable for each 8x8 block
- * @param[out] zigzag_last_index index referring to the last non zero coefficient in zigzag order
+ * @param[out] zigzag_last_index index refering to the last non zero coefficient in zigzag order
  */
 static inline int decide_ac_pred(MpegEncContext * s, DCTELEM block[6][64], const int dir[6], uint8_t *st[6], int zigzag_last_index[6])
 {
@@ -238,7 +236,7 @@ void ff_clean_mpeg4_qscales(MpegEncContext *s){
 
 
 /**
- * Encode the dc value.
+ * encodes the dc value.
  * @param n block index (0-3 are luma, 4-5 are chroma)
  */
 static inline void mpeg4_encode_dc(PutBitContext * s, int level, int n)
@@ -291,7 +289,7 @@ static inline int mpeg4_get_dc_length(int level, int n){
 }
 
 /**
- * Encode an 8x8 block.
+ * encodes a 8x8 block
  * @param n block index (0-3 are luma, 4-5 are chroma)
  */
 static inline void mpeg4_encode_block(MpegEncContext * s, DCTELEM * block, int n, int intra_dc,
@@ -425,52 +423,12 @@ static inline void mpeg4_encode_blocks(MpegEncContext * s, DCTELEM block[6][64],
     }
 }
 
-static inline int get_b_cbp(MpegEncContext * s, DCTELEM block[6][64],
-                            int motion_x, int motion_y, int mb_type)
-{
-    int cbp = 0, i;
-
-    if (s->mpv_flags & FF_MPV_FLAG_CBP_RD) {
-        int score = 0;
-        const int lambda = s->lambda2 >> (FF_LAMBDA_SHIFT - 6);
-
-        for (i = 0; i < 6; i++)
-            if (s->coded_score[i] < 0) {
-                score += s->coded_score[i];
-                cbp   |= 1 << (5 - i);
-            }
-
-        if (cbp) {
-            int zero_score = -6;
-            if ((motion_x | motion_y | s->dquant | mb_type) == 0)
-                zero_score -= 4; //2*MV + mb_type + cbp bit
-
-            zero_score *= lambda;
-            if (zero_score <= score)
-                cbp = 0;
-        }
-
-        for (i = 0; i < 6; i++) {
-            if (s->block_last_index[i] >= 0 && ((cbp >> (5 - i)) & 1) == 0) {
-                s->block_last_index[i] = -1;
-                s->dsp.clear_block(s->block[i]);
-            }
-        }
-    } else {
-        for (i = 0; i < 6; i++) {
-            if (s->block_last_index[i] >= 0)
-                cbp |= 1 << (5 - i);
-        }
-    }
-    return cbp;
-}
-
 //FIXME this is duplicated to h263.c
 static const int dquant_code[5]= {1,0,9,2,3};
 
-void ff_mpeg4_encode_mb(MpegEncContext * s,
-                        DCTELEM block[6][64],
-                        int motion_x, int motion_y)
+void mpeg4_encode_mb(MpegEncContext * s,
+                    DCTELEM block[6][64],
+                    int motion_x, int motion_y)
 {
     int cbpc, cbpy, pred_x, pred_y;
     PutBitContext * const pb2    = s->data_partitioning                         ? &s->pb2    : &s->pb;
@@ -627,6 +585,8 @@ void ff_mpeg4_encode_mb(MpegEncContext * s,
 
                     x= s->mb_x*16;
                     y= s->mb_y*16;
+                    if(x+16 > s->width)  x= s->width-16;
+                    if(y+16 > s->height) y= s->height-16;
 
                     offset= x + y*s->linesize;
                     p_pic = s->new_picture.f.data[0] + offset;
@@ -643,21 +603,7 @@ void ff_mpeg4_encode_mb(MpegEncContext * s,
                         b_pic = pic->f.data[0] + offset;
                         if (pic->f.type != FF_BUFFER_TYPE_SHARED)
                             b_pic+= INPLACE_OFFSET;
-
-                        if(x+16 > s->width || y+16 > s->height){
-                            int x1,y1;
-                            int xe= FFMIN(16, s->width - x);
-                            int ye= FFMIN(16, s->height- y);
-                            diff=0;
-                            for(y1=0; y1<ye; y1++){
-                                for(x1=0; x1<xe; x1++){
-                                    diff+= FFABS(p_pic[x1+y1*s->linesize] - b_pic[x1+y1*s->linesize]);
-                                }
-                            }
-                            diff= diff*256/(xe*ye);
-                        }else{
-                            diff= s->dsp.sad[0](NULL, p_pic, b_pic, s->linesize, 16);
-                        }
+                        diff= s->dsp.sad[0](NULL, p_pic, b_pic, s->linesize, 16);
                         if(diff>s->qscale*70){ //FIXME check that 70 is optimal
                             s->mb_skipped=0;
                             break;
@@ -705,7 +651,7 @@ void ff_mpeg4_encode_mb(MpegEncContext * s,
                 }
 
                 /* motion vectors: 16x16 mode */
-                ff_h263_pred_motion(s, 0, 0, &pred_x, &pred_y);
+                h263_pred_motion(s, 0, 0, &pred_x, &pred_y);
 
                 ff_h263_encode_motion_vector(s, motion_x - pred_x,
                                                 motion_y - pred_y, s->f_code);
@@ -729,7 +675,7 @@ void ff_mpeg4_encode_mb(MpegEncContext * s,
                 }
 
                 /* motion vectors: 16x8 interlaced mode */
-                ff_h263_pred_motion(s, 0, 0, &pred_x, &pred_y);
+                h263_pred_motion(s, 0, 0, &pred_x, &pred_y);
                 pred_y /=2;
 
                 put_bits(&s->pb, 1, s->field_select[0][0]);
@@ -757,7 +703,7 @@ void ff_mpeg4_encode_mb(MpegEncContext * s,
 
                 for(i=0; i<4; i++){
                     /* motion vectors: 8x8 mode*/
-                    ff_h263_pred_motion(s, i, 0, &pred_x, &pred_y);
+                    h263_pred_motion(s, i, 0, &pred_x, &pred_y);
 
                     ff_h263_encode_motion_vector(s, s->current_picture.f.motion_val[0][ s->block_index[i] ][0] - pred_x,
                                                     s->current_picture.f.motion_val[0][ s->block_index[i] ][1] - pred_y, s->f_code);
@@ -858,7 +804,7 @@ void ff_set_mpeg4_time(MpegEncContext * s){
         ff_mpeg4_init_direct_mv(s);
     }else{
         s->last_time_base= s->time_base;
-        s->time_base= FFUDIV(s->time, s->avctx->time_base.den);
+        s->time_base= s->time/s->avctx->time_base.den;
     }
 }
 
@@ -873,12 +819,11 @@ static void mpeg4_encode_gop_header(MpegEncContext * s){
     if(s->reordered_input_picture[1])
         time = FFMIN(time, s->reordered_input_picture[1]->f.pts);
     time= time*s->avctx->time_base.num;
-    s->last_time_base= FFUDIV(time, s->avctx->time_base.den);
 
-    seconds= FFUDIV(time, s->avctx->time_base.den);
-    minutes= FFUDIV(seconds, 60); seconds = FFUMOD(seconds, 60);
-    hours  = FFUDIV(minutes, 60); minutes = FFUMOD(minutes, 60);
-    hours  = FFUMOD(hours  , 24);
+    seconds= time/s->avctx->time_base.den;
+    minutes= seconds/60; seconds %= 60;
+    hours= minutes/60; minutes %= 60;
+    hours%=24;
 
     put_bits(&s->pb, 5, hours);
     put_bits(&s->pb, 6, minutes);
@@ -887,6 +832,8 @@ static void mpeg4_encode_gop_header(MpegEncContext * s){
 
     put_bits(&s->pb, 1, !!(s->flags&CODEC_FLAG_CLOSED_GOP));
     put_bits(&s->pb, 1, 0); //broken link == NO
+
+    s->last_time_base= time / s->avctx->time_base.den;
 
     ff_mpeg4_stuffing(&s->pb);
 }
@@ -1038,7 +985,7 @@ static void mpeg4_encode_vol_header(MpegEncContext * s, int vo_number, int vol_n
 }
 
 /* write mpeg4 VOP header */
-void ff_mpeg4_encode_picture_header(MpegEncContext * s, int picture_number)
+void mpeg4_encode_picture_header(MpegEncContext * s, int picture_number)
 {
     int time_incr;
     int time_div, time_mod;
@@ -1060,8 +1007,9 @@ void ff_mpeg4_encode_picture_header(MpegEncContext * s, int picture_number)
     put_bits(&s->pb, 16, VOP_STARTCODE);    /* vop header */
     put_bits(&s->pb, 2, s->pict_type - 1);  /* pict type: I = 0 , P = 1 */
 
-    time_div= FFUDIV(s->time, s->avctx->time_base.den);
-    time_mod= FFUMOD(s->time, s->avctx->time_base.den);
+    assert(s->time>=0);
+    time_div= s->time/s->avctx->time_base.den;
+    time_mod= s->time%s->avctx->time_base.den;
     time_incr= time_div - s->last_time_base;
     assert(time_incr >= 0);
     while(time_incr--)
@@ -1232,7 +1180,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
     int ret;
     static int done = 0;
 
-    if((ret=ff_MPV_encode_init(avctx)) < 0)
+    if((ret=MPV_encode_init(avctx)) < 0)
         return ret;
 
     if (!done) {
@@ -1240,7 +1188,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
 
         init_uni_dc_tab();
 
-        ff_init_rl(&ff_mpeg4_rl_intra, ff_mpeg4_static_rl_table_store[0]);
+        init_rl(&ff_mpeg4_rl_intra, ff_mpeg4_static_rl_table_store[0]);
 
         init_uni_mpeg4_rl_tab(&ff_mpeg4_rl_intra, uni_mpeg4_intra_rl_bits, uni_mpeg4_intra_rl_len);
         init_uni_mpeg4_rl_tab(&ff_h263_rl_inter, uni_mpeg4_inter_rl_bits, uni_mpeg4_inter_rl_len);
@@ -1253,6 +1201,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
     s->inter_ac_vlc_length     = uni_mpeg4_inter_rl_len;
     s->inter_ac_vlc_last_length= uni_mpeg4_inter_rl_len + 128*64;
     s->luma_dc_vlc_length= uni_DCtab_lum_len;
+    s->chroma_dc_vlc_length= uni_DCtab_chrom_len;
     s->ac_esc_length= 7+2+1+6+1+12+1;
     s->y_dc_scale_table= ff_mpeg4_y_dc_scale_table;
     s->c_dc_scale_table= ff_mpeg4_c_dc_scale_table;
@@ -1307,8 +1256,8 @@ void ff_mpeg4_merge_partitions(MpegEncContext *s)
     flush_put_bits(&s->tex_pb);
 
     set_put_bits_buffer_size(&s->pb, s->pb2.buf_end - s->pb.buf);
-    avpriv_copy_bits(&s->pb, s->pb2.buf   , pb2_len);
-    avpriv_copy_bits(&s->pb, s->tex_pb.buf, tex_pb_len);
+    ff_copy_bits(&s->pb, s->pb2.buf   , pb2_len);
+    ff_copy_bits(&s->pb, s->tex_pb.buf, tex_pb_len);
     s->last_bits= put_bits_count(&s->pb);
 }
 
@@ -1325,32 +1274,15 @@ void ff_mpeg4_encode_video_packet_header(MpegEncContext *s)
     put_bits(&s->pb, 1, 0); /* no HEC */
 }
 
-#define OFFSET(x) offsetof(MpegEncContext, x)
-#define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
-static const AVOption options[] = {
-    { "data_partitioning",       "Use data partitioning.",      OFFSET(data_partitioning), AV_OPT_TYPE_INT, { 0 }, 0, 1, VE },
-    { "alternate_scan",          "Enable alternate scantable.", OFFSET(alternate_scan),    AV_OPT_TYPE_INT, { 0 }, 0, 1, VE },
-    FF_MPV_COMMON_OPTS
-    { NULL },
-};
-
-static const AVClass mpeg4enc_class = {
-    .class_name = "MPEG4 encoder",
-    .item_name  = av_default_item_name,
-    .option     = options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 AVCodec ff_mpeg4_encoder = {
     .name           = "mpeg4",
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_MPEG4,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = encode_init,
-    .encode2        = ff_MPV_encode_picture,
-    .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
-    .capabilities   = CODEC_CAP_DELAY | CODEC_CAP_SLICE_THREADS,
-    .long_name      = NULL_IF_CONFIG_SMALL("MPEG-4 part 2"),
-    .priv_class     = &mpeg4enc_class,
+    .encode         = MPV_encode_picture,
+    .close          = MPV_encode_end,
+    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, PIX_FMT_NONE},
+    .capabilities= CODEC_CAP_DELAY | CODEC_CAP_SLICE_THREADS,
+    .long_name= NULL_IF_CONFIG_SMALL("MPEG-4 part 2"),
 };

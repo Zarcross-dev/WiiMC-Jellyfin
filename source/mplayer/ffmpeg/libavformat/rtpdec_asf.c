@@ -2,20 +2,20 @@
  * Microsoft RTP/ASF support.
  * Copyright (c) 2008 Ronald S. Bultje
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -33,7 +33,6 @@
 #include "rtsp.h"
 #include "asf.h"
 #include "avio_internal.h"
-#include "internal.h"
 
 /**
  * From MSDN 2.2.1.4, we learn that ASF data packets over RTP should not
@@ -99,7 +98,6 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
     if (av_strstart(p, "pgmpu:data:application/vnd.ms.wms-hdr.asfv1;base64,", &p)) {
         AVIOContext pb;
         RTSPState *rt = s->priv_data;
-        AVDictionary *opts = NULL;
         int len = strlen(p) * 6 / 8;
         char *buf = av_mallocz(len);
         av_base64_decode(buf, p, len);
@@ -109,14 +107,13 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
                    "Failed to fix invalid RTSP-MS/ASF min_pktsize\n");
         init_packetizer(&pb, buf, len);
         if (rt->asf_ctx) {
-            avformat_close_input(&rt->asf_ctx);
+            av_close_input_file(rt->asf_ctx);
+            rt->asf_ctx = NULL;
         }
         if (!(rt->asf_ctx = avformat_alloc_context()))
             return AVERROR(ENOMEM);
         rt->asf_ctx->pb      = &pb;
-        av_dict_set(&opts, "no_resync_search", "1", 0);
-        ret = avformat_open_input(&rt->asf_ctx, "", &ff_asf_demuxer, &opts);
-        av_dict_free(&opts);
+        ret = avformat_open_input(&rt->asf_ctx, "", &ff_asf_demuxer, NULL);
         if (ret < 0)
             return ret;
         av_dict_copy(&s->metadata, rt->asf_ctx->metadata, 0);
@@ -130,8 +127,6 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
 static int asfrtp_parse_sdp_line(AVFormatContext *s, int stream_index,
                                  PayloadContext *asf, const char *line)
 {
-    if (stream_index < 0)
-        return 0;
     if (av_strstart(line, "stream:", &line)) {
         RTSPState *rt = s->priv_data;
 
@@ -146,7 +141,7 @@ static int asfrtp_parse_sdp_line(AVFormatContext *s, int stream_index,
                         *rt->asf_ctx->streams[i]->codec;
                     rt->asf_ctx->streams[i]->codec->extradata_size = 0;
                     rt->asf_ctx->streams[i]->codec->extradata = NULL;
-                    avpriv_set_pts_info(s->streams[stream_index], 32, 1, 1000);
+                    av_set_pts_info(s->streams[stream_index], 32, 1, 1000);
                 }
            }
         }
@@ -238,14 +233,8 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
 
                 int cur_len = start_off + len_off - off;
                 int prev_len = out_len;
-                void *newmem;
                 out_len += cur_len;
-                if (FFMIN(cur_len, len - off) < 0)
-                    return -1;
-                newmem = av_realloc(asf->buf, out_len);
-                if (!newmem)
-                    return -1;
-                asf->buf = newmem;
+                asf->buf = av_realloc(asf->buf, out_len);
                 memcpy(asf->buf + prev_len, buf + off,
                        FFMIN(cur_len, len - off));
                 avio_skip(pb, cur_len);
@@ -261,7 +250,7 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
     for (;;) {
         int i;
 
-        res = ff_read_packet(rt->asf_ctx, pkt);
+        res = av_read_packet(rt->asf_ctx, pkt);
         rt->asf_pb_pos = avio_tell(pb);
         if (res != 0)
             break;

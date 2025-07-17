@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2008 Affine Systems, Inc (Michael Sullivan, Bobby Impollonia)
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -28,14 +28,13 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/parseutils.h"
 #include "avfilter.h"
-#include "video.h"
 
 enum { Y, U, V, A };
 
 typedef struct {
     int x, y, w, h;
     unsigned char yuv_color[4];
-    int vsub, hsub;   ///< chroma subsampling
+    int vsub, hsub;   //< chroma subsampling
 } DrawBoxContext;
 
 static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
@@ -71,7 +70,7 @@ static int query_formats(AVFilterContext *ctx)
         PIX_FMT_NONE
     };
 
-    avfilter_set_common_pixel_formats(ctx, avfilter_make_format_list(pix_fmts));
+    avfilter_set_common_formats(ctx, avfilter_make_format_list(pix_fmts));
     return 0;
 }
 
@@ -86,7 +85,7 @@ static int config_input(AVFilterLink *inlink)
     if (drawbox->h == 0) drawbox->h = inlink->h;
 
     av_log(inlink->dst, AV_LOG_INFO, "x:%d y:%d w:%d h:%d color:0x%02X%02X%02X%02X\n",
-           drawbox->x, drawbox->y, drawbox->w, drawbox->h,
+           drawbox->w, drawbox->y, drawbox->w, drawbox->h,
            drawbox->yuv_color[Y], drawbox->yuv_color[U], drawbox->yuv_color[V], drawbox->yuv_color[A]);
 
     return 0;
@@ -128,17 +127,17 @@ AVFilter avfilter_vf_drawbox = {
     .init      = init,
 
     .query_formats   = query_formats,
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
+    .inputs    = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO,
                                     .config_props     = config_input,
-                                    .get_video_buffer = ff_null_get_video_buffer,
-                                    .start_frame      = ff_null_start_frame,
+                                    .get_video_buffer = avfilter_null_get_video_buffer,
+                                    .start_frame      = avfilter_null_start_frame,
                                     .draw_slice       = draw_slice,
-                                    .end_frame        = ff_null_end_frame,
+                                    .end_frame        = avfilter_null_end_frame,
                                     .min_perms        = AV_PERM_WRITE | AV_PERM_READ,
                                     .rej_perms        = AV_PERM_PRESERVE },
                                   { .name = NULL}},
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
+    .outputs   = (AVFilterPad[]) {{ .name             = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO, },
                                   { .name = NULL}},
 };

@@ -2,20 +2,20 @@
  * NUT (de)muxing via libnut
  * copyright (c) 2006 Oded Shimon <ods15@ods15.dyndns.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -26,7 +26,6 @@
  */
 
 #include "avformat.h"
-#include "internal.h"
 #include "riff.h"
 #include <libnut.h>
 
@@ -71,8 +70,6 @@ static int nut_write_header(AVFormatContext * avf) {
     int i;
 
     priv->s = s = av_mallocz((avf->nb_streams + 1) * sizeof*s);
-    if(!s)
-        return AVERROR(ENOMEM);
 
     for (i = 0; i < avf->nb_streams; i++) {
         AVCodecContext * codec = avf->streams[i]->codec;
@@ -95,7 +92,7 @@ static int nut_write_header(AVFormatContext * avf) {
         for (j = 0; j < s[i].fourcc_len; j++) s[i].fourcc[j] = (fourcc >> (j*8)) & 0xFF;
 
         ff_parse_specific_params(codec, &num, &ssize, &denom);
-        avpriv_set_pts_info(avf->streams[i], 60, denom, num);
+        av_set_pts_info(avf->streams[i], 60, denom, num);
 
         s[i].time_base.num = denom;
         s[i].time_base.den = num;
@@ -164,7 +161,7 @@ AVOutputFormat ff_libnut_muxer = {
     .write_header      = nut_write_header,
     .write_packet      = nut_write_packet,
     .write_trailer     = nut_write_trailer,
-    .flags             = AVFMT_GLOBALHEADER,
+    .flags = AVFMT_GLOBALHEADER,
 };
 #endif /* CONFIG_LIBNUT_MUXER */
 
@@ -188,7 +185,7 @@ static off_t av_seek(void * h, long long pos, int whence) {
     return avio_seek(bc, pos, whence);
 }
 
-static int nut_read_header(AVFormatContext * avf) {
+static int nut_read_header(AVFormatContext * avf, AVFormatParameters * ap) {
     NUTContext * priv = avf->priv_data;
     AVIOContext * bc = avf->pb;
     nut_demuxer_opts_tt dopts = {
@@ -207,20 +204,16 @@ static int nut_read_header(AVFormatContext * avf) {
     nut_stream_header_tt * s;
     int ret, i;
 
-    if(!nut)
-        return -1;
-
     if ((ret = nut_read_headers(nut, &s, NULL))) {
         av_log(avf, AV_LOG_ERROR, " NUT error: %s\n", nut_error(ret));
         nut_demuxer_uninit(nut);
-        priv->nut = NULL;
         return -1;
     }
 
     priv->s = s;
 
     for (i = 0; s[i].type != -1 && i < 2; i++) {
-        AVStream * st = avformat_new_stream(avf, NULL);
+        AVStream * st = av_new_stream(avf, i);
         int j;
 
         for (j = 0; j < s[i].fourcc_len && j < 8; j++) st->codec->codec_tag |= s[i].fourcc[j]<<(j*8);
@@ -230,15 +223,10 @@ static int nut_read_header(AVFormatContext * avf) {
         st->codec->extradata_size = s[i].codec_specific_len;
         if (st->codec->extradata_size) {
             st->codec->extradata = av_mallocz(st->codec->extradata_size);
-            if(!st->codec->extradata){
-                nut_demuxer_uninit(nut);
-                priv->nut = NULL;
-                return AVERROR(ENOMEM);
-            }
             memcpy(st->codec->extradata, s[i].codec_specific, st->codec->extradata_size);
         }
 
-        avpriv_set_pts_info(avf->streams[i], 60, s[i].time_base.num, s[i].time_base.den);
+        av_set_pts_info(avf->streams[i], 60, s[i].time_base.num, s[i].time_base.den);
         st->start_time = 0;
         st->duration = s[i].max_pts;
 
@@ -318,5 +306,5 @@ AVInputFormat ff_libnut_demuxer = {
     .read_packet    = nut_read_packet,
     .read_close     = nut_read_close,
     .read_seek      = nut_read_seek,
-    .extensions     = "nut",
+    .extensions = "nut",
 };

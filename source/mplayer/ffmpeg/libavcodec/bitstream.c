@@ -6,20 +6,20 @@
  *
  * alternative bitstream reader & writer by Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -41,7 +41,7 @@ const uint8_t ff_log2_run[41]={
 24,
 };
 
-void avpriv_align_put_bits(PutBitContext *s)
+void align_put_bits(PutBitContext *s)
 {
     put_bits(s,s->bit_left & 7,0);
 }
@@ -56,7 +56,7 @@ void ff_put_string(PutBitContext *pb, const char *string, int terminate_string)
         put_bits(pb, 8, 0);
 }
 
-void avpriv_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
+void ff_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
 {
     int words= length>>4;
     int bits= length&15;
@@ -103,10 +103,10 @@ static int alloc_table(VLC *vlc, int size, int use_static)
     vlc->table_size += size;
     if (vlc->table_size > vlc->table_allocated) {
         if(use_static)
-            abort(); // cannot do anything, init_vlc() is used with too little memory
+            abort(); //cant do anything, init_vlc() is used with too little memory
         vlc->table_allocated += (1 << vlc->bits);
-        vlc->table = av_realloc_f(vlc->table,
-                                  vlc->table_allocated, sizeof(VLC_TYPE) * 2);
+        vlc->table = av_realloc(vlc->table,
+                                sizeof(VLC_TYPE) * 2 * vlc->table_allocated);
         if (!vlc->table)
             return -1;
     }
@@ -157,8 +157,6 @@ static int build_table(VLC *vlc, int table_nb_bits, int nb_codes,
     VLC_TYPE (*table)[2];
 
     table_size = 1 << table_nb_bits;
-    if (table_nb_bits > 30)
-       return -1;
     table_index = alloc_table(vlc, table_size, flags & INIT_VLC_USE_NEW_STATIC);
     av_dlog(NULL, "new table index=%d size=%d\n", table_index, table_size);
     if (table_index < 0)
@@ -255,9 +253,9 @@ static int build_table(VLC *vlc, int table_nb_bits, int nb_codes,
    (byte/word/long) to store the 'bits', 'codes', and 'symbols' tables.
 
    'use_static' should be set to 1 for tables, which should be freed
-   with av_free_static(), 0 if ff_free_vlc() will be used.
+   with av_free_static(), 0 if free_vlc() will be used.
 */
-int ff_init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
+int init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
              const void *bits, int bits_wrap, int bits_size,
              const void *codes, int codes_wrap, int codes_size,
              const void *symbols, int symbols_wrap, int symbols_size,
@@ -320,7 +318,8 @@ int ff_init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
 }
 
 
-void ff_free_vlc(VLC *vlc)
+void free_vlc(VLC *vlc)
 {
     av_freep(&vlc->table);
 }
+

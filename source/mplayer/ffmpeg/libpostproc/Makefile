@@ -6,3 +6,5 @@ FFLIBS = avutil
 HEADERS = postprocess.h
 
 OBJS = postprocess.o
+
+include $(SUBDIR)../subdir.mak

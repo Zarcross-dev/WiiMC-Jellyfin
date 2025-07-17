@@ -200,7 +200,7 @@ static AVStream *add_video_stream(AVFormatContext *oc, enum CodecID codec_id)
     AVCodecContext *c;
     AVStream *st;
 
-    st = avformat_new_stream(oc, NULL);
+    st = av_new_stream(oc, 0);
     if (!st) {
         fprintf(stderr, "Could not alloc stream\n");
         exit(1);

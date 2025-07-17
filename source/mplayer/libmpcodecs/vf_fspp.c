@@ -51,7 +51,6 @@
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mem.h"
-#include "libavutil/x86_cpu.h"
 #include "libavcodec/avcodec.h"
 #include "libavcodec/dsputil.h"
 
@@ -641,7 +640,7 @@ static int vf_open(vf_instance_t *vf, char *args)
     init_avcodec();
 
     //vf->priv->avctx= avcodec_alloc_context();
-    //ff_dsputil_init(&vf->priv->dsp, vf->priv->avctx);
+    //dsputil_init(&vf->priv->dsp, vf->priv->avctx);
 
     vf->priv->log2_count= 4;
     vf->priv->bframes = 0;

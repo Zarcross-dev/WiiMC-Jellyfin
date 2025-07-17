@@ -1,20 +1,20 @@
 /*
  * copyright (c) 2008 Paul Kendall <paul@kcbbs.gen.nz>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -36,7 +36,7 @@ typedef struct LATMParseContext{
 } LATMParseContext;
 
 /**
- * Find the end of the current frame in the bitstream.
+ * finds the end of the current frame in the bitstream.
  * @return the position of the first byte of the next frame, or -1
  */
 static int latm_find_frame_end(AVCodecParserContext *s1, const uint8_t *buf,
@@ -50,6 +50,7 @@ static int latm_find_frame_end(AVCodecParserContext *s1, const uint8_t *buf,
     pic_found = pc->frame_start_found;
     state     = pc->state;
 
+    i = 0;
     if (!pic_found) {
         for (i = 0; i < buf_size; i++) {
             state = (state<<8) | buf[i];
@@ -105,8 +106,9 @@ static int latm_parse(AVCodecParserContext *s1, AVCodecContext *avctx,
 }
 
 AVCodecParser ff_aac_latm_parser = {
-    .codec_ids      = { CODEC_ID_AAC_LATM },
-    .priv_data_size = sizeof(LATMParseContext),
-    .parser_parse   = latm_parse,
-    .parser_close   = ff_parse_close
+    { CODEC_ID_AAC_LATM },
+    sizeof(LATMParseContext),
+    NULL,
+    latm_parse,
+    ff_parse_close
 };

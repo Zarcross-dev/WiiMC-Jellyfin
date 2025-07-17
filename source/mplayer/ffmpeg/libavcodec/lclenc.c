@@ -2,20 +2,20 @@
  * LCL (LossLess Codec Library) Codec
  * Copyright (c) 2002-2004 Roberto Togni
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -42,7 +42,6 @@
 #include <stdlib.h>
 
 #include "avcodec.h"
-#include "internal.h"
 #include "lcl.h"
 
 #include <zlib.h>
@@ -69,17 +68,12 @@ typedef struct LclEncContext {
  * Encode a frame
  *
  */
-static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
-                        const AVFrame *pict, int *got_packet)
-{
+static int encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_size, void *data){
     LclEncContext *c = avctx->priv_data;
+    AVFrame *pict = data;
     AVFrame * const p = &c->pic;
-    int i, ret;
+    int i;
     int zret; // Zlib return code
-    int max_size = deflateBound(&c->zstream, avctx->width * avctx->height * 3);
-
-    if ((ret = ff_alloc_packet2(avctx, pkt, max_size)) < 0)
-            return ret;
 
     *p = *pict;
     p->pict_type= AV_PICTURE_TYPE_I;
@@ -95,8 +89,8 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         av_log(avctx, AV_LOG_ERROR, "Deflate reset error: %d\n", zret);
         return -1;
     }
-    c->zstream.next_out  = pkt->data;
-    c->zstream.avail_out = pkt->size;
+    c->zstream.next_out = buf;
+    c->zstream.avail_out = buf_size;
 
     for(i = avctx->height - 1; i >= 0; i--) {
         c->zstream.next_in = p->data[0]+p->linesize[0]*i;
@@ -113,11 +107,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         return -1;
     }
 
-    pkt->size   = c->zstream.total_out;
-    pkt->flags |= AV_PKT_FLAG_KEY;
-    *got_packet = 1;
-
-    return 0;
+    return c->zstream.total_out;
 }
 
 /*
@@ -186,8 +176,8 @@ AVCodec ff_zlib_encoder = {
     .id             = CODEC_ID_ZLIB,
     .priv_data_size = sizeof(LclEncContext),
     .init           = encode_init,
-    .encode2        = encode_frame,
+    .encode         = encode_frame,
     .close          = encode_end,
-    .pix_fmts       = (const enum PixelFormat[]) { PIX_FMT_BGR24, PIX_FMT_NONE },
-    .long_name      = NULL_IF_CONFIG_SMALL("LCL (LossLess Codec Library) ZLIB"),
+    .pix_fmts = (const enum PixelFormat[]) { PIX_FMT_BGR24, PIX_FMT_NONE },
+    .long_name = NULL_IF_CONFIG_SMALL("LCL (LossLess Codec Library) ZLIB"),
 };

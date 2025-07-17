@@ -3,20 +3,20 @@
  * Copyright (c) 2009 Konstantin Shishkov
  * Copyright (C) 2011 Peter Ross <pross@xvid.org>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -27,7 +27,7 @@
 #include "binkdsp.h"
 #include "mathops.h"
 
-#define BITSTREAM_READER_LE
+#define ALT_BITSTREAM_READER_LE
 #include "get_bits.h"
 
 #define BINK_FLAG_ALPHA 0x00100000
@@ -146,8 +146,6 @@ enum BlockTypes {
  */
 static void init_lengths(BinkContext *c, int width, int bw)
 {
-    width = FFALIGN(width, 8);
-
     c->bundle[BINK_SRC_BLOCK_TYPES].len = av_log2((width >> 3) + 511) + 1;
 
     c->bundle[BINK_SRC_SUB_BLOCK_TYPES].len = av_log2((width >> 4) + 511) + 1;
@@ -233,7 +231,7 @@ static void merge(GetBitContext *gb, uint8_t *dst, uint8_t *src, int size)
  */
 static void read_tree(GetBitContext *gb, Tree *tree)
 {
-    uint8_t tmp1[16] = { 0 }, tmp2[16], *in = tmp1, *out = tmp2;
+    uint8_t tmp1[16], tmp2[16], *in = tmp1, *out = tmp2;
     int i, t, len;
 
     tree->vlc_num = get_bits(gb, 4);
@@ -244,11 +242,12 @@ static void read_tree(GetBitContext *gb, Tree *tree)
     }
     if (get_bits1(gb)) {
         len = get_bits(gb, 3);
+        memset(tmp1, 0, sizeof(tmp1));
         for (i = 0; i <= len; i++) {
             tree->syms[i] = get_bits(gb, 4);
             tmp1[tree->syms[i]] = 1;
         }
-        for (i = 0; i < 16 && len < 16 - 1; i++)
+        for (i = 0; i < 16; i++)
             if (!tmp1[i])
                 tree->syms[++len] = i;
     } else {
@@ -345,14 +344,14 @@ static int read_motion_values(AVCodecContext *avctx, GetBitContext *gb, Bundle *
         memset(b->cur_dec, v, t);
         b->cur_dec += t;
     } else {
-        while (b->cur_dec < dec_end) {
+        do {
             v = GET_HUFF(gb, b->tree);
             if (v) {
                 sign = -get_bits1(gb);
                 v = (v ^ sign) - sign;
             }
             *b->cur_dec++ = v;
-        }
+        } while (b->cur_dec < dec_end);
     }
     return 0;
 }
@@ -376,7 +375,7 @@ static int read_block_types(AVCodecContext *avctx, GetBitContext *gb, Bundle *b)
         memset(b->cur_dec, v, t);
         b->cur_dec += t;
     } else {
-        while (b->cur_dec < dec_end) {
+        do {
             v = GET_HUFF(gb, b->tree);
             if (v < 12) {
                 last = v;
@@ -384,12 +383,10 @@ static int read_block_types(AVCodecContext *avctx, GetBitContext *gb, Bundle *b)
             } else {
                 int run = bink_rlelens[v - 12];
 
-                if (dec_end - b->cur_dec < run)
-                    return -1;
                 memset(b->cur_dec, last, run);
                 b->cur_dec += run;
             }
-        }
+        } while (b->cur_dec < dec_end);
     }
     return 0;
 }
@@ -459,8 +456,7 @@ static int read_dcs(AVCodecContext *avctx, GetBitContext *gb, Bundle *b,
                     int start_bits, int has_sign)
 {
     int i, j, len, len2, bsize, sign, v, v2;
-    int16_t *dst     = (int16_t*)b->cur_dec;
-    int16_t *dst_end = (int16_t*)b->data_end;
+    int16_t *dst = (int16_t*)b->cur_dec;
 
     CHECK_READ_VAL(gb, b, len);
     v = get_bits(gb, start_bits - has_sign);
@@ -468,14 +464,10 @@ static int read_dcs(AVCodecContext *avctx, GetBitContext *gb, Bundle *b,
         sign = -get_bits1(gb);
         v = (v ^ sign) - sign;
     }
-    if (dst_end - dst < 1)
-        return -1;
     *dst++ = v;
     len--;
     for (i = 0; i < len; i += 8) {
         len2 = FFMIN(len - i, 8);
-        if (dst_end - dst < len2)
-            return -1;
         bsize = get_bits(gb, 4);
         if (bsize) {
             for (j = 0; j < len2; j++) {
@@ -543,8 +535,6 @@ static int binkb_read_bundle(BinkContext *c, GetBitContext *gb, int bundle_num)
     int i, len;
 
     CHECK_READ_VAL(gb, b, len);
-    if (b->data_end - b->cur_dec < len * (1 + (bits > 8)))
-        return -1;
     if (bits <= 8) {
         if (!issigned) {
             for (i = 0; i < len; i++)
@@ -596,7 +586,7 @@ static int read_dct_coeffs(GetBitContext *gb, int32_t block[64], const uint8_t *
 {
     int coef_list[128];
     int mode_list[128];
-    int i, t, bits, ccoef, mode, sign;
+    int i, t, mask, bits, ccoef, mode, sign;
     int list_start = 64, list_end = 64, list_pos;
     int coef_count = 0;
     int coef_idx[64];
@@ -610,7 +600,8 @@ static int read_dct_coeffs(GetBitContext *gb, int32_t block[64], const uint8_t *
     coef_list[list_end] = 2;  mode_list[list_end++] = 3;
     coef_list[list_end] = 3;  mode_list[list_end++] = 3;
 
-    for (bits = get_bits(gb, 4) - 1; bits >= 0; bits--) {
+    bits = get_bits(gb, 4) - 1;
+    for (mask = 1 << bits; bits >= 0; mask >>= 1, bits--) {
         list_pos = list_start;
         while (list_pos < list_end) {
             if (!(mode_list[list_pos] | coef_list[list_pos]) || !get_bits1(gb)) {
@@ -636,7 +627,7 @@ static int read_dct_coeffs(GetBitContext *gb, int32_t block[64], const uint8_t *
                         if (!bits) {
                             t = 1 - (get_bits1(gb) << 1);
                         } else {
-                            t = get_bits(gb, bits) | 1 << bits;
+                            t = get_bits(gb, bits) | mask;
                             sign = -get_bits1(gb);
                             t = (t ^ sign) - sign;
                         }
@@ -657,7 +648,7 @@ static int read_dct_coeffs(GetBitContext *gb, int32_t block[64], const uint8_t *
                 if (!bits) {
                     t = 1 - (get_bits1(gb) << 1);
                 } else {
-                    t = get_bits(gb, bits) | 1 << bits;
+                    t = get_bits(gb, bits) | mask;
                     sign = -get_bits1(gb);
                     t = (t ^ sign) - sign;
                 }
@@ -858,7 +849,7 @@ static int binkb_decode_plane(BinkContext *c, GetBitContext *gb, int plane_idx,
                 memset(dctblock, 0, sizeof(*dctblock) * 64);
                 dctblock[0] = binkb_get_value(c, BINKB_SRC_INTRA_DC);
                 qp = binkb_get_value(c, BINKB_SRC_INTRA_Q);
-                read_dct_coeffs(gb, dctblock, bink_scan, (const int32_t (*)[64])binkb_intra_quant, qp);
+                read_dct_coeffs(gb, dctblock, bink_scan, binkb_intra_quant, qp);
                 c->bdsp.idct_put(dst, stride, dctblock);
                 break;
             case 3:
@@ -891,7 +882,7 @@ static int binkb_decode_plane(BinkContext *c, GetBitContext *gb, int plane_idx,
                 memset(dctblock, 0, sizeof(*dctblock) * 64);
                 dctblock[0] = binkb_get_value(c, BINKB_SRC_INTER_DC);
                 qp = binkb_get_value(c, BINKB_SRC_INTER_Q);
-                read_dct_coeffs(gb, dctblock, bink_scan, (const int32_t (*)[64])binkb_inter_quant, qp);
+                read_dct_coeffs(gb, dctblock, bink_scan, binkb_inter_quant, qp);
                 c->bdsp.idct_add(dst, stride, dctblock);
                 break;
             case 5:
@@ -959,9 +950,8 @@ static int bink_decode_plane(BinkContext *c, GetBitContext *gb, int plane_idx,
     for (i = 0; i < BINK_NB_SRC; i++)
         read_bundle(gb, c, i);
 
-    ref_start = c->last.data[plane_idx] ? c->last.data[plane_idx]
-                                        : c->pic.data[plane_idx];
-    ref_end   = ref_start
+    ref_start = c->last.data[plane_idx];
+    ref_end   = c->last.data[plane_idx]
                 + (bw - 1 + c->last.linesize[plane_idx] * (bh - 1)) * 8;
 
     for (i = 0; i < 64; i++)
@@ -990,8 +980,7 @@ static int bink_decode_plane(BinkContext *c, GetBitContext *gb, int plane_idx,
         if (by == bh)
             break;
         dst  = c->pic.data[plane_idx]  + 8*by*stride;
-        prev = (c->last.data[plane_idx] ? c->last.data[plane_idx]
-                                        : c->pic.data[plane_idx]) + 8*by*stride;
+        prev = c->last.data[plane_idx] + 8*by*stride;
         for (bx = 0; bx < bw; bx++, dst += 8, prev += 8) {
             blk = get_value(c, BINK_SRC_BLOCK_TYPES);
             // 16x16 block type on odd line means part of the already decoded block, so skip it
@@ -1128,11 +1117,6 @@ static int bink_decode_plane(BinkContext *c, GetBitContext *gb, int plane_idx,
                 xoff = get_value(c, BINK_SRC_X_OFF);
                 yoff = get_value(c, BINK_SRC_Y_OFF);
                 ref = prev + xoff + yoff * stride;
-                if (ref < ref_start || ref > ref_end) {
-                    av_log(c->avctx, AV_LOG_ERROR, "Copy out of bounds @%d, %d\n",
-                           bx*8 + xoff, by*8 + yoff);
-                    return -1;
-                }
                 c->dsp.put_pixels_tab[1][0](dst, ref, stride, 8);
                 memset(dctblock, 0, sizeof(*dctblock) * 64);
                 dctblock[0] = get_value(c, BINK_SRC_INTER_DC);
@@ -1304,7 +1288,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     avctx->pix_fmt = c->has_alpha ? PIX_FMT_YUVA420P : PIX_FMT_YUV420P;
 
     avctx->idct_algo = FF_IDCT_BINK;
-    ff_dsputil_init(&c->dsp, avctx);
+    dsputil_init(&c->dsp, avctx);
     ff_binkdsp_init(&c->bdsp);
 
     init_bundles(c);
@@ -1340,5 +1324,5 @@ AVCodec ff_bink_decoder = {
     .init           = decode_init,
     .close          = decode_end,
     .decode         = decode_frame,
-    .long_name      = NULL_IF_CONFIG_SMALL("Bink video"),
+    .long_name = NULL_IF_CONFIG_SMALL("Bink video"),
 };

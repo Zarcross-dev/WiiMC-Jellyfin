@@ -2,25 +2,25 @@
 ;* MMX/SSE2-optimized functions for the VP3 decoder
 ;* Copyright (c) 2007 Aurelien Jacobs <aurel@gnuage.org>
 ;*
-;* This file is part of FFmpeg.
+;* This file is part of Libav.
 ;*
-;* FFmpeg is free software; you can redistribute it and/or
+;* Libav is free software; you can redistribute it and/or
 ;* modify it under the terms of the GNU Lesser General Public
 ;* License as published by the Free Software Foundation; either
 ;* version 2.1 of the License, or (at your option) any later version.
 ;*
-;* FFmpeg is distributed in the hope that it will be useful,
+;* Libav is distributed in the hope that it will be useful,
 ;* but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;* Lesser General Public License for more details.
 ;*
 ;* You should have received a copy of the GNU Lesser General Public
-;* License along with FFmpeg; if not, write to the Free Software
+;* License along with Libav; if not, write to the Free Software
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;******************************************************************************
 
-%include "libavutil/x86/x86inc.asm"
-%include "libavutil/x86/x86util.asm"
+%include "x86inc.asm"
+%include "x86util.asm"
 
 ; MMX-optimized functions cribbed from the original VP3 source code.
 
@@ -106,7 +106,7 @@ SECTION .text
 
 INIT_MMX
 cglobal vp3_v_loop_filter_mmx2, 3, 4
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     movsxd        r1, r1d
 %endif
     mov           r3, r1
@@ -123,7 +123,7 @@ cglobal vp3_v_loop_filter_mmx2, 3, 4
     RET
 
 cglobal vp3_h_loop_filter_mmx2, 3, 4
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     movsxd        r1, r1d
 %endif
     lea           r3, [r1*3]
@@ -510,7 +510,7 @@ cglobal vp3_h_loop_filter_mmx2, 3, 4
 %define SHIFT(x)
 %define ADD(x)
         VP3_1D_IDCT_SSE2
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
         TRANSPOSE8x8W 0, 1, 2, 3, 4, 5, 6, 7, 8
 %else
         TRANSPOSE8x8W 0, 1, 2, 3, 4, 5, 6, 7, [%1], [%1+16]
@@ -530,7 +530,7 @@ cglobal vp3_idct_%1, 1, 1, %2
 
 cglobal vp3_idct_put_%1, 3, %3, %2
     VP3_IDCT_%1   r2
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     mov           r3, r2
     mov           r2, r1
     mov           r1, r0
@@ -540,7 +540,7 @@ cglobal vp3_idct_put_%1, 3, %3, %2
     mov          r1m, r0
     mov          r2m, r1
 %endif
-%if WIN64
+%ifdef WIN64
     call put_signed_pixels_clamped_mmx
     RET
 %else
@@ -549,7 +549,7 @@ cglobal vp3_idct_put_%1, 3, %3, %2
 
 cglobal vp3_idct_add_%1, 3, %3, %2
     VP3_IDCT_%1   r2
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     mov           r3, r2
     mov           r2, r1
     mov           r1, r0
@@ -559,7 +559,7 @@ cglobal vp3_idct_add_%1, 3, %3, %2
     mov          r1m, r0
     mov          r2m, r1
 %endif
-%if WIN64
+%ifdef WIN64
     call add_pixels_clamped_mmx
     RET
 %else
@@ -567,7 +567,7 @@ cglobal vp3_idct_add_%1, 3, %3, %2
 %endif
 %endmacro
 
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
 %define REGS 4
 %else
 %define REGS 3
@@ -599,7 +599,7 @@ vp3_idct_funcs sse2, 9, REGS
 
 INIT_MMX
 cglobal vp3_idct_dc_add_mmx2, 3, 4
-%if ARCH_X86_64
+%ifdef ARCH_X86_64
     movsxd        r1, r1d
 %endif
     lea           r3, [r1*3]

@@ -41,7 +41,7 @@
 #include "libavutil/avutil.h"
 #include "libavutil/avstring.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/opt.h"
+#include "libavcodec/opt.h"
 
 #include "mp_taglists.h"
 
@@ -69,7 +69,7 @@ const m_option_t lavfdopts_conf[] = {
 typedef struct lavf_priv {
     AVInputFormat *avif;
     AVFormatContext *avfc;
-    AVIOContext *pb;
+    ByteIOContext *pb;
     uint8_t buffer[BIO_BUFFER_SIZE];
     int audio_streams;
     int video_streams;
@@ -140,7 +140,7 @@ static int64_t mp_read_seek(void *opaque, int stream_idx, int64_t ts, int flags)
 static void list_formats(void) {
     AVInputFormat *fmt;
     mp_msg(MSGT_DEMUX, MSGL_INFO, "Available lavf input formats:\n");
-    for (fmt = av_iformat_next(NULL); fmt; fmt = av_iformat_next(fmt))
+    for (fmt = av_iformat_next(NULL); fmt; av_iformat_next(fmt))
         mp_msg(MSGT_DEMUX, MSGL_INFO, "%15s : %s\n", fmt->name, fmt->long_name);
 }
 
@@ -207,16 +207,7 @@ static int lavf_check_file(demuxer_t *demuxer){
     return DEMUXER_TYPE_LAVF;
 }
 
-/* Before adding anything to this list please stop and consider why.
- * There are two good reasons
- * 1) to reduce startup time when streaming these file types
- * 2) workarounds around bugs in our native demuxers that are not reasonable to
- *    fix
- * For the case 2) that means the issue should be understood well
- * enough to be able to decide that a fix is not reasonable.
- */
 static const char * const preferred_list[] = {
-    "cdxl",
     "dxa",
     "flv",
     "gxf",
@@ -228,8 +219,6 @@ static const char * const preferred_list[] = {
     "mpc8",
     "mxf",
     "ogg",
-    "pva",
-    "qcp",
     "swf",
     "vqf",
     "w64",
@@ -274,9 +263,13 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
     AVCodecContext *codec= st->codec;
     char *stream_type = NULL;
     int stream_id;
-    AVDictionaryEntry *lang = av_dict_get(st->metadata, "language", NULL, 0);
-    AVDictionaryEntry *title= av_dict_get(st->metadata, "title",    NULL, 0);
-    int g;
+    AVMetadataTag *lang = av_metadata_get(st->metadata, "language", NULL, 0);
+    AVMetadataTag *title= av_metadata_get(st->metadata, "title",    NULL, 0);
+    int g, override_tag = av_codec_get_tag(mp_codecid_override_taglists,
+                                           codec->codec_id);
+    // For some formats (like PCM) always trust CODEC_ID_* more than codec_tag
+    if (override_tag)
+        codec->codec_tag = override_tag;
 
     switch(codec->codec_type){
         case AVMEDIA_TYPE_AUDIO:{
@@ -288,7 +281,11 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
             stream_type = "audio";
             priv->astreams[priv->audio_streams] = i;
             wf= calloc(sizeof(*wf) + codec->extradata_size, 1);
-            codec->codec_tag = mp_codec_id2tag(codec->codec_id, codec->codec_tag, 1);
+            // mp4a tag is used for all mp4 files no matter what they actually contain
+            if(codec->codec_tag == MKTAG('m', 'p', '4', 'a'))
+                codec->codec_tag= 0;
+            if(!codec->codec_tag)
+                codec->codec_tag= av_codec_get_tag(mp_wav_taglists, codec->codec_id);
             wf->wFormatTag= codec->codec_tag;
             wf->nChannels= codec->channels;
             wf->nSamplesPerSec= codec->sample_rate;
@@ -366,7 +363,8 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
                         codec->codec_tag= MKTAG(24, 'R', 'G', 'B');
                 }
             }
-            codec->codec_tag = mp_codec_id2tag(codec->codec_id, codec->codec_tag, 0);
+            if(!codec->codec_tag)
+                codec->codec_tag= av_codec_get_tag(mp_bmp_taglists, codec->codec_id);
             bih->biSize= sizeof(*bih) + codec->extradata_size;
             bih->biWidth= codec->width;
             bih->biHeight= codec->height;
@@ -423,6 +421,7 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
         case AVMEDIA_TYPE_SUBTITLE:{
             sh_sub_t* sh_sub;
             char type;
+            /* only support text subtitles for now */
             if(codec->codec_id == CODEC_ID_TEXT)
                 type = 't';
             else if(codec->codec_id == CODEC_ID_MOV_TEXT)
@@ -439,12 +438,6 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
                 type = 'd';
             else if(codec->codec_id == CODEC_ID_HDMV_PGS_SUBTITLE)
                 type = 'p';
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 14, 100)
-            else if(codec->codec_id == CODEC_ID_EIA_608)
-                type = 'c';
-#endif
-            else if(codec->codec_tag == MKTAG('c', '6', '0', '8'))
-                type = 'c';
             else
                 break;
             sh_sub = new_sh_sub_sid(demuxer, i, priv->sub_streams, lang ? lang->value : NULL);
@@ -466,7 +459,7 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
         }
         case AVMEDIA_TYPE_ATTACHMENT:{
             if (st->codec->codec_id == CODEC_ID_TTF) {
-                AVDictionaryEntry *fnametag = av_dict_get(st->metadata, "filename", NULL, 0);
+                AVMetadataTag *fnametag = av_metadata_get(st->metadata, "filename", NULL, 0);
                 demuxer_add_attachment(demuxer, fnametag ? fnametag->value : NULL,
                                        "application/x-truetype-font",
                                        codec->extradata, codec->extradata_size);
@@ -492,10 +485,14 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
 
 static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     AVFormatContext *avfc;
-    AVDictionaryEntry *t = NULL;
+    AVFormatParameters ap;
+    const AVOption *opt;
+    AVMetadataTag *t = NULL;
     lavf_priv_t *priv= demuxer->priv;
     int i;
     char mp_filename[256]="mp:";
+
+    memset(&ap, 0, sizeof(AVFormatParameters));
 
     stream_seek(demuxer->stream, 0);
 
@@ -508,13 +505,14 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     if (index_mode == 0)
         avfc->flags |= AVFMT_FLAG_IGNIDX;
 
+    ap.prealloced_context = 1;
     if(opt_probesize) {
-        if (av_opt_set_int(avfc, "probesize", opt_probesize, 0) < 0)
-            mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option probesize to %u\n", opt_probesize);
+        opt = av_set_int(avfc, "probesize", opt_probesize);
+        if(!opt) mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option probesize to %u\n", opt_probesize);
     }
     if(opt_analyzeduration) {
-        if (av_opt_set_int(avfc, "analyzeduration", opt_analyzeduration * AV_TIME_BASE, 0) < 0)
-            mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option analyzeduration to %u\n", opt_analyzeduration);
+        opt = av_set_int(avfc, "analyzeduration", opt_analyzeduration * AV_TIME_BASE);
+        if(!opt) mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option analyzeduration to %u\n", opt_analyzeduration);
     }
 
     if(opt_avopt){
@@ -533,37 +531,33 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
         av_strlcat(mp_filename, "foobar.dummy", sizeof(mp_filename));
 
     if (!(priv->avif->flags & AVFMT_NOFILE)) {
-        priv->pb = avio_alloc_context(priv->buffer, BIO_BUFFER_SIZE, 0,
-                                      demuxer, mp_read, NULL, mp_seek);
+        priv->pb = av_alloc_put_byte(priv->buffer, BIO_BUFFER_SIZE, 0,
+                                     demuxer, mp_read, NULL, mp_seek);
         priv->pb->read_seek = mp_read_seek;
-        if (!demuxer->stream->end_pos || (demuxer->stream->flags & MP_STREAM_SEEK) != MP_STREAM_SEEK)
-            priv->pb->seekable = 0;
-        avfc->pb = priv->pb;
+        priv->pb->is_streamed = !demuxer->stream->end_pos || (demuxer->stream->flags & MP_STREAM_SEEK) != MP_STREAM_SEEK;
     }
 
-    if(avformat_open_input(&avfc, mp_filename, priv->avif, NULL)<0){
+    if(av_open_input_stream(&avfc, priv->pb, mp_filename, priv->avif, &ap)<0){
         mp_msg(MSGT_HEADER,MSGL_ERR,"LAVF_header: av_open_input_stream() failed\n");
         return NULL;
     }
 
     priv->avfc= avfc;
 
-    if(avformat_find_stream_info(avfc, NULL) < 0){
+    if(av_find_stream_info(avfc) < 0){
         mp_msg(MSGT_HEADER,MSGL_ERR,"LAVF_header: av_find_stream_info() failed\n");
         return NULL;
     }
 
     /* Add metadata. */
-    while((t = av_dict_get(avfc->metadata, "", t, AV_DICT_IGNORE_SUFFIX)))
+    while((t = av_metadata_get(avfc->metadata, "", t, AV_METADATA_IGNORE_SUFFIX)))
         demux_info_add(demuxer, t->key, t->value);
 
     for(i=0; i < avfc->nb_chapters; i++) {
         AVChapter *c = avfc->chapters[i];
-      //  uint64_t start = av_rescale_q(c->start, c->time_base, (AVRational){1,1000});
-        //uint64_t end   = av_rescale_q(c->end, c->time_base, (AVRational){1,1000});
-		uint64_t start = av_rescale_q(c->start, c->time_base, (AVRational){1,1000000000});
-        uint64_t end   = av_rescale_q(c->end, c->time_base, (AVRational){1,1000000000});
-        t = av_dict_get(c->metadata, "title", NULL, 0);
+        uint64_t start = av_rescale_q(c->start, c->time_base, (AVRational){1,1000});
+        uint64_t end   = av_rescale_q(c->end, c->time_base, (AVRational){1,1000});
+        t = av_metadata_get(c->metadata, "title", NULL, 0);
         demuxer_add_chapter(demuxer, t ? t->value : NULL, start, end);
     }
 
@@ -575,7 +569,7 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
         int p;
         for (p = 0; p < avfc->nb_programs; p++) {
             AVProgram *program = avfc->programs[p];
-            t = av_dict_get(program->metadata, "title", NULL, 0);
+            t = av_metadata_get(program->metadata, "title", NULL, 0);
             mp_msg(MSGT_HEADER,MSGL_INFO,"LAVF: Program %d %s\n", program->id, t ? t->value : "");
             mp_msg(MSGT_IDENTIFY, MSGL_V, "PROGRAM_ID=%d\n", program->id);
         }
@@ -849,7 +843,7 @@ static void demux_close_lavf(demuxer_t *demuxer)
         if(priv->avfc)
         {
          av_freep(&priv->avfc->key);
-         avformat_close_input(&priv->avfc);
+         av_close_input_stream(priv->avfc);
         }
         av_freep(&priv->pb);
         free(priv); demuxer->priv= NULL;

@@ -2,36 +2,36 @@
  * RTP definitions
  * Copyright (c) 2002 Fabrice Bellard
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #ifndef AVFORMAT_RTP_H
 #define AVFORMAT_RTP_H
 
-#include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"
 
 /**
- * Return the payload type for a given codec used in the given format context.
+ * Return the payload type for a given codec.
  *
- * @param fmt   The context of the format
  * @param codec The context of the codec
- * @return The payload type (the 'PT' field in the RTP header).
+ * @return In case of unknown payload type or dynamic payload type, a
+ * negative value is returned; otherwise, the payload type (the 'PT' field
+ * in the RTP header) is returned.
  */
-int ff_rtp_get_payload_type(AVFormatContext *fmt, AVCodecContext *codec);
+int ff_rtp_get_payload_type(AVCodecContext *codec);
 
 /**
  * Initialize a codec context based on the payload type.
@@ -72,7 +72,7 @@ enum CodecID ff_rtp_codec_id(const char *buf, enum AVMediaType codec_type);
 #define RTP_VERSION 2
 #define RTP_MAX_SDES 256   /**< maximum text length for SDES */
 
-/* RTCP packets use 0.5% of the bandwidth */
+/* RTCP paquets use 0.5 % of the bandwidth */
 #define RTCP_TX_RATIO_NUM 5
 #define RTCP_TX_RATIO_DEN 1000
 
@@ -90,7 +90,5 @@ enum RTCPType {
     RTCP_BYE,  // 203
     RTCP_APP   // 204
 };
-
-#define RTP_PT_IS_RTCP(x) ((x) >= RTCP_SR && (x) <= RTCP_APP)
 
 #endif /* AVFORMAT_RTP_H */

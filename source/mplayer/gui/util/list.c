@@ -16,249 +16,215 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/**
- * @file
- * @brief List management
- */
-
 #include <stdlib.h>
 #include <string.h>
 
 #include "list.h"
 #include "string.h"
 
-static plItem *plList;
-static plItem *plCurrent;
+plItem *plList;
+plItem *plCurrent;
+plItem *plLastPlayed;
 
-static urlItem *urlList;
+urlItem *urlList;
 
-/**
- * @brief Manage playlists and URL lists.
- *
- * @param cmd task to be performed
- * @param data list item for the task
- *
- * @return pointer to top of list (GET command),
- *         pointer to current list item (ITEM command) or
- *         NULL (DELETE or unknown command)
- *
- */
-void *listMgr(int cmd, void *data)
+void *listSet(int cmd, void *vparam)
 {
-    plItem *pdat  = (plItem *)data;
-    urlItem *udat = (urlItem *)data;
+    plItem *item      = (plItem *)vparam;
+    urlItem *url_item = (urlItem *)vparam;
+    int is_added      = 1;
 
     switch (cmd) {
-    /* playlist */
+    // handle playlist
 
-    case PLAYLIST_GET:
-
-        return plList;
-
-    case PLAYLIST_ITEM_APPEND:
-
+    // add item to playlist
+    case gtkAddPlItem:
         if (plList) {
-            plItem *item = plList;
+            plItem *next = plList;
 
-            while (item->next)
-                item = item->next;
+            while (next->next)
+// {
+// printf( "%s\n",next->name );
+                next = next->next;
+// }
 
-            item->next = pdat;
-            pdat->prev = item;
-            pdat->next = NULL;
+            next->next = item;
+            item->prev = next;
+            item->next = NULL;
         } else {
-            pdat->next = pdat->prev = NULL;
-            plCurrent  = plList = pdat;
+            item->prev = item->next = NULL;
+            plCurrent  = plList = item;
         }
+        return NULL;
 
-        return plCurrent;
-
-    case PLAYLIST_ITEM_INSERT:
-
+    // add item into playlist after current
+    case gtkInsertPlItem:
         if (plCurrent) {
-            pdat->next = plCurrent->next;
+            plItem *curr = plCurrent;
+            item->next = curr->next;
 
-            if (pdat->next)
-                pdat->next->prev = pdat;
+            if (item->next)
+                item->next->prev = item;
 
-            pdat->prev      = plCurrent;
-            plCurrent->next = pdat;
-
-            plCurrent = pdat;
+            item->prev = curr;
+            curr->next = item;
+            plCurrent  = plCurrent->next;
 
             return plCurrent;
         } else
-            return listMgr(PLAYLIST_ITEM_APPEND, pdat);
+            return listSet(gtkAddPlItem, item);
 
-    case PLAYLIST_ITEM_SET_CURR:
-
-        plCurrent = pdat;
-        return plCurrent;
-
-    case PLAYLIST_ITEM_GET_CURR:
-
-        return plCurrent;
-
-    case PLAYLIST_ITEM_GET_PREV:
-
-        if (plCurrent && plCurrent->prev) {
-            plCurrent = plCurrent->prev;
-            return plCurrent;
-        }
-
-        return NULL;
-
-    case PLAYLIST_ITEM_GET_NEXT:
-
+    // get next item from playlist
+    case gtkGetNextPlItem:
         if (plCurrent && plCurrent->next) {
             plCurrent = plCurrent->next;
+// if (!plCurrent && plList)
+// {
+// plItem *next = plList;
+//
+// while (next->next)
+// {
+// if (!next->next) break;
+// next = next->next;
+// }
+//
+// plCurrent = next;
+// }
             return plCurrent;
         }
-
         return NULL;
 
-    case PLAYLIST_ITEM_DEL_CURR:
+    // get previous item from playlist
+    case gtkGetPrevPlItem:
+        if (plCurrent && plCurrent->prev) {
+            plCurrent = plCurrent->prev;
+// if ( !plCurrent && plList ) plCurrent=plList;
+            return plCurrent;
+        }
+        return NULL;
 
-        if (plCurrent) {
-            plItem *curr = plCurrent;
+    // set current item
+    case gtkSetCurrPlItem:
+        plCurrent = item;
+        return plCurrent;
 
-            if (curr->prev)
-                curr->prev->next = curr->next;
-            if (curr->next)
-                curr->next->prev = curr->prev;
+    // get current item
+    case gtkGetCurrPlItem:
+        return plCurrent;
 
-            plCurrent = curr->next;
+    // delete current item
+    case gtkDelCurrPlItem:
+    {
+        plItem *curr = plCurrent;
 
-            if (curr == plList)
-                plList = plCurrent;
+        if (!curr)
+            return NULL;
 
+        if (curr->prev)
+            curr->prev->next = curr->next;
+        if (curr->next)
+            curr->next->prev = curr->prev;
+        if (curr == plList)
+            plList = curr->next;
+
+        plCurrent = curr->next;
+
+        // free it
+        free(curr->path);
+        free(curr->name);
+        free(curr);
+    }
+        //uiCurr();     // instead of using uiNext && uiPrev
+        return plCurrent;
+
+    // delete list
+    case gtkDelPl:
+    {
+        plItem *curr = plList;
+        plItem *next;
+
+        if (!plList)
+            return NULL;
+
+        if (!curr->next) {
             free(curr->path);
             free(curr->name);
             free(curr);
+        } else {
+            while (curr->next) {
+                next = curr->next;
+                free(curr->path);
+                free(curr->name);
+                free(curr);
+                curr = next;
+            }
         }
 
-        return plCurrent;
-
-    case PLAYLIST_DELETE:
-
-        while (plList) {
-            plItem *item = plList->next;
-
-            free(plList->path);
-            free(plList->name);
-            free(plList);
-
-            plList = item;
-        }
-
+        plList    = NULL;
         plCurrent = NULL;
+    }
         return NULL;
 
-    /* URL list */
-
-    case URLLIST_GET:
-
-        return urlList;
-
-    case URLLIST_ITEM_ADD:
-
+    // handle url
+    case gtkAddURLItem:
         if (urlList) {
-            urlItem *item = urlList;
+            urlItem *next_url = urlList;
+            is_added = 0;
 
-            while (item) {
-                if (strcmp(udat->url, item->url) == 0) {
-                    free(udat->url);
-                    free(udat);
-                    return NULL;
-                }
-
-                if (item->next)
-                    item = item->next;
-                else {
-                    item->next = udat;
-                    udat->next = NULL;
+            while (next_url->next) {
+                if (!gstrcmp(next_url->url, url_item->url)) {
+                    is_added = 1;
                     break;
                 }
+
+                next_url = next_url->next;
             }
+
+            if (!is_added && gstrcmp(next_url->url, url_item->url))
+                next_url->next = url_item;
         } else {
-            udat->next = NULL;
-            urlList    = udat;
+            url_item->next = NULL;
+            urlList = url_item;
         }
-
-        return udat;
-
-    case URLLIST_DELETE:
-
-        while (urlList) {
-            urlItem *item = urlList->next;
-
-            free(urlList->url);
-            free(urlList);
-
-            urlList = item;
-        }
-
-        return NULL;
-
-    default:
-
         return NULL;
     }
+
+    return NULL;
 }
 
 /**
- * @brief Set list to @a entry.
- *
- * @param list pointer to the char pointer list
- * @param entry the new (and only) element of the list
- *
- * @note Actually, a new list will be created and the old list will be freed.
+ * \brief This actually creates a new list containing only one element...
  */
-void listSet(char ***list, const char *entry)
+void gaddlist(char ***list, const char *entry)
 {
-    if (*list) {
-        char **l = *list;
+    int i;
 
-        while (*l) {
-            free(*l);
-            l++;
-        }
+    if (*list) {
+        for (i = 0; (*list)[i]; i++)
+            free((*list)[i]);
 
         free(*list);
     }
 
-    *list = malloc(2 * sizeof(char *));
-
-    if (*list) {
-        (*list)[0] = gstrdup(entry);
-        (*list)[1] = NULL;
-    }
+    *list      = malloc(2 * sizeof(char **));
+    (*list)[0] = gstrdup(entry);
+    (*list)[1] = NULL;
 }
 
 /**
- * @brief Replace the first element in list that starts with @a search.
- *
- * @note If no such element is found, @a replace will be appended.
- *
- * @param list pointer to the char pointer list
- * @param search element to search
- * @param replace replacement element
+ * \brief This replaces a string starting with search by replace.
+ * If not found, replace is appended.
  */
-void listRepl(char ***list, const char *search, const char *replace)
+void greplace(char ***list, const char *search, const char *replace)
 {
-    int i      = 0;
-    char **org = *list;
-
-    if (!replace)
-        return;
+    int i   = 0;
+    int len = (search ? strlen(search) : 0);
 
     if (*list) {
-        size_t len = (search ? strlen(search) : 0);
-
         for (i = 0; (*list)[i]; i++) {
-            if (gstrncmp((*list)[i], search, len) == 0) {
+            if (search && (strncmp((*list)[i], search, len) == 0)) {
                 free((*list)[i]);
-                (*list)[i] = strdup(replace);
+                (*list)[i] = gstrdup(replace);
                 return;
             }
         }
@@ -267,11 +233,6 @@ void listRepl(char ***list, const char *search, const char *replace)
     } else
         *list = malloc(2 * sizeof(char *));
 
-    if (!*list) {
-        *list = org;
-        return;
-    }
-
-    (*list)[i]     = strdup(replace);
+    (*list)[i]     = gstrdup(replace);
     (*list)[i + 1] = NULL;
 }

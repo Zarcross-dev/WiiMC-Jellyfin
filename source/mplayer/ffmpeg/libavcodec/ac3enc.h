@@ -52,7 +52,6 @@
 #define MAC_COEF(d,a,b) ((d)+=(a)*(b))
 #define COEF_MIN (-16777215.0/16777216.0)
 #define COEF_MAX ( 16777215.0/16777216.0)
-#define NEW_CPL_COORD_THRESHOLD 0.03
 typedef float SampleType;
 typedef float CoefType;
 typedef float CoefSumType;
@@ -61,7 +60,6 @@ typedef float CoefSumType;
 #define MAC_COEF(d,a,b) MAC64(d,a,b)
 #define COEF_MIN -16777215
 #define COEF_MAX  16777215
-#define NEW_CPL_COORD_THRESHOLD 503317
 typedef int16_t SampleType;
 typedef int32_t CoefType;
 typedef int64_t CoefSumType;
@@ -73,8 +71,8 @@ typedef int64_t CoefSumType;
 #define AC3ENC_OPT_OFF              0
 #define AC3ENC_OPT_ON               1
 #define AC3ENC_OPT_NOT_INDICATED    0
-#define AC3ENC_OPT_MODE_ON          2
-#define AC3ENC_OPT_MODE_OFF         1
+#define AC3ENC_OPT_MODE_ON          1
+#define AC3ENC_OPT_MODE_OFF         2
 
 /* specific option values */
 #define AC3ENC_OPT_LARGE_ROOM       1
@@ -258,7 +256,7 @@ typedef struct AC3EncodeContext {
 } AC3EncodeContext;
 
 
-extern const uint64_t ff_ac3_channel_layouts[19];
+extern const int64_t ff_ac3_channel_layouts[19];
 
 int ff_ac3_encode_init(AVCodecContext *avctx);
 
@@ -297,9 +295,9 @@ int ff_ac3_float_mdct_init(AC3EncodeContext *s);
 int ff_ac3_fixed_allocate_sample_buffers(AC3EncodeContext *s);
 int ff_ac3_float_allocate_sample_buffers(AC3EncodeContext *s);
 
-int ff_ac3_fixed_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
-                              const AVFrame *frame, int *got_packet_ptr);
-int ff_ac3_float_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
-                              const AVFrame *frame, int *got_packet_ptr);
+int ff_ac3_fixed_encode_frame(AVCodecContext *avctx, unsigned char *frame,
+                              int buf_size, void *data);
+int ff_ac3_float_encode_frame(AVCodecContext *avctx, unsigned char *frame,
+                              int buf_size, void *data);
 
 #endif /* AVCODEC_AC3ENC_H */

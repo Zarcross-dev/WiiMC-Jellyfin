@@ -39,6 +39,7 @@ extern const ao_functions_t audio_out_pulse;
 extern const ao_functions_t audio_out_jack;
 extern const ao_functions_t audio_out_openal;
 extern const ao_functions_t audio_out_null;
+extern const ao_functions_t audio_out_alsa5;
 extern const ao_functions_t audio_out_alsa;
 extern const ao_functions_t audio_out_nas;
 extern const ao_functions_t audio_out_sdl;
@@ -81,6 +82,9 @@ const ao_functions_t* const audio_out_drivers[] =
 #endif
 #ifdef CONFIG_ALSA
         &audio_out_alsa,
+#endif
+#ifdef CONFIG_ALSA5
+        &audio_out_alsa5,
 #endif
 #ifdef CONFIG_SGI_AUDIO
         &audio_out_sgi,
@@ -194,14 +198,4 @@ const ao_functions_t* init_best_audio_out(char** ao_list,int use_plugin,int rate
             return audio_out; // success!
     }
     return NULL;
-}
-
-void mp_ao_resume_refill(const ao_functions_t *ao, int prepause_space)
-{
-    int fillcnt = ao->get_space() - prepause_space;
-    if (fillcnt > 0 && !(ao_data.format & AF_FORMAT_SPECIAL_MASK)) {
-      void *silence = calloc(fillcnt, 1);
-      ao->play(silence, fillcnt, 0);
-      free(silence);
-    }
 }

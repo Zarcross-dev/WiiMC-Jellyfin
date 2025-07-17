@@ -44,7 +44,11 @@
 #include "libmpcodecs/dec_audio.h"
 #include "libmpcodecs/dec_video.h"
 #include "libmpcodecs/dec_teletext.h"
+
+#ifdef CONFIG_ASS
+#include "libass/ass.h"
 #include "sub/ass_mp.h"
+#endif
 
 #ifdef CONFIG_FFMPEG
 #include "libavcodec/avcodec.h"
@@ -53,7 +57,6 @@
 #endif
 #include "av_helpers.h"
 #endif
-#include "libavutil/avstring.h"
 
 // This is quite experimental, in particular it will mess up the pts values
 // in the queue - on the other hand it might fix some issues like generating
@@ -124,7 +127,7 @@ const demuxer_desc_t *const demuxer_list[] = {
 #endif
     &demuxer_desc_avi,
     &demuxer_desc_y4m,
-    //&demuxer_desc_asf,
+    &demuxer_desc_asf,
     &demuxer_desc_nsv,
     &demuxer_desc_real,
     &demuxer_desc_smjpeg,
@@ -474,11 +477,9 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
     init_avcodec();
 
     switch (format) {
-    case 0x1600:
     case MKTAG('M', 'P', '4', 'A'):
         codec_id = CODEC_ID_AAC;
         break;
-    case 0x1602:
     case MKTAG('M', 'P', '4', 'L'):
         codec_id = CODEC_ID_AAC_LATM;
         break;
@@ -494,15 +495,10 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
         //codec_id = CODEC_ID_DNET;
         break;
     case MKTAG('E', 'A', 'C', '3'):
-    case MKTAG('e', 'c', '-', '3'):
         codec_id = CODEC_ID_EAC3;
         break;
     case 0x2001:
     case 0x86:
-    case MKTAG('D', 'T', 'S', ' '):
-    case MKTAG('d', 't', 's', ' '):
-    case MKTAG('d', 't', 's', 'b'):
-    case MKTAG('d', 't', 's', 'c'):
         codec_id = CODEC_ID_DTS;
         break;
     case MKTAG('f', 'L', 'a', 'C'):
@@ -530,7 +526,7 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
         break;
     }
     if (codec_id != CODEC_ID_NONE) {
-        *avctx = avcodec_alloc_context3(NULL);
+        *avctx = avcodec_alloc_context();
         if (!*avctx)
             return;
         *parser = av_parser_init(codec_id);
@@ -1481,7 +1477,7 @@ double demuxer_get_time_length(demuxer_t *demuxer)
  *        0 otherwise
  * \return the current play time
  */
-double demuxer_get_current_time(demuxer_t *demuxer)
+int demuxer_get_current_time(demuxer_t *demuxer)
 {
     double get_time_ans = 0;
     sh_video_t *sh_video = demuxer->video->sh;
@@ -1489,7 +1485,7 @@ double demuxer_get_current_time(demuxer_t *demuxer)
         get_time_ans = demuxer->stream_pts;
     else if (sh_video)
         get_time_ans = sh_video->pts;
-    return get_time_ans;
+    return (int) get_time_ans;
 }
 
 int demuxer_get_percent_pos(demuxer_t *demuxer)
@@ -1566,9 +1562,9 @@ int demuxer_add_chapter(demuxer_t *demuxer, const char *name, uint64_t start,
     demuxer->chapters[demuxer->num_chapters].name = strdup(name ? name : MSGTR_Unknown);
 
     mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_CHAPTER_ID=%d\n", demuxer->num_chapters);
-    mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_CHAPTER_%d_START=%"PRIu64"\n", demuxer->num_chapters, start / 1000000);
+    mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_CHAPTER_%d_START=%"PRIu64"\n", demuxer->num_chapters, start);
     if (end)
-        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_CHAPTER_%d_END=%"PRIu64"\n", demuxer->num_chapters, end / 1000000);
+        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_CHAPTER_%d_END=%"PRIu64"\n", demuxer->num_chapters, end);
     if (name)
         mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_CHAPTER_%d_NAME=%s\n", demuxer->num_chapters, name);
 
@@ -1658,7 +1654,7 @@ int demuxer_seek_chapter(demuxer_t *demuxer, int chapter, int mode,
         if (current < 0)
             current = 0;
 
-        *seek_pts = demuxer->chapters[current].start / 1e9;
+        *seek_pts = demuxer->chapters[current].start / 1000.0;
 
         if (num_chapters)
             *num_chapters = demuxer->num_chapters;
@@ -1686,7 +1682,7 @@ int demuxer_get_current_chapter(demuxer_t *demuxer)
         sh_audio_t *sh_audio = demuxer->audio->sh;
         uint64_t now;
         now = (sh_video ? sh_video->pts : (sh_audio ? sh_audio->pts : 0))
-              * 1e9 + 0.5;
+              * 1000 + 0.5;
         for (chapter = demuxer->num_chapters - 1; chapter >= 0; --chapter) {
             if (demuxer->chapters[chapter].start <= now)
                 break;
@@ -1729,10 +1725,8 @@ float demuxer_chapter_time(demuxer_t *demuxer, int chapter, float *end)
     if (demuxer->num_chapters && demuxer->chapters && chapter >= 0
         && chapter < demuxer->num_chapters) {
         if (end)
-          //  *end = demuxer->chapters[chapter].end / 1000.0;
-        //return demuxer->chapters[chapter].start / 1000.0;
-		 *end = demuxer->chapters[chapter].end / 1e9;
-        return demuxer->chapters[chapter].start / 1e9;
+            *end = demuxer->chapters[chapter].end / 1000.0;
+        return demuxer->chapters[chapter].start / 1000.0;
     }
     return -1.0;
 }
@@ -1786,50 +1780,6 @@ int demuxer_set_angle(demuxer_t *demuxer, int angle)
     demux_resync(demuxer);
 
     return angle;
-}
-
-int demuxer_audio_lang(demuxer_t *d, int id, char *buf, int buf_len)
-{
-    struct stream_lang_req req;
-    sh_audio_t *sh;
-    if (id < 0 || id >= MAX_A_STREAMS)
-        return -1;
-    sh = d->a_streams[id];
-    if (!sh)
-        return -1;
-    if (sh->lang) {
-        av_strlcpy(buf, sh->lang, buf_len);
-        return 0;
-    }
-    req.type = stream_ctrl_audio;
-    req.id = sh->aid;
-    if (stream_control(d->stream, STREAM_CTRL_GET_LANG, &req) == STREAM_OK) {
-        av_strlcpy(buf, req.buf, buf_len);
-        return 0;
-    }
-    return -1;
-}
-
-int demuxer_sub_lang(demuxer_t *d, int id, char *buf, int buf_len)
-{
-    struct stream_lang_req req;
-    sh_sub_t *sh;
-    if (id < 0 || id >= MAX_S_STREAMS)
-        return -1;
-    sh = d->s_streams[id];
-    if (sh && sh->lang) {
-        av_strlcpy(buf, sh->lang, buf_len);
-        return 0;
-    }
-    req.type = stream_ctrl_sub;
-    // assume 1:1 mapping so we can show the language of
-    // DVD subs even when we have not yet created the stream.
-    req.id = sh ? sh->sid : id;
-    if (stream_control(d->stream, STREAM_CTRL_GET_LANG, &req) == STREAM_OK) {
-        av_strlcpy(buf, req.buf, buf_len);
-        return 0;
-    }
-    return -1;
 }
 
 int demuxer_audio_track_by_lang(demuxer_t *d, char *lang)

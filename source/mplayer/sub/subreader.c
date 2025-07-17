@@ -55,8 +55,8 @@ extern int BrowserFindSub(char *path);
 
 #ifdef CONFIG_ICONV
 #include <iconv.h>
-#endif
 char *sub_cp=NULL;
+#endif
 #ifdef CONFIG_FRIBIDI
 #include <fribidi/fribidi.h>
 char *fribidi_charset = NULL;   ///character set that will be passed to FriBiDi
@@ -646,7 +646,7 @@ static subtitle *sub_read_line_ssa(stream_t *st,subtitle *current, int utf16) {
  * http://www.eswat.demon.co.uk is where the SSA specs can be found
  */
         int comma;
-        static int max_comma = 12; /* let's use 32 for the case that the */
+        static int max_comma = 32; /* let's use 32 for the case that the */
                     /*  amount of commas increase with newer SSA versions */
 
 	int hour1, min1, sec1, hunsec1,
@@ -657,7 +657,6 @@ static subtitle *sub_read_line_ssa(stream_t *st,subtitle *current, int utf16) {
 	     line3[LINE_LEN+1],
 	     *line2;
 	char *tmp;
-	const char *brace;
 
 	do {
 		if (!stream_read_line (st, line, LINE_LEN, utf16)) return NULL;
@@ -675,13 +674,11 @@ static subtitle *sub_read_line_ssa(stream_t *st,subtitle *current, int utf16) {
 
         line2=strchr(line3, ',');
         if (!line2) return NULL;
-        brace = strchr(line2, '{');
 
         for (comma = 4; comma < max_comma; comma ++)
           {
             tmp = line2;
             if(!(tmp=strchr(++tmp, ','))) break;
-            if(brace && brace < tmp) break; // comma inside command
             if(*(++tmp) == ' ') break;
                   /* a space after a comma means we're already in a sentence */
             line2 = tmp;
@@ -720,10 +717,6 @@ static void sub_pp_ssa(subtitle *sub) {
             	so=de=sub->text[--l];
             	while (*so) {
             		if(*so == '{' && so[1]=='\\') {
-					/*	if(so[1]=='\\' && so[2]=='a' && so[3]=='n' && so[4]=='8')
-							sub_pos=50;
-						else
-							sub_pos=92; */
             			for (start=so; *so && *so!='}'; so++);
             			if(*so) so++; else so=start;
             		}
@@ -1249,7 +1242,11 @@ subtitle* subcp_recode (subtitle *sub)
  */
 int do_fribid_log2vis(int charset, const char *in, FriBidiChar *logical, FriBidiChar *visual, int flip_commas)
 {
+#if defined(FRIBIDI_PAR_LTR) || FRIBIDI_INTERFACE_VERSION >= 3
   FriBidiParType base = flip_commas ? FRIBIDI_PAR_ON : FRIBIDI_PAR_LTR;
+#else
+  FriBidiCharType base = flip_commas ? FRIBIDI_TYPE_ON : FRIBIDI_TYPE_L;
+#endif
   int len = strlen(in);
   len = fribidi_charset_to_unicode(charset, in, len, logical);
   if (!fribidi_log2vis(logical, len, &base, visual, NULL, NULL, NULL))
@@ -1486,7 +1483,7 @@ sub_data* sub_read_file (const char *filename, float fps) {
 	    int l,k;
 	    k = -1;
 	    if ((l=strlen(filename))>4){
-		    static const char exts[][8] = {".utf", ".utf8", ".utf-8" };
+		    char *exts[] = {".utf", ".utf8", ".utf-8" };
 		    for (k=3;--k>=0;)
 			if (l >= strlen(exts[k]) && !strcasecmp(filename+(l - strlen(exts[k])), exts[k])){
 			    sub_utf8 = 1;
@@ -1526,7 +1523,7 @@ sub_data* sub_read_file (const char *filename, float fps) {
         sub=srp->read(fd,sub,utf16);
         if(!sub) break;   // EOF
 #ifdef CONFIG_ICONV
-	if ((sub!=ERR) && sub_utf8 == 2 && utf16 == 0) sub=subcp_recode(sub);
+	if ((sub!=ERR) && sub_utf8 == 2) sub=subcp_recode(sub);
 #endif
 #ifdef CONFIG_FRIBIDI
 	if (sub!=ERR) sub=sub_fribidi(sub,sub_utf8,0);
@@ -2107,8 +2104,7 @@ static void append_dir_subtitles(struct sub_list *slist, const char *path,
 
     free(tmpresult);
 }
-//extern int ext_lang;
-//extern int find_prob;
+
 /**
  * @brief Load all subtitles matching the subtitle filename
  *
@@ -2180,12 +2176,6 @@ void load_subtitles(const char *fname, float fps, open_sub_func add_f)
     // Sort subs by priority and append them
     qsort(slist.subs, slist.sid, sizeof(*slist.subs), compare_sub_priority);
     for (i = 0; i < slist.sid; i++) {
-		//find_prob = ext_lang;
-		//Right now, assumes multiple external subs are 0=Eng and 1=Esp
-		//This is a bad design but how else could I identify subtitles?
-		//If I want Esp to override English by default then the lang setting
-		//would pick the wrong subtitle.
-       // struct subfn *sub = &slist.subs[i+ext_lang];
         struct subfn *sub = &slist.subs[i];
         add_f(sub->fname, fps, 1);
         free(sub->fname);
@@ -2545,7 +2535,6 @@ void sub_free( sub_data * subd )
  * @param len length of text in txt
  * @param endpts pts at which this subtitle text should be removed again
  * @param strip_markup if strip markup is set (!= 0), markup tags like <b></b> are ignored
- *                     and fribidi is used to process right-to-left markers
  *
  * <> and {} are interpreted as comment delimiters, "\n", "\N", '\n', '\r'
  * and '\0' are interpreted as newlines, duplicate, leading and trailing
@@ -2591,7 +2580,6 @@ void sub_add_text(subtitle *sub, const char *txt, int len, double endpts, int st
       if (c == '\\' && i + 1 < len) {
         c = txt[++i];
         if (c == 'n' || c == 'N') c = 0;
-		if (c == 'h') c = 0x20; // h is hard space, used in CC converted subs.
       }
       if (c == '\n' || c == '\r') c = 0;
       if (c) {
@@ -2616,18 +2604,7 @@ void sub_add_text(subtitle *sub, const char *txt, int len, double endpts, int st
   if (sub->lines < SUB_MAX_TEXT &&
       strlen(sub->text[sub->lines]))
     sub->lines++;
-  if (sub->lines > 1 &&
-      strcmp(sub->text[sub->lines-1], sub->text[sub->lines-2]) == 0) {
-    // remove duplicate lines. These can happen with some
-    // "clever" ASS effects.
-    sub->lines--;
-    sub->endpts[sub->lines-1] =
-      FFMAX(sub->endpts[sub->lines-1],
-            sub->endpts[sub->lines]);
-    free(sub->text[sub->lines]);
-  }
 #ifdef CONFIG_FRIBIDI
-  if (strip_markup)
   sub = sub_fribidi(sub, sub_utf8, orig_lines);
 #endif
 }

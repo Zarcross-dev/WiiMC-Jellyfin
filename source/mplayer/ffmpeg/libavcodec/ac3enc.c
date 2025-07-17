@@ -4,20 +4,20 @@
  * Copyright (c) 2006-2010 Justin Ruggles <justin.ruggles@gmail.com>
  * Copyright (c) 2006-2010 Prakash Punnoor <prakash@punnoor.de>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -77,7 +77,7 @@ static uint8_t exponent_group_tab[2][3][256];
 /**
  * List of supported channel layouts.
  */
-const uint64_t ff_ac3_channel_layouts[19] = {
+const int64_t ff_ac3_channel_layouts[19] = {
      AV_CH_LAYOUT_MONO,
      AV_CH_LAYOUT_STEREO,
      AV_CH_LAYOUT_2_1,
@@ -176,8 +176,6 @@ static const int8_t ac3_coupling_start_tab[6][3][19] = {
 /**
  * Adjust the frame size to make the average bit rate match the target bit rate.
  * This is only needed for 11025, 22050, and 44100 sample rates or any E-AC-3.
- *
- * @param s  AC-3 encoder private context
  */
 void ff_ac3_adjust_frame_size(AC3EncodeContext *s)
 {
@@ -192,11 +190,6 @@ void ff_ac3_adjust_frame_size(AC3EncodeContext *s)
 }
 
 
-/**
- * Set the initial coupling strategy parameters prior to coupling analysis.
- *
- * @param s  AC-3 encoder private context
- */
 void ff_ac3_compute_coupling_strategy(AC3EncodeContext *s)
 {
     int blk, ch;
@@ -265,8 +258,6 @@ void ff_ac3_compute_coupling_strategy(AC3EncodeContext *s)
 
 /**
  * Apply stereo rematrixing to coefficients based on rematrixing flags.
- *
- * @param s  AC-3 encoder private context
  */
 void ff_ac3_apply_rematrixing(AC3EncodeContext *s)
 {
@@ -299,7 +290,7 @@ void ff_ac3_apply_rematrixing(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Initialize exponent tables.
  */
 static av_cold void exponent_init(AC3EncodeContext *s)
@@ -321,7 +312,7 @@ static av_cold void exponent_init(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Extract exponents from the MDCT coefficients.
  */
 static void extract_exponents(AC3EncodeContext *s)
@@ -350,7 +341,7 @@ static const uint8_t exp_strategy_reuse_tab[4][6] = {
     { EXP_D45, EXP_D25, EXP_D25, EXP_D15, EXP_D15, EXP_D15 }
 };
 
-/*
+/**
  * Calculate exponent strategies for all channels.
  * Array arrangement is reversed to simplify the per-channel calculation.
  */
@@ -414,11 +405,6 @@ static void compute_exp_strategy(AC3EncodeContext *s)
 
 /**
  * Update the exponents so that they are the ones the decoder will decode.
- *
- * @param[in,out] exp   array of exponents for 1 block in 1 channel
- * @param nb_exps       number of exponents in active bandwidth
- * @param exp_strategy  exponent strategy for the block
- * @param cpl           indicates if the block is in the coupling channel
  */
 static void encode_exponents_blk_ch(uint8_t *exp, int nb_exps, int exp_strategy,
                                     int cpl)
@@ -487,7 +473,7 @@ static void encode_exponents_blk_ch(uint8_t *exp, int nb_exps, int exp_strategy,
 }
 
 
-/*
+/**
  * Encode exponents from original extracted form to what the decoder will see.
  * This copies and groups exponents based on exponent strategy and reduces
  * deltas between adjacent exponent groups so that they can be differentially
@@ -540,7 +526,7 @@ static void encode_exponents(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Count exponent bits based on bandwidth, coupling, and exponent strategies.
  */
 static int count_exponent_bits(AC3EncodeContext *s)
@@ -572,8 +558,6 @@ static int count_exponent_bits(AC3EncodeContext *s)
  * Group exponents.
  * 3 delta-encoded exponents are in each 7-bit group. The number of groups
  * varies depending on exponent strategy and bandwidth.
- *
- * @param s  AC-3 encoder private context
  */
 void ff_ac3_group_exponents(AC3EncodeContext *s)
 {
@@ -630,8 +614,6 @@ void ff_ac3_group_exponents(AC3EncodeContext *s)
  * Calculate final exponents from the supplied MDCT coefficients and exponent shift.
  * Extract exponents from MDCT coefficients, calculate exponent strategies,
  * and encode final exponents.
- *
- * @param s  AC-3 encoder private context
  */
 void ff_ac3_process_exponents(AC3EncodeContext *s)
 {
@@ -645,7 +627,7 @@ void ff_ac3_process_exponents(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Count frame bits that are based solely on fixed parameters.
  * This only has to be run once when the encoder is initialized.
  */
@@ -751,7 +733,7 @@ static void count_frame_bits_fixed(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Initialize bit allocation.
  * Set default parameter codes and calculate parameter values.
  */
@@ -786,7 +768,7 @@ static void bit_alloc_init(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Count the bits used to encode the frame, minus exponents and mantissas.
  * Bits based on fixed parameters have already been counted, so now we just
  * have to add the bits based on parameters that change during encoding.
@@ -933,7 +915,7 @@ static void count_frame_bits(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Calculate masking curve based on the final exponents.
  * Also calculate the power spectral densities to use in future calculations.
  */
@@ -963,7 +945,7 @@ static void bit_alloc_masking(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Ensure that bap for each block and channel point to the current bap_buffer.
  * They may have been switched during the bit allocation search.
  */
@@ -989,8 +971,6 @@ static void reset_block_bap(AC3EncodeContext *s)
  * Initialize mantissa counts.
  * These are set so that they are padded to the next whole group size when bits
  * are counted in compute_mantissa_size.
- *
- * @param[in,out] mant_cnt  running counts for each bap value for each block
  */
 static void count_mantissa_bits_init(uint16_t mant_cnt[AC3_MAX_BLOCKS][16])
 {
@@ -1007,12 +987,6 @@ static void count_mantissa_bits_init(uint16_t mant_cnt[AC3_MAX_BLOCKS][16])
 /**
  * Update mantissa bit counts for all blocks in 1 channel in a given bandwidth
  * range.
- *
- * @param s                 AC-3 encoder private context
- * @param ch                channel index
- * @param[in,out] mant_cnt  running counts for each bap value for each block
- * @param start             starting coefficient bin
- * @param end               ending coefficient bin
  */
 static void count_mantissa_bits_update_ch(AC3EncodeContext *s, int ch,
                                           uint16_t mant_cnt[AC3_MAX_BLOCKS][16],
@@ -1031,7 +1005,7 @@ static void count_mantissa_bits_update_ch(AC3EncodeContext *s, int ch,
 }
 
 
-/*
+/**
  * Count the number of mantissa bits in the frame based on the bap values.
  */
 static int count_mantissa_bits(AC3EncodeContext *s)
@@ -1054,9 +1028,6 @@ static int count_mantissa_bits(AC3EncodeContext *s)
  * Run the bit allocation with a given SNR offset.
  * This calculates the bit allocation pointers that will be used to determine
  * the quantization of each mantissa.
- *
- * @param s           AC-3 encoder private context
- * @param snr_offset  SNR offset, 0 to 1023
  * @return the number of bits needed for mantissas if the given SNR offset is
  *         is used.
  */
@@ -1087,7 +1058,7 @@ static int bit_alloc(AC3EncodeContext *s, int snr_offset)
 }
 
 
-/*
+/**
  * Constant bitrate bit allocation search.
  * Find the largest SNR offset that will allow data to fit in the frame.
  */
@@ -1136,7 +1107,7 @@ static int cbr_bit_allocation(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Perform bit allocation search.
  * Finds the SNR offset value that maximizes quality and fits in the specified
  * frame size.  Output is the SNR offset and a set of bit allocation pointers
@@ -1156,11 +1127,6 @@ int ff_ac3_compute_bit_allocation(AC3EncodeContext *s)
 
 /**
  * Symmetric quantization on 'levels' levels.
- *
- * @param c       unquantized coefficient
- * @param e       exponent
- * @param levels  number of quantization levels
- * @return        quantized coefficient
  */
 static inline int sym_quant(int c, int e, int levels)
 {
@@ -1172,11 +1138,6 @@ static inline int sym_quant(int c, int e, int levels)
 
 /**
  * Asymmetric quantization on 2^qbits levels.
- *
- * @param c      unquantized coefficient
- * @param e      exponent
- * @param qbits  number of quantization bits
- * @return       quantized coefficient
  */
 static inline int asym_quant(int c, int e, int qbits)
 {
@@ -1193,14 +1154,6 @@ static inline int asym_quant(int c, int e, int qbits)
 
 /**
  * Quantize a set of mantissas for a single channel in a single block.
- *
- * @param s           Mantissa count context
- * @param fixed_coef  unquantized fixed-point coefficients
- * @param exp         exponents
- * @param bap         bit allocation pointer indices
- * @param[out] qmant  quantized coefficients
- * @param start_freq  starting coefficient bin
- * @param end_freq    ending coefficient bin
  */
 static void quantize_mantissas_blk_ch(AC3Mant *s, int32_t *fixed_coef,
                                       uint8_t *exp, uint8_t *bap,
@@ -1210,11 +1163,14 @@ static void quantize_mantissas_blk_ch(AC3Mant *s, int32_t *fixed_coef,
     int i;
 
     for (i = start_freq; i < end_freq; i++) {
+        int v;
         int c = fixed_coef[i];
         int e = exp[i];
-        int v = bap[i];
-        if (v)
-        switch (v) {
+        int b = bap[i];
+        switch (b) {
+        case 0:
+            v = 0;
+            break;
         case 1:
             v = sym_quant(c, e, 3);
             switch (s->mant1_cnt) {
@@ -1283,7 +1239,7 @@ static void quantize_mantissas_blk_ch(AC3Mant *s, int32_t *fixed_coef,
             v = asym_quant(c, e, 16);
             break;
         default:
-            v = asym_quant(c, e, v - 1);
+            v = asym_quant(c, e, b - 1);
             break;
         }
         qmant[i] = v;
@@ -1293,8 +1249,6 @@ static void quantize_mantissas_blk_ch(AC3Mant *s, int32_t *fixed_coef,
 
 /**
  * Quantize mantissas using coefficients, exponents, and bit allocation pointers.
- *
- * @param s  AC-3 encoder private context
  */
 void ff_ac3_quantize_mantissas(AC3EncodeContext *s)
 {
@@ -1322,7 +1276,7 @@ void ff_ac3_quantize_mantissas(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Write the AC-3 frame header to the output bitstream.
  */
 static void ac3_output_frame_header(AC3EncodeContext *s)
@@ -1378,12 +1332,13 @@ static void ac3_output_frame_header(AC3EncodeContext *s)
 }
 
 
-/*
+/**
  * Write one audio block to the output bitstream.
  */
 static void output_audio_block(AC3EncodeContext *s, int blk)
 {
-    int ch, i, baie, bnd, got_cpl, ch0;
+    int ch, i, baie, bnd, got_cpl;
+    int av_uninit(ch0);
     AC3Block *block = &s->blocks[blk];
 
     /* block switching */
@@ -1605,7 +1560,7 @@ static unsigned int pow_poly(unsigned int a, unsigned int n, unsigned int poly)
 }
 
 
-/*
+/**
  * Fill the end of the frame with 0's and compute the two CRCs.
  */
 static void output_frame_end(AC3EncodeContext *s)
@@ -1653,9 +1608,6 @@ static void output_frame_end(AC3EncodeContext *s)
 
 /**
  * Write the frame to the output bitstream.
- *
- * @param s      AC-3 encoder private context
- * @param frame  output data buffer
  */
 void ff_ac3_output_frame(AC3EncodeContext *s, unsigned char *frame)
 {
@@ -1826,8 +1778,6 @@ static void validate_mix_level(void *log_ctx, const char *opt_name,
 /**
  * Validate metadata options as set by AVOption system.
  * These values can optionally be changed per-frame.
- *
- * @param s  AC-3 encoder private context
  */
 int ff_ac3_validate_metadata(AC3EncodeContext *s)
 {
@@ -2010,8 +1960,6 @@ int ff_ac3_validate_metadata(AC3EncodeContext *s)
 
 /**
  * Finalize encoding and free any memory allocated by the encoder.
- *
- * @param avctx  Codec context
  */
 av_cold int ff_ac3_encode_close(AVCodecContext *avctx)
 {
@@ -2050,28 +1998,26 @@ av_cold int ff_ac3_encode_close(AVCodecContext *avctx)
 
     s->mdct_end(s);
 
-#if FF_API_OLD_ENCODE_AUDIO
     av_freep(&avctx->coded_frame);
-#endif
     return 0;
 }
 
 
-/*
+/**
  * Set channel information during initialization.
  */
 static av_cold int set_channel_info(AC3EncodeContext *s, int channels,
-                                    uint64_t *channel_layout)
+                                    int64_t *channel_layout)
 {
     int ch_layout;
 
     if (channels < 1 || channels > AC3_MAX_CHANNELS)
         return AVERROR(EINVAL);
-    if (*channel_layout > 0x7FF)
+    if ((uint64_t)*channel_layout > 0x7FF)
         return AVERROR(EINVAL);
     ch_layout = *channel_layout;
     if (!ch_layout)
-        ch_layout = av_get_default_channel_layout(channels);
+        ch_layout = avcodec_guess_channel_layout(channels, CODEC_ID_AC3, NULL);
 
     s->lfe_on       = !!(ch_layout & AV_CH_LOW_FREQUENCY);
     s->channels     = channels;
@@ -2140,17 +2086,6 @@ static av_cold int validate_options(AC3EncodeContext *s)
     s->bit_alloc.sr_code  = i % 3;
     s->bitstream_id       = s->eac3 ? 16 : 8 + s->bit_alloc.sr_shift;
 
-    /* select a default bit rate if not set by the user */
-    if (!avctx->bit_rate) {
-        switch (s->fbw_channels) {
-        case 1: avctx->bit_rate =  96000; break;
-        case 2: avctx->bit_rate = 192000; break;
-        case 3: avctx->bit_rate = 320000; break;
-        case 4: avctx->bit_rate = 384000; break;
-        case 5: avctx->bit_rate = 448000; break;
-        }
-    }
-
     /* validate bit rate */
     if (s->eac3) {
         int max_br, min_br, wpf, min_br_dist, min_br_code;
@@ -2199,20 +2134,15 @@ static av_cold int validate_options(AC3EncodeContext *s)
             wpf--;
         s->frame_size_min = 2 * wpf;
     } else {
-        int best_br = 0, best_code = 0, best_diff = INT_MAX;
         for (i = 0; i < 19; i++) {
-            int br   = (ff_ac3_bitrate_tab[i] >> s->bit_alloc.sr_shift) * 1000;
-            int diff = abs(br - avctx->bit_rate);
-            if (diff < best_diff) {
-                best_br   = br;
-                best_code = i;
-                best_diff = diff;
-            }
-            if (!best_diff)
+            if ((ff_ac3_bitrate_tab[i] >> s->bit_alloc.sr_shift)*1000 == avctx->bit_rate)
                 break;
         }
-        avctx->bit_rate    = best_br;
-        s->frame_size_code = best_code << 1;
+        if (i == 19) {
+            av_log(avctx, AV_LOG_ERROR, "invalid bit rate\n");
+            return AVERROR(EINVAL);
+        }
+        s->frame_size_code = i << 1;
         s->frame_size_min  = 2 * ff_ac3_frame_size_tab[s->frame_size_code][s->bit_alloc.sr_code];
         s->num_blks_code   = 0x3;
         s->num_blocks      = 6;
@@ -2237,20 +2167,21 @@ static av_cold int validate_options(AC3EncodeContext *s)
                              (s->channel_mode == AC3_CHMODE_STEREO);
 
     s->cpl_enabled = s->options.channel_coupling &&
-                     s->channel_mode >= AC3_CHMODE_STEREO;
+                     s->channel_mode >= AC3_CHMODE_STEREO && !s->fixed_point;
 
     return 0;
 }
 
 
-/*
+/**
  * Set bandwidth for all channels.
  * The user can optionally supply a cutoff frequency. Otherwise an appropriate
  * default value will be used.
  */
 static av_cold void set_bandwidth(AC3EncodeContext *s)
 {
-    int blk, ch, cpl_start;
+    int blk, ch;
+    int av_uninit(cpl_start);
 
     if (s->cutoff) {
         /* calculate bandwidth based on user-specified cutoff frequency */
@@ -2420,6 +2351,9 @@ alloc_fail:
 }
 
 
+/**
+ * Initialize the encoder.
+ */
 av_cold int ff_ac3_encode_init(AVCodecContext *avctx)
 {
     AC3EncodeContext *s = avctx->priv_data;
@@ -2436,7 +2370,6 @@ av_cold int ff_ac3_encode_init(AVCodecContext *avctx)
         return ret;
 
     avctx->frame_size = AC3_BLOCK_SIZE * s->num_blocks;
-    avctx->delay      = AC3_BLOCK_SIZE;
 
     s->bitstream_mode = avctx->audio_service_type;
     if (s->bitstream_mode == AV_AUDIO_SERVICE_TYPE_KARAOKE)
@@ -2482,15 +2415,9 @@ av_cold int ff_ac3_encode_init(AVCodecContext *avctx)
     if (ret)
         goto init_fail;
 
-#if FF_API_OLD_ENCODE_AUDIO
     avctx->coded_frame= avcodec_alloc_frame();
-    if (!avctx->coded_frame) {
-        ret = AVERROR(ENOMEM);
-        goto init_fail;
-    }
-#endif
 
-    ff_dsputil_init(&s->dsp, avctx);
+    dsputil_init(&s->dsp, avctx);
     ff_ac3dsp_init(&s->ac3dsp, avctx->flags & CODEC_FLAG_BITEXACT);
 
     dprint_options(s);

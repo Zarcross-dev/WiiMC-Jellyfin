@@ -3,20 +3,20 @@
  *
  * copyright (c) 2009 Laurent Aimar
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -95,7 +95,7 @@ static void fill_picture_parameters(struct dxva_context *ctx, const H264Context 
     pp->wBitFields                    = ((s->picture_structure != PICT_FRAME) <<  0) |
                                         (h->sps.mb_aff                        <<  1) |
                                         (h->sps.residual_color_transform_flag <<  2) |
-                                        /* sp_for_switch_flag (not implemented by FFmpeg) */
+                                        /* sp_for_switch_flag (not implemented by Libav) */
                                         (0                                    <<  3) |
                                         (h->sps.chroma_format_idc             <<  4) |
                                         ((h->nal_ref_idc != 0)                <<  6) |
@@ -113,10 +113,7 @@ static void fill_picture_parameters(struct dxva_context *ctx, const H264Context 
 
     pp->bit_depth_luma_minus8         = h->sps.bit_depth_luma - 8;
     pp->bit_depth_chroma_minus8       = h->sps.bit_depth_chroma - 8;
-    if (ctx->workaround & FF_DXVA2_WORKAROUND_SCALING_LIST_ZIGZAG)
-        pp->Reserved16Bits            = 0;
-    else
-        pp->Reserved16Bits            = 3; /* FIXME is there a way to detect the right mode ? */
+    pp->Reserved16Bits                = 3; /* FIXME is there a way to detect the right mode ? */
     pp->StatusReportFeedbackNumber    = 1 + ctx->report_id++;
     pp->CurrFieldOrderCnt[0] = 0;
     if ((s->picture_structure & PICT_TOP_FIELD) &&
@@ -149,33 +146,21 @@ static void fill_picture_parameters(struct dxva_context *ctx, const H264Context 
     pp->deblocking_filter_control_present_flag = h->pps.deblocking_filter_parameters_present;
     pp->redundant_pic_cnt_present_flag= h->pps.redundant_pic_cnt_present;
     pp->Reserved8BitsB                = 0;
-    pp->slice_group_change_rate_minus1= 0;  /* XXX not implemented by FFmpeg */
-    //pp->SliceGroupMap[810];               /* XXX not implemented by FFmpeg */
+    pp->slice_group_change_rate_minus1= 0;  /* XXX not implemented by Libav */
+    //pp->SliceGroupMap[810];               /* XXX not implemented by Libav */
 }
 
-static void fill_scaling_lists(struct dxva_context *ctx, const H264Context *h, DXVA_Qmatrix_H264 *qm)
+static void fill_scaling_lists(const H264Context *h, DXVA_Qmatrix_H264 *qm)
 {
     unsigned i, j;
     memset(qm, 0, sizeof(*qm));
-    if (ctx->workaround & FF_DXVA2_WORKAROUND_SCALING_LIST_ZIGZAG) {
-        for (i = 0; i < 6; i++)
-            for (j = 0; j < 16; j++)
-                qm->bScalingLists4x4[i][j] = h->pps.scaling_matrix4[i][j];
+    for (i = 0; i < 6; i++)
+        for (j = 0; j < 16; j++)
+            qm->bScalingLists4x4[i][j] = h->pps.scaling_matrix4[i][zigzag_scan[j]];
 
-        for (i = 0; i < 64; i++) {
-            qm->bScalingLists8x8[0][i] = h->pps.scaling_matrix8[0][i];
-            qm->bScalingLists8x8[1][i] = h->pps.scaling_matrix8[3][i];
-        }
-    } else {
-        for (i = 0; i < 6; i++)
-            for (j = 0; j < 16; j++)
-                qm->bScalingLists4x4[i][j] = h->pps.scaling_matrix4[i][zigzag_scan[j]];
-
-        for (i = 0; i < 64; i++) {
-            qm->bScalingLists8x8[0][i] = h->pps.scaling_matrix8[0][ff_zigzag_direct[i]];
-            qm->bScalingLists8x8[1][i] = h->pps.scaling_matrix8[3][ff_zigzag_direct[i]];
-        }
-    }
+    for (i = 0; i < 2; i++)
+        for (j = 0; j < 64; j++)
+            qm->bScalingLists8x8[i][j] = h->pps.scaling_matrix8[i][ff_zigzag_direct[j]];
 }
 
 static int is_slice_short(struct dxva_context *ctx)
@@ -258,7 +243,7 @@ static void fill_slice_long(AVCodecContext *avctx, DXVA_Slice_H264_Long *slice,
             }
         }
     }
-    slice->slice_qs_delta    = 0; /* XXX not implemented by FFmpeg */
+    slice->slice_qs_delta    = 0; /* XXX not implemented by Libav */
     slice->slice_qp_delta    = s->qscale - h->pps.init_qp;
     slice->redundant_pic_cnt = h->redundant_pic_count;
     if (h->slice_type == AV_PICTURE_TYPE_B)
@@ -385,7 +370,7 @@ static int start_frame(AVCodecContext *avctx,
     fill_picture_parameters(ctx, h, &ctx_pic->pp);
 
     /* Fill up DXVA_Qmatrix_H264 */
-    fill_scaling_lists(ctx, h, &ctx_pic->qm);
+    fill_scaling_lists(h, &ctx_pic->qm);
 
     ctx_pic->slice_count    = 0;
     ctx_pic->bitstream_size = 0;
@@ -443,8 +428,10 @@ AVHWAccel ff_h264_dxva2_hwaccel = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_H264,
     .pix_fmt        = PIX_FMT_DXVA2_VLD,
+    .capabilities   = 0,
     .start_frame    = start_frame,
     .decode_slice   = decode_slice,
     .end_frame      = end_frame,
     .priv_data_size = sizeof(struct dxva2_picture_context),
 };
+

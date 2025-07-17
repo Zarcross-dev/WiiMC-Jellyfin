@@ -2,20 +2,20 @@
  * HTTP authentication
  * Copyright (c) 2010 Martin Storsjo
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -57,9 +57,6 @@ static void handle_digest_params(HTTPAuthState *state, const char *key,
     } else if (!strncmp(key, "qop=", key_len)) {
         *dest     =        digest->qop;
         *dest_len = sizeof(digest->qop);
-    } else if (!strncmp(key, "stale=", key_len)) {
-        *dest     =        digest->stale;
-        *dest_len = sizeof(digest->stale);
     }
 }
 
@@ -90,13 +87,12 @@ static void choose_qop(char *qop, int size)
 void ff_http_auth_handle_header(HTTPAuthState *state, const char *key,
                                 const char *value)
 {
-    if (!strcmp(key, "WWW-Authenticate") || !strcmp(key, "Proxy-Authenticate")) {
+    if (!strcmp(key, "WWW-Authenticate")) {
         const char *p;
         if (av_stristart(value, "Basic ", &p) &&
             state->auth_type <= HTTP_AUTH_BASIC) {
             state->auth_type = HTTP_AUTH_BASIC;
             state->realm[0] = 0;
-            state->stale = 0;
             ff_parse_key_value(p, (ff_parse_key_val_cb) handle_basic_params,
                                state);
         } else if (av_stristart(value, "Digest ", &p) &&
@@ -104,13 +100,10 @@ void ff_http_auth_handle_header(HTTPAuthState *state, const char *key,
             state->auth_type = HTTP_AUTH_DIGEST;
             memset(&state->digest_params, 0, sizeof(DigestParams));
             state->realm[0] = 0;
-            state->stale = 0;
             ff_parse_key_value(p, (ff_parse_key_val_cb) handle_digest_params,
                                state);
             choose_qop(state->digest_params.qop,
                        sizeof(state->digest_params.qop));
-            if (!av_strcasecmp(state->digest_params.stale, "true"))
-                state->stale = 1;
         }
     } else if (!strcmp(key, "Authentication-Info")) {
         ff_parse_key_value(value, (ff_parse_key_val_cb) handle_digest_update,
@@ -244,9 +237,6 @@ char *ff_http_auth_create_response(HTTPAuthState *state, const char *auth,
 {
     char *authstr = NULL;
 
-    /* Clear the stale flag, we assume the auth is ok now. It is reset
-     * by the server headers if there's a new issue. */
-    state->stale = 0;
     if (!auth || !strchr(auth, ':'))
         return NULL;
 
@@ -275,3 +265,4 @@ char *ff_http_auth_create_response(HTTPAuthState *state, const char *auth,
     }
     return authstr;
 }
+

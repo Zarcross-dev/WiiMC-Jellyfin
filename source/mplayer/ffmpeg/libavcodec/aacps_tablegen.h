@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2010 Alex Converse <alex.converse@gmail.com>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -31,7 +31,6 @@
 #else
 #include "libavutil/common.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/mem.h"
 #define NR_ALLPASS_BANDS20 30
 #define NR_ALLPASS_BANDS34 50
 #define PS_AP_LINKS 3
@@ -39,12 +38,12 @@ static float pd_re_smooth[8*8*8];
 static float pd_im_smooth[8*8*8];
 static float HA[46][8][4];
 static float HB[46][8][4];
-static DECLARE_ALIGNED(16, float, f20_0_8) [ 8][8][2];
-static DECLARE_ALIGNED(16, float, f34_0_12)[12][8][2];
-static DECLARE_ALIGNED(16, float, f34_1_8) [ 8][8][2];
-static DECLARE_ALIGNED(16, float, f34_2_4) [ 4][8][2];
-static DECLARE_ALIGNED(16, float, Q_fract_allpass)[2][50][3][2];
-static DECLARE_ALIGNED(16, float, phi_fract)[2][50][2];
+static float f20_0_8 [ 8][7][2];
+static float f34_0_12[12][7][2];
+static float f34_1_8 [ 8][7][2];
+static float f34_2_4 [ 4][7][2];
+static float Q_fract_allpass[2][50][3][2];
+static float phi_fract[2][50][2];
 
 static const float g0_Q8[] = {
     0.00746082949812f, 0.02270420949825f, 0.04546865930473f, 0.07266113929591f,
@@ -66,7 +65,7 @@ static const float g2_Q4[] = {
      0.16486303567403f,  0.23279856662996f, 0.25f
 };
 
-static void make_filters_from_proto(float (*filter)[8][2], const float *proto, int bands)
+static void make_filters_from_proto(float (*filter)[7][2], const float *proto, int bands)
 {
     int q, n;
     for (q = 0; q < bands; q++) {
@@ -140,7 +139,7 @@ static void ps_tableinit(void)
     }
 
     for (iid = 0; iid < 46; iid++) {
-        float c = iid_par_dequant[iid]; ///< Linear Inter-channel Intensity Difference
+        float c = iid_par_dequant[iid]; //<Linear Inter-channel Intensity Difference
         float c1 = (float)M_SQRT2 / sqrtf(1.0f + c*c);
         float c2 = c * c1;
         for (icc = 0; icc < 8; icc++) {

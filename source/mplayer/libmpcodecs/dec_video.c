@@ -420,13 +420,15 @@ void *decode_video(sh_video_t *sh_video, unsigned char *start, int in_size,
         }
     }
 
+#if HAVE_MMX
     // some codecs are broken, and doesn't restore MMX state :(
     // it happens usually with broken/damaged files.
-    if (HAVE_AMD3DNOW && gCpuCaps.has3DNow) {
+    if (gCpuCaps.has3DNow) {
         __asm__ volatile ("femms\n\t":::"memory");
-    } else if (HAVE_MMX && gCpuCaps.hasMMX) {
+    } else if (gCpuCaps.hasMMX) {
         __asm__ volatile ("emms\n\t":::"memory");
     }
+#endif
 
     t2 = GetTimer();
     t = t2 - t;

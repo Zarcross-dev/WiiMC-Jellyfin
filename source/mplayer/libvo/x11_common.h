@@ -25,6 +25,12 @@
 
 #include "config.h"
 
+#if defined(CONFIG_GL) || defined(CONFIG_X11) || defined(CONFIG_XV)
+#define X11_FULLSCREEN 1
+#endif
+
+#ifdef X11_FULLSCREEN
+
 #define vo_wm_LAYER 1
 #define vo_wm_FULLSCREEN 2
 #define vo_wm_STAYS_ON_TOP 4
@@ -57,6 +63,8 @@ extern int stop_xscreensaver;
 
 int vo_init( void );
 void vo_uninit( void );
+void vo_hidecursor ( Display* , Window );
+void vo_showcursor( Display *disp, Window win );
 void vo_x11_decoration( Display * vo_Display,Window w,int d );
 void vo_x11_classhint( Display * display,Window window,const char *name );
 void vo_x11_nofs_sizepos(int x, int y, int width, int height);
@@ -82,16 +90,16 @@ void vo_x11_clearwindow_part(Display *mDisplay, Window vo_window,
 void vo_x11_clearwindow( Display *mDisplay, Window vo_window );
 void vo_x11_ontop(void);
 void vo_x11_border(void);
-void vo_x11_ewmh_fullscreen( Window win, int action );
+void vo_x11_ewmh_fullscreen( int action );
 
+#endif
 
 extern Window     vo_window;
 extern GC         vo_gc;
 extern XSizeHints vo_hint;
 
-
-
-// XVideo related declarations
+#ifdef CONFIG_XV
+//XvPortID xv_port;
 extern unsigned int xv_port;
 
 int vo_xv_set_eq(uint32_t xv_port, const char * name, int value);
@@ -126,8 +134,7 @@ void xv_setup_colorkeyhandling(char const * ck_method_str, char const * ck_str);
 /*** test functions for common suboptions ***/
 int xv_test_ck( void * arg );
 int xv_test_ckm( void * arg );
-
-
+#endif
 
 void vo_setwindow( Window w,GC g );
 void vo_x11_putkey(int key);
@@ -136,13 +143,10 @@ void xscreensaver_heartbeat(void);
 void saver_off( Display * );
 void saver_on( Display * );
 
-
-
-// XF86VM-related functions
+#ifdef CONFIG_XF86VM
 void vo_vm_switch(void);
 void vo_vm_close(void);
-
-
+#endif
 
 void update_xinerama_info(void);
 

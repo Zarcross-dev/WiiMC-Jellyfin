@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2002 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -110,15 +110,10 @@ static int RENAME(dct_quantize)(MpegEncContext *s,
 
     if (s->mb_intra) {
         int dummy;
-        if (n < 4){
+        if (n < 4)
             q = s->y_dc_scale;
-            bias = s->q_intra_matrix16[qscale][1];
-            qmat = s->q_intra_matrix16[qscale][0];
-        }else{
+        else
             q = s->c_dc_scale;
-            bias = s->q_chroma_intra_matrix16[qscale][1];
-            qmat = s->q_chroma_intra_matrix16[qscale][0];
-        }
         /* note: block[0] is assumed to be positive */
         if (!s->h263_aic) {
         __asm__ volatile (
@@ -133,6 +128,8 @@ static int RENAME(dct_quantize)(MpegEncContext *s,
         block[0]=0; //avoid fake overflow
 //        temp_block[0] = (block[0] + (q >> 1)) / q;
         last_non_zero_p1 = 1;
+        bias = s->q_intra_matrix16[qscale][1];
+        qmat = s->q_intra_matrix16[qscale][0];
     } else {
         last_non_zero_p1 = 0;
         bias = s->q_inter_matrix16[qscale][1];
@@ -171,7 +168,7 @@ static int RENAME(dct_quantize)(MpegEncContext *s,
             "movzb %%al, %%"REG_a"              \n\t" // last_non_zero_p1
             : "+a" (last_non_zero_p1)
             : "r" (block+64), "r" (qmat), "r" (bias),
-              "r" (ff_inv_zigzag_direct16+64), "r" (temp_block+64)
+              "r" (inv_zigzag_direct16+64), "r" (temp_block+64)
               XMM_CLOBBERS_ONLY("%xmm0", "%xmm1", "%xmm2", "%xmm3",
                                 "%xmm4", "%xmm5", "%xmm6", "%xmm7")
         );
@@ -205,7 +202,7 @@ static int RENAME(dct_quantize)(MpegEncContext *s,
             "movzb %%al, %%"REG_a"              \n\t" // last_non_zero_p1
             : "+a" (last_non_zero_p1)
             : "r" (block+64), "r" (qmat+64), "r" (bias+64),
-              "r" (ff_inv_zigzag_direct16+64), "r" (temp_block+64)
+              "r" (inv_zigzag_direct16+64), "r" (temp_block+64)
               XMM_CLOBBERS_ONLY("%xmm0", "%xmm1", "%xmm2", "%xmm3",
                                 "%xmm4", "%xmm5", "%xmm6", "%xmm7")
         );

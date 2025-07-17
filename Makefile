@@ -26,40 +26,24 @@ INCLUDES	:=	source source/mplayer
 # options for code generation
 #---------------------------------------------------------------------------------
 
-# Compile settings, NTFS = 191KB, EXT2 = 91KB, Full = 282KB
-ENABLE_NTFS                   = 1
-ENABLE_EXT2                   = 1
-
-
-CFLAGS		=	-g -O3 -Wall $(MACHDEP) $(INCLUDE)  \
-				-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -Wframe-larger-than=8192
+CFLAGS		=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) \
+				-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 CXXFLAGS	=	$(CFLAGS)
-LDFLAGS		=	-g $(MACHDEP) -specs=wiimc.spec -Wl,-wrap,memcpy
+LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -specs=wiimc.spec
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS    := -lmplayerwii -lavformat -lavcodec -lswscale -lavutil \
-                        -ljpeg -ldi -liso9660 -liconv -lpng -lz \
-                        -lfat -lwiiuse -lbte -logc -lfreetype -lmxml -ltinysmb -lexif
-
-ifeq ($(ENABLE_NTFS), 1)
-CFLAGS += -DWANT_NTFS
-LIBS += -lntfs
-endif
-
-ifeq ($(ENABLE_EXT2), 1)
-CFLAGS += -DWANT_EXT2
-LIBS += -lext2fs
-endif
+LIBS	:= -lmplayerwii -lavformat -lavcodec -lavutil -lpostproc -lswscale \
+			-lfribidi -ljpeg -ldi -liso9660 -liconv -lpng -lz -lntfs -lext2fs \
+			-lfat -lwiiuse -lbte -logc -lfreetype -lmxml -ltinysmb -lexif
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS)
-
-
+LIBDIRS	:= /opt/devkitpro-r24/portlibs/ppc /opt/devkitpro-r24/libogc \
+			/opt/devkitpro-r24/portlibs/ppc/wii
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
@@ -95,8 +79,7 @@ endif
 export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
 					$(TTFFILES:.ttf=.ttf.o) $(LANGFILES:.lang=.lang.o) \
-					$(PNGFILES:.png=.png.o) $(JPGFILES:.jpg=.jpg.o) \
-					$(CURDIR)/source/utils/ehcmodule.elf.o
+					$(PNGFILES:.png=.png.o) $(JPGFILES:.jpg=.jpg.o)
 #---------------------------------------------------------------------------------
 # build a list of include paths
 #---------------------------------------------------------------------------------
@@ -112,9 +95,11 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					-L$(LIBOGC_LIB) \
 				-L$(MPLAYER)/ \
+				-L$(MPLAYER)/ffmpeg/libavcore \
 				-L$(MPLAYER)/ffmpeg/libavcodec \
 				-L$(MPLAYER)/ffmpeg/libavformat \
 				-L$(MPLAYER)/ffmpeg/libavutil \
+				-L$(MPLAYER)/ffmpeg/libpostproc \
 				-L$(MPLAYER)/ffmpeg/libswscale 
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)

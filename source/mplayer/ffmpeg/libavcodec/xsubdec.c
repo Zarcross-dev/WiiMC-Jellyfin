@@ -2,20 +2,20 @@
  * XSUB subtitle decoder
  * Copyright (c) 2007 Reimar Döffinger
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -53,14 +53,15 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     AVSubtitle *sub = data;
     const uint8_t *buf_end = buf + buf_size;
     uint8_t *bitmap;
-    int w, h, x, y, i;
+    int w, h, x, y, rlelen, i;
     int64_t packet_time = 0;
     GetBitContext gb;
-    int has_alpha = avctx->codec_tag == MKTAG('D','X','S','A');
+
+    memset(sub, 0, sizeof(*sub));
 
     // check that at least header fits
     if (buf_size < 27 + 7 * 2 + 4 * 3) {
-        av_log(avctx, AV_LOG_ERROR, "coded frame size %d too small\n", buf_size);
+        av_log(avctx, AV_LOG_ERROR, "coded frame too small\n");
         return -1;
     }
 
@@ -85,11 +86,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     // skip bottom right position, it gives no new information
     bytestream_get_le16(&buf);
     bytestream_get_le16(&buf);
-    // The following value is supposed to indicate the start offset
-    // (relative to the palette) of the data for the second field,
-    // however there are files  where it has a bogus value and thus
-    // we just ignore it
-    bytestream_get_le16(&buf);
+    rlelen = bytestream_get_le16(&buf);
 
     // allocate sub and set values
     sub->rects =  av_mallocz(sizeof(*sub->rects));
@@ -107,11 +104,12 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     for (i = 0; i < sub->rects[0]->nb_colors; i++)
         ((uint32_t*)sub->rects[0]->pict.data[1])[i] = bytestream_get_be24(&buf);
     // make all except background (first entry) non-transparent
-    for (i = 0; i < sub->rects[0]->nb_colors; i++)
-        ((uint32_t*)sub->rects[0]->pict.data[1])[i] |= (has_alpha ? *buf++ : (i ? 0xff : 0)) << 24;
+    for (i = 1; i < sub->rects[0]->nb_colors; i++)
+        ((uint32_t*)sub->rects[0]->pict.data[1])[i] |= 0xff000000;
 
     // process RLE-compressed data
-    init_get_bits(&gb, buf, (buf_end - buf) * 8);
+    rlelen = FFMIN(rlelen, buf_end - buf);
+    init_get_bits(&gb, buf, rlelen * 8);
     bitmap = sub->rects[0]->pict.data[0];
     for (y = 0; y < h; y++) {
         // interlaced: do odd lines

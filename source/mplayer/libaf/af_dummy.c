@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mp_msg.h"
 #include "af.h"
 
 // Initialization and runtime control

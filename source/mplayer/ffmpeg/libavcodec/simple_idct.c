@@ -3,20 +3,20 @@
  *
  * Copyright (c) 2001 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
@@ -53,6 +53,7 @@
 static inline void idct4col_put(uint8_t *dest, int line_size, const DCTELEM *col)
 {
     int c0, c1, c2, c3, a0, a1, a2, a3;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
 
     a0 = col[8*0];
     a1 = col[8*2];
@@ -62,13 +63,13 @@ static inline void idct4col_put(uint8_t *dest, int line_size, const DCTELEM *col
     c2 = ((a0 - a2) << (CN_SHIFT - 1)) + (1 << (C_SHIFT - 1));
     c1 = a1 * C1 + a3 * C2;
     c3 = a1 * C2 - a3 * C1;
-    dest[0] = av_clip_uint8((c0 + c1) >> C_SHIFT);
+    dest[0] = cm[(c0 + c1) >> C_SHIFT];
     dest += line_size;
-    dest[0] = av_clip_uint8((c2 + c3) >> C_SHIFT);
+    dest[0] = cm[(c2 + c3) >> C_SHIFT];
     dest += line_size;
-    dest[0] = av_clip_uint8((c2 - c3) >> C_SHIFT);
+    dest[0] = cm[(c2 - c3) >> C_SHIFT];
     dest += line_size;
-    dest[0] = av_clip_uint8((c0 - c1) >> C_SHIFT);
+    dest[0] = cm[(c0 - c1) >> C_SHIFT];
 }
 
 #define BF(k) \
@@ -107,7 +108,7 @@ void ff_simple_idct248_put(uint8_t *dest, int line_size, DCTELEM *block)
 
     /* IDCT8 on each line */
     for(i=0; i<8; i++) {
-        idctRowCondDC_8(block + i*8, 0);
+        idctRowCondDC_8(block + i*8);
     }
 
     /* IDCT4 and store */
@@ -132,6 +133,7 @@ void ff_simple_idct248_put(uint8_t *dest, int line_size, DCTELEM *block)
 static inline void idct4col_add(uint8_t *dest, int line_size, const DCTELEM *col)
 {
     int c0, c1, c2, c3, a0, a1, a2, a3;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
 
     a0 = col[8*0];
     a1 = col[8*1];
@@ -141,13 +143,13 @@ static inline void idct4col_add(uint8_t *dest, int line_size, const DCTELEM *col
     c2 = (a0 - a2)*C3 + (1 << (C_SHIFT - 1));
     c1 = a1 * C1 + a3 * C2;
     c3 = a1 * C2 - a3 * C1;
-    dest[0] = av_clip_uint8(dest[0] + ((c0 + c1) >> C_SHIFT));
+    dest[0] = cm[dest[0] + ((c0 + c1) >> C_SHIFT)];
     dest += line_size;
-    dest[0] = av_clip_uint8(dest[0] + ((c2 + c3) >> C_SHIFT));
+    dest[0] = cm[dest[0] + ((c2 + c3) >> C_SHIFT)];
     dest += line_size;
-    dest[0] = av_clip_uint8(dest[0] + ((c2 - c3) >> C_SHIFT));
+    dest[0] = cm[dest[0] + ((c2 - c3) >> C_SHIFT)];
     dest += line_size;
-    dest[0] = av_clip_uint8(dest[0] + ((c0 - c1) >> C_SHIFT));
+    dest[0] = cm[dest[0] + ((c0 - c1) >> C_SHIFT)];
 }
 
 #define RN_SHIFT 15
@@ -159,6 +161,7 @@ static inline void idct4col_add(uint8_t *dest, int line_size, const DCTELEM *col
 static inline void idct4row(DCTELEM *row)
 {
     int c0, c1, c2, c3, a0, a1, a2, a3;
+    //const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
 
     a0 = row[0];
     a1 = row[1];
@@ -180,7 +183,7 @@ void ff_simple_idct84_add(uint8_t *dest, int line_size, DCTELEM *block)
 
     /* IDCT8 on each line */
     for(i=0; i<4; i++) {
-        idctRowCondDC_8(block + i*8, 0);
+        idctRowCondDC_8(block + i*8);
     }
 
     /* IDCT4 and store */
@@ -217,18 +220,4 @@ void ff_simple_idct44_add(uint8_t *dest, int line_size, DCTELEM *block)
     for(i=0; i<4; i++){
         idct4col_add(dest + i, line_size, block + i);
     }
-}
-
-void ff_prores_idct(DCTELEM *block, const int16_t *qmat)
-{
-    int i;
-
-    for (i = 0; i < 64; i++)
-        block[i] *= qmat[i];
-
-    for (i = 0; i < 8; i++)
-        idctRowCondDC_10(block + i*8, 2);
-
-    for (i = 0; i < 8; i++)
-        idctSparseCol_10(block + i);
 }

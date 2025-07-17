@@ -76,6 +76,10 @@ typedef __int64 off_t;
 #       define stat _stati64
 #   endif
 
+#   ifndef snprintf
+#       define snprintf _snprintf  /* snprintf not defined in mingw32 (bug?) */
+#   endif
+
 #endif
 
 #endif /* DVDCSS_COMMON_H */

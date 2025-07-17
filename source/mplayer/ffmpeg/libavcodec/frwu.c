@@ -3,37 +3,36 @@
  *
  * Copyright (c) 2009 Reimar Döffinger <Reimar.Doeffinger@gmx.de>
  *
- * This file is part of FFmpeg.
+ * This file is part of Libav.
  *
- * FFmpeg is free software; you can redistribute it and/or
+ * Libav is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * Libav is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
+ * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "libavutil/intreadwrite.h"
 
 static av_cold int decode_init(AVCodecContext *avctx)
 {
     if (avctx->width & 1) {
-        av_log(avctx, AV_LOG_ERROR, "frwu needs even width\n");
-        return AVERROR(EINVAL);
+        av_log(avctx, AV_LOG_ERROR, "FRWU needs even width\n");
+        return -1;
     }
     avctx->pix_fmt = PIX_FMT_UYVY422;
 
     avctx->coded_frame = avcodec_alloc_frame();
-    if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
 
     return 0;
 }
@@ -41,7 +40,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
                         AVPacket *avpkt)
 {
-    int field, ret;
+    int field;
     AVFrame *pic = avctx->coded_frame;
     const uint8_t *buf = avpkt->data;
     const uint8_t *buf_end = buf + avpkt->size;
@@ -51,18 +50,16 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
 
     if (avpkt->size < avctx->width * 2 * avctx->height + 4 + 2*8) {
         av_log(avctx, AV_LOG_ERROR, "Packet is too small.\n");
-        return AVERROR_INVALIDDATA;
+        return -1;
     }
-    if (bytestream_get_le32(&buf) != MKTAG('F', 'R', 'W', '1')) {
+    if (bytestream_get_le32(&buf) != AV_RL32("FRW1")) {
         av_log(avctx, AV_LOG_ERROR, "incorrect marker\n");
-        return AVERROR_INVALIDDATA;
+        return -1;
     }
 
     pic->reference = 0;
-    if ((ret = avctx->get_buffer(avctx, pic)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return ret;
-    }
+    if (avctx->get_buffer(avctx, pic) < 0)
+        return -1;
 
     pic->pict_type = AV_PICTURE_TYPE_I;
     pic->key_frame = 1;
@@ -75,16 +72,16 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         int field_size, min_field_size = avctx->width * 2 * field_h;
         uint8_t *dst = pic->data[0];
         if (buf_end - buf < 8)
-            return AVERROR_INVALIDDATA;
+            return -1;
         buf += 4; // flags? 0x80 == bottom field maybe?
         field_size = bytestream_get_le32(&buf);
         if (field_size < min_field_size) {
             av_log(avctx, AV_LOG_ERROR, "Field size %i is too small (required %i)\n", field_size, min_field_size);
-            return AVERROR_INVALIDDATA;
+            return -1;
         }
         if (buf_end - buf < field_size) {
             av_log(avctx, AV_LOG_ERROR, "Packet is too small, need %i, have %i\n", field_size, (int)(buf_end - buf));
-            return AVERROR_INVALIDDATA;
+            return -1;
         }
         if (field)
             dst += pic->linesize[0];
@@ -113,12 +110,12 @@ static av_cold int decode_close(AVCodecContext *avctx)
 }
 
 AVCodec ff_frwu_decoder = {
-    .name           = "frwu",
+    .name           = "FRWU",
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_FRWU,
     .init           = decode_init,
     .close          = decode_close,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Forward Uncompressed"),
+    .long_name = NULL_IF_CONFIG_SMALL("Forward Uncompressed"),
 };

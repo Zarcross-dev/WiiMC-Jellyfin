@@ -272,7 +272,7 @@ static int initTextures(void)
       glCreateClearTex(GL_TEXTURE_2D, gl_internal_format, gl_bitmap_format,  gl_bitmap_type, GL_LINEAR,
                        texture_width, texture_height, 0);
 
-      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+      glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
       if (is_yuv) {
         int xs, ys, depth;
         int chroma_clear_val = 128;
@@ -382,7 +382,7 @@ static void drawTextureDisplay (void)
   struct TexSquare *square = texgrid;
   int x, y;
 
-  glColor4f(1.0,1.0,1.0,1.0);
+  glColor3f(1.0,1.0,1.0);
 
   if (is_yuv)
     glEnableYUVConversion(GL_TEXTURE_2D, use_yuv);
@@ -423,13 +423,6 @@ static void drawTextureDisplay (void)
 
 
 static void resize(int x,int y){
-  // simple orthogonal projection for 0-1;0-1
-  static const float matrix[16] = {
-     2,  0, 0, 0,
-     0, -2, 0, 0,
-     0,  0, 0, 0,
-    -1,  1, 0, 1,
-  };
   mp_msg(MSGT_VO,MSGL_V,"[gl2] Resize: %dx%d\n",x,y);
   if(aspect_scaling()) {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -450,7 +443,8 @@ static void resize(int x,int y){
   }
 
   glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(matrix);
+  glLoadIdentity();
+  glOrtho (0, 1, 1, 0, -1.0, 1.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();

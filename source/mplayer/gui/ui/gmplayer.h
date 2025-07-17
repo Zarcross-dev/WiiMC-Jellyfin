@@ -19,7 +19,7 @@
 #ifndef MPLAYER_GUI_GMPLAYER_H
 #define MPLAYER_GUI_GMPLAYER_H
 
-extern int             uiVideoRender;
+extern int             uiSubRender;
 extern int             uiMainRender;
 
 extern unsigned char * mainDrawBuffer;
@@ -40,15 +40,15 @@ void uiMainMouseHandle( int Button, int X, int Y, int RX, int RY );
 void uiMainKeyHandle( int KeyCode, int Type, int Key );
 void uiDandDHandler(int num, char** files);
 
-void uiVideoDraw( void );
-void uiVideoMouseHandle( int Button, int X, int Y, int RX, int RY );
+void uiSubDraw( void );
+void uiSubMouseHandle( int Button, int X, int Y, int RX, int RY );
 
 void uiMenuInit( void );
 void uiHideMenu( int mx, int my, int w );
 void uiShowMenu( int mx, int my );
-void uiMenuMouseHandle( int RX, int RY );
+void uiMenuMouseHandle( int X, int Y, int RX, int RY );
 
 void uiPlaybarInit( void );
-void uiPlaybarShow( int y );
+void uiPlaybarShow( int x, int y );
 
 #endif /* MPLAYER_GUI_GMPLAYER_H */
