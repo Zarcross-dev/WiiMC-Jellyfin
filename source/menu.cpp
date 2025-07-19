@@ -34,6 +34,7 @@
 #include "utils/gettext.h"
 #include "utils/http.h"
 #include "filelist.h"
+#include "jellyfin/jellyfin.h"
 
 extern "C" {
 #include "mplayer/stream/url.h"
@@ -7403,6 +7404,8 @@ void WiiMenu()
 
 	ResumeDeviceThread();
 	ResumeParseThread();
+
+	UpdateJellyfinDatabase();
 
 	static bool checkIOS = true;
 

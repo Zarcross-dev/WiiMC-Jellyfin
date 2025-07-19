@@ -1,93 +1,93 @@
 libdvdnav/read_cache.o: libdvdnav/read_cache.c config.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/limits.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/syslimits.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/limits.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/limits.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/syslimits.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/limits.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h \
  libdvdnav/dvdnav/dvdnav.h libdvdnav/dvdnav/dvd_types.h \
  libdvdread4/dvdread/dvd_reader.h libdvdread4/dvdread/nav_types.h \
  libdvdread4/dvdread/ifo_types.h libdvdread4/dvdread/ifo_types.h \
  libdvdnav/dvdnav/dvdnav_events.h libdvdnav/remap.h \
  libdvdnav/vm/decoder.h libdvdnav/vm/vm.h libdvdnav/dvdnav_internal.h \
- /opt/devkitpro-r24/portlibs/ppc/include/ogc/mutex.h \
- /opt/devkitpro-r24/portlibs/ppc/include/gctypes.h \
- /opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h \
+ /opt/devkitPro/portlibs/ppc/include/ogc/mutex.h \
+ /opt/devkitPro/portlibs/ppc/include/gctypes.h \
+ /opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h \
  libdvdnav/read_cache.h
 
 config.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/inttypes.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdint.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdint.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stddef.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/stdlib.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/ieeefp.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/newlib.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/config.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/features.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/reent.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/_ansi.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/_types.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_types.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/_default_types.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/lock.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/stdlib.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/alloca.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/limits.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/limits.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/syslimits.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include-fixed/syslimits.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/limits.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/limits.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/time.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/sys/types.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/types.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/time.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/../../../../powerpc-eabi/include/machine/time.h:
 
 libdvdnav/dvdnav/dvdnav.h:
 
@@ -111,10 +111,10 @@ libdvdnav/vm/vm.h:
 
 libdvdnav/dvdnav_internal.h:
 
-/opt/devkitpro-r24/portlibs/ppc/include/ogc/mutex.h:
+/opt/devkitPro/portlibs/ppc/include/ogc/mutex.h:
 
-/opt/devkitpro-r24/portlibs/ppc/include/gctypes.h:
+/opt/devkitPro/portlibs/ppc/include/gctypes.h:
 
-/opt/devkitpro-r24/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h:
+/opt/devkitPro/devkitPPC/bin/../lib/gcc/powerpc-eabi/4.6.1/include/stdbool.h:
 
 libdvdnav/read_cache.h:

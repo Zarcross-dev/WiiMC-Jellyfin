@@ -11,9 +11,9 @@
 #include "utils/FreeTypeGX.h"
 #include "network.h"
 
-#define APPNAME			"WiiMC"
+#define APPNAME			"WiiMC-Jellyfin"
 #define APPVERSION		"1.1.9"
-#define APPFOLDER		"wiimc"
+#define APPFOLDER		"WiiMC-Jellyfin"
 
 enum {
 	DEVICE_SD,

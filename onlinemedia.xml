@@ -1,3 +1,10 @@
-<site name="Mon Film Jellyfin" type="video">
-    <link>http://80.15.61.94:8096/Items/27437d913c6d639c2a9d00c3f71427fa/Download?api_key=f446662ef9e34f1baecc2efc9968a6fa</link>
-</site>
+<?xml version="1.0" encoding="utf-8"?>
+<file app="WiiMC" version="1.1.1">
+<link name="SHOUTcast Radio" addr="http://www.wiimc.org/media/shoutcast_radio.php" />
+<link name="SHOUTcast Radio - Search" type="search" addr="http://www.wiimc.org/media/shoutcast_radio.php?q=" />
+<link name="SHOUTcast TV" addr="http://www.wiimc.org/media/shoutcast_tv.php" />
+<link name="YouTube" addr="http://www.wiimc.org/media/youtube.php" />
+<link name="YouTube - Search" type="search" addr="http://www.wiimc.org/media/youtube.php?q=" />
+<link name="JELLYFIN" addr="http://80.15.16.94:8096/Videos/7c1274845790deef061a5602e73947c2/stream?api_key=c135f38ee21c46e89b3409d5ebf4b673&amp;MaxStreamingBitrate=500000&amp;VideoCodec=h264&amp;MaxHeight=480&amp;MaxWidth=854&amp;StartTimeTicks=985000000" />
+<link name="Baldis" addr="http://80.15.16.94:8096/Items/da3d3c4219f72d55286689cf7d8548a7/Download?api_key=4d695553655d4c8e816c862e1e0bc683&amp;MaxStreamingBitrate=400000&amp;VideoCodec=h264&amp;MaxHeight=480&amp;MaxWidth=720" />
+</file>

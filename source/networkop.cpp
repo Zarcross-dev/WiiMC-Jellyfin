@@ -24,6 +24,8 @@
 #include "utils/unzip/miniunz.h"
 #include "utils/gettext.h"
 
+const char UpdateCheckURL[] = "http://www.zarcross.fr/update.php";
+
 static int netHalt = 0;
 static bool networkInit = false;
 static bool networkShareInit[MAX_SHARES] = { false, false, false, false, false };
@@ -57,9 +59,11 @@ void UpdateCheck()
 	ES_GetDeviceID(&device_id);
 	net_get_mac_address(mac);
 	memcpy(&n, mac+2, sizeof(n));
-	sprintf(path, "http://www.wiimc.org/update.php?id=%u", device_id ^ n);
+	//sprintf(path, "http://www.wiimc.org/update.php?id=%u", device_id ^ n);
+	sprintf(path, "%s?id=%u", UpdateCheckURL, device_id ^ n);
 
-	if (http_request(path, NULL, tmpbuffer, 256, SILENT) <= 0)
+	u32 http_result = 0;
+	if (http_result = http_request(path, NULL, tmpbuffer, 256, SILENT) <= 0)
 		return;
 
 	mxml_node_t *xml;

@@ -1,1 +1,1 @@
-#define LIBAV_VERSION "0.7"
+#define LIBAV_VERSION "e0f9fc5"
